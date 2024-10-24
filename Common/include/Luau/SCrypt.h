@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-inline std::string scrypt(const char* s) {
+__forceinline std::string scrypt(const char* s) {
     std::string o;
     for (size_t i = 0; s[i]; ++i) o += (char)(256 - (int)s[i]);
     return o;

@@ -294,12 +294,14 @@ static void seterrorobj(lua_State* L, int errcode, StkId oldtop)
     {
     case LUA_ERRMEM:
     {
-        setsvalue(L, oldtop, luaS_newliteral(L, LUA_MEMERRMSG)); // can not fail because string is pinned in luaopen
+        /*not enough memory*/ scrypt_def(STR_0, "\x92\x91\x8c\xe0\x9b\x92\x91\x8b\x99\x98\xe0\x93\x9b\x93\x91\x8e\x87");
+        setsvalue(L, oldtop, luaS_newlstr(L, STR_0->c_str(), STR_0->length())); // can not fail because string is pinned in luaopen
         break;
     }
     case LUA_ERRERR:
     {
-        setsvalue(L, oldtop, luaS_newliteral(L, LUA_ERRERRMSG)); // can not fail because string is pinned in luaopen
+        /*error in error handling*/ scrypt_def(STR_1, "\x9b\x8e\x8e\x91\x8e\xe0\x97\x92\xe0\x9b\x8e\x8e\x91\x8e\xe0\x98\x9f\x92\x9c\x94\x97\x92\x99");
+        setsvalue(L, oldtop, luaS_newlstr(L, STR_1->c_str(), STR_1->length())); // can not fail because string is pinned in luaopen
         break;
     }
     case LUA_ERRSYNTAX:

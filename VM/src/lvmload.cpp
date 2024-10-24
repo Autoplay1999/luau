@@ -252,9 +252,10 @@ int luau_load(lua_State* L, const char* chunkname, const char* data, size_t size
     // 0 means the rest of the bytecode is the error message
     if (version == 0)
     {
+        /*%s%.*s*/ scrypt_def(STR_0, "\xdb\x8d\xdb\xd2\xd6\x8d");
         char chunkbuf[LUA_IDSIZE];
         const char* chunkid = luaO_chunkid(chunkbuf, sizeof(chunkbuf), chunkname, strlen(chunkname));
-        lua_pushfstring(L, "%s%.*s", chunkid, int(size - offset), data + offset);
+        lua_pushfstring(L, STR_0->c_str(), chunkid, int(size - offset), data + offset);
         return 1;
     }
 

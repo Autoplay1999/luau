@@ -42,183 +42,267 @@ Builtin getBuiltin(AstExpr* node, const DenseHashMap<AstName, Global>& globals, 
 
 static int getBuiltinFunctionId(const Builtin& builtin, const CompileOptions& options)
 {
-    if (builtin.isGlobal("assert"))
+    /*assert*/ scrypt_def(STR_0, "\x9f\x8d\x8d\x9b\x8e\x8c");
+    if (builtin.isGlobal(STR_0->c_str()))
         return LBF_ASSERT;
-
-    if (builtin.isGlobal("type"))
+    
+    /*type*/ scrypt_def(STR_1, "\x8c\x87\x90\x9b");
+    if (builtin.isGlobal(STR_1->c_str()))
         return LBF_TYPE;
-
-    if (builtin.isGlobal("typeof"))
+    
+    /*typeof*/ scrypt_def(STR_2, "\x8c\x87\x90\x9b\x91\x9a");
+    if (builtin.isGlobal(STR_2->c_str()))
         return LBF_TYPEOF;
 
-    if (builtin.isGlobal("rawset"))
+    /*rawset*/ scrypt_def(STR_3, "\x8e\x9f\x89\x8d\x9b\x8c");
+    if (builtin.isGlobal(STR_3->c_str()))
         return LBF_RAWSET;
-    if (builtin.isGlobal("rawget"))
+    /*rawget*/ scrypt_def(STR_4, "\x8e\x9f\x89\x99\x9b\x8c");
+    if (builtin.isGlobal(STR_4->c_str()))
         return LBF_RAWGET;
-    if (builtin.isGlobal("rawequal"))
+    /*rawequal*/ scrypt_def(STR_5, "\x8e\x9f\x89\x9b\x8f\x8b\x9f\x94");
+    if (builtin.isGlobal(STR_5->c_str()))
         return LBF_RAWEQUAL;
-    if (builtin.isGlobal("rawlen"))
+    /*rawlen*/ scrypt_def(STR_6, "\x8e\x9f\x89\x94\x9b\x92");
+    if (builtin.isGlobal(STR_6->c_str()))
         return LBF_RAWLEN;
-
-    if (builtin.isGlobal("unpack"))
+    
+    /*unpack*/ scrypt_def(STR_7, "\x8b\x92\x90\x9f\x9d\x95");
+    if (builtin.isGlobal(STR_7->c_str()))
         return LBF_TABLE_UNPACK;
-
-    if (builtin.isGlobal("select"))
+    
+    /*select*/ scrypt_def(STR_8, "\x8d\x9b\x94\x9b\x9d\x8c");
+    if (builtin.isGlobal(STR_8->c_str()))
         return LBF_SELECT_VARARG;
-
-    if (builtin.isGlobal("getmetatable"))
+    
+    /*getmetatable*/ scrypt_def(STR_9, "\x99\x9b\x8c\x93\x9b\x8c\x9f\x8c\x9f\x9e\x94\x9b");
+    if (builtin.isGlobal(STR_9->c_str()))
         return LBF_GETMETATABLE;
-    if (builtin.isGlobal("setmetatable"))
+    /*setmetatable*/ scrypt_def(STR_10, "\x8d\x9b\x8c\x93\x9b\x8c\x9f\x8c\x9f\x9e\x94\x9b");
+    if (builtin.isGlobal(STR_10->c_str()))
         return LBF_SETMETATABLE;
 
-    if (builtin.isGlobal("tonumber"))
+    /*tonumber*/ scrypt_def(STR_11, "\x8c\x91\x92\x8b\x93\x9e\x9b\x8e");
+    if (builtin.isGlobal(STR_11->c_str()))
         return LBF_TONUMBER;
-    if (builtin.isGlobal("tostring"))
+    /*tostring*/ scrypt_def(STR_12, "\x8c\x91\x8d\x8c\x8e\x97\x92\x99");
+    if (builtin.isGlobal(STR_12->c_str()))
         return LBF_TOSTRING;
 
-    if (builtin.object == "math")
+    /*math*/ scrypt_def(STR_13, "\x93\x9f\x8c\x98");
+    if (builtin.object == STR_13->c_str())
     {
-        if (builtin.method == "abs")
+        /*abs*/ scrypt_def(STR_14, "\x9f\x9e\x8d");
+        if (builtin.method == STR_14->c_str())
             return LBF_MATH_ABS;
-        if (builtin.method == "acos")
+        /*acos*/ scrypt_def(STR_15, "\x9f\x9d\x91\x8d");
+        if (builtin.method == STR_15->c_str())
             return LBF_MATH_ACOS;
-        if (builtin.method == "asin")
+        /*asin*/ scrypt_def(STR_16, "\x9f\x8d\x97\x92");
+        if (builtin.method == STR_16->c_str())
             return LBF_MATH_ASIN;
-        if (builtin.method == "atan2")
+        /*atan2*/ scrypt_def(STR_17, "\x9f\x8c\x9f\x92\xce");
+        if (builtin.method == STR_17->c_str())
             return LBF_MATH_ATAN2;
-        if (builtin.method == "atan")
+        /*atan*/ scrypt_def(STR_18, "\x9f\x8c\x9f\x92");
+        if (builtin.method == STR_18->c_str())
             return LBF_MATH_ATAN;
-        if (builtin.method == "ceil")
+        /*ceil*/ scrypt_def(STR_19, "\x9d\x9b\x97\x94");
+        if (builtin.method == STR_19->c_str())
             return LBF_MATH_CEIL;
-        if (builtin.method == "cosh")
+        /*cosh*/ scrypt_def(STR_20, "\x9d\x91\x8d\x98");
+        if (builtin.method == STR_20->c_str())
             return LBF_MATH_COSH;
-        if (builtin.method == "cos")
+        /*cos*/ scrypt_def(STR_21, "\x9d\x91\x8d");
+        if (builtin.method == STR_21->c_str())
             return LBF_MATH_COS;
-        if (builtin.method == "deg")
+        /*deg*/ scrypt_def(STR_22, "\x9c\x9b\x99");
+        if (builtin.method == STR_22->c_str())
             return LBF_MATH_DEG;
-        if (builtin.method == "exp")
+        /*exp*/ scrypt_def(STR_23, "\x9b\x88\x90");
+        if (builtin.method == STR_23->c_str())
             return LBF_MATH_EXP;
-        if (builtin.method == "floor")
+        /*floor*/ scrypt_def(STR_24, "\x9a\x94\x91\x91\x8e");
+        if (builtin.method == STR_24->c_str())
             return LBF_MATH_FLOOR;
-        if (builtin.method == "fmod")
+        /*fmod*/ scrypt_def(STR_25, "\x9a\x93\x91\x9c");
+        if (builtin.method == STR_25->c_str())
             return LBF_MATH_FMOD;
-        if (builtin.method == "frexp")
+        /*frexp*/ scrypt_def(STR_26, "\x9a\x8e\x9b\x88\x90");
+        if (builtin.method == STR_26->c_str())
             return LBF_MATH_FREXP;
-        if (builtin.method == "ldexp")
+        /*ldexp*/ scrypt_def(STR_27, "\x94\x9c\x9b\x88\x90");
+        if (builtin.method == STR_27->c_str())
             return LBF_MATH_LDEXP;
-        if (builtin.method == "log10")
+        /*log10*/ scrypt_def(STR_28, "\x94\x91\x99\xcf\xd0");
+        if (builtin.method == STR_28->c_str())
             return LBF_MATH_LOG10;
-        if (builtin.method == "log")
+        /*log*/ scrypt_def(STR_29, "\x94\x91\x99");
+        if (builtin.method == STR_29->c_str())
             return LBF_MATH_LOG;
-        if (builtin.method == "max")
+        /*max*/ scrypt_def(STR_30, "\x93\x9f\x88");
+        if (builtin.method == STR_30->c_str())
             return LBF_MATH_MAX;
-        if (builtin.method == "min")
+        /*min*/ scrypt_def(STR_31, "\x93\x97\x92");
+        if (builtin.method == STR_31->c_str())
             return LBF_MATH_MIN;
-        if (builtin.method == "modf")
+        /*modf*/ scrypt_def(STR_32, "\x93\x91\x9c\x9a");
+        if (builtin.method == STR_32->c_str())
             return LBF_MATH_MODF;
-        if (builtin.method == "pow")
+        /*pow*/ scrypt_def(STR_33, "\x90\x91\x89");
+        if (builtin.method == STR_33->c_str())
             return LBF_MATH_POW;
-        if (builtin.method == "rad")
+        /*rad*/ scrypt_def(STR_34, "\x8e\x9f\x9c");
+        if (builtin.method == STR_34->c_str())
             return LBF_MATH_RAD;
-        if (builtin.method == "sinh")
+        /*sinh*/ scrypt_def(STR_35, "\x8d\x97\x92\x98");
+        if (builtin.method == STR_35->c_str())
             return LBF_MATH_SINH;
-        if (builtin.method == "sin")
+        /*sin*/ scrypt_def(STR_36, "\x8d\x97\x92");
+        if (builtin.method == STR_36->c_str())
             return LBF_MATH_SIN;
-        if (builtin.method == "sqrt")
+        /*sqrt*/ scrypt_def(STR_37, "\x8d\x8f\x8e\x8c");
+        if (builtin.method == STR_37->c_str())
             return LBF_MATH_SQRT;
-        if (builtin.method == "tanh")
+        /*tanh*/ scrypt_def(STR_38, "\x8c\x9f\x92\x98");
+        if (builtin.method == STR_38->c_str())
             return LBF_MATH_TANH;
-        if (builtin.method == "tan")
+        /*tan*/ scrypt_def(STR_39, "\x8c\x9f\x92");
+        if (builtin.method == STR_39->c_str())
             return LBF_MATH_TAN;
-        if (builtin.method == "clamp")
+        /*clamp*/ scrypt_def(STR_40, "\x9d\x94\x9f\x93\x90");
+        if (builtin.method == STR_40->c_str())
             return LBF_MATH_CLAMP;
-        if (builtin.method == "sign")
+        /*sign*/ scrypt_def(STR_41, "\x8d\x97\x99\x92");
+        if (builtin.method == STR_41->c_str())
             return LBF_MATH_SIGN;
-        if (builtin.method == "round")
+        /*round*/ scrypt_def(STR_42, "\x8e\x91\x8b\x92\x9c");
+        if (builtin.method == STR_42->c_str())
             return LBF_MATH_ROUND;
     }
 
-    if (builtin.object == "bit32")
+    /*bit32*/ scrypt_def(STR_43, "\x9e\x97\x8c\xcd\xce");
+    if (builtin.object == STR_43->c_str())
     {
-        if (builtin.method == "arshift")
+        /*arshift*/ scrypt_def(STR_44, "\x9f\x8e\x8d\x98\x97\x9a\x8c");
+        if (builtin.method == STR_44->c_str())
             return LBF_BIT32_ARSHIFT;
-        if (builtin.method == "band")
+        /*band*/ scrypt_def(STR_45, "\x9e\x9f\x92\x9c");
+        if (builtin.method == STR_45->c_str())
             return LBF_BIT32_BAND;
-        if (builtin.method == "bnot")
+        /*bnot*/ scrypt_def(STR_46, "\x9e\x92\x91\x8c");
+        if (builtin.method == STR_46->c_str())
             return LBF_BIT32_BNOT;
-        if (builtin.method == "bor")
+        /*bor*/ scrypt_def(STR_47, "\x9e\x91\x8e");
+        if (builtin.method == STR_47->c_str())
             return LBF_BIT32_BOR;
-        if (builtin.method == "bxor")
+        /*bxor*/ scrypt_def(STR_48, "\x9e\x88\x91\x8e");
+        if (builtin.method == STR_48->c_str())
             return LBF_BIT32_BXOR;
-        if (builtin.method == "btest")
+        /*btest*/ scrypt_def(STR_49, "\x9e\x8c\x9b\x8d\x8c");
+        if (builtin.method == STR_49->c_str())
             return LBF_BIT32_BTEST;
-        if (builtin.method == "extract")
+        /*extract*/ scrypt_def(STR_50, "\x9b\x88\x8c\x8e\x9f\x9d\x8c");
+        if (builtin.method == STR_50->c_str())
             return LBF_BIT32_EXTRACT;
-        if (builtin.method == "lrotate")
+        /*lrotate*/ scrypt_def(STR_51, "\x94\x8e\x91\x8c\x9f\x8c\x9b");
+        if (builtin.method == STR_51->c_str())
             return LBF_BIT32_LROTATE;
-        if (builtin.method == "lshift")
+        /*lshift*/ scrypt_def(STR_52, "\x94\x8d\x98\x97\x9a\x8c");
+        if (builtin.method == STR_52->c_str())
             return LBF_BIT32_LSHIFT;
-        if (builtin.method == "replace")
+        /*replace*/ scrypt_def(STR_53, "\x8e\x9b\x90\x94\x9f\x9d\x9b");
+        if (builtin.method == STR_53->c_str())
             return LBF_BIT32_REPLACE;
-        if (builtin.method == "rrotate")
+        /*rrotate*/ scrypt_def(STR_54, "\x8e\x8e\x91\x8c\x9f\x8c\x9b");
+        if (builtin.method == STR_54->c_str())
             return LBF_BIT32_RROTATE;
-        if (builtin.method == "rshift")
+        /*rshift*/ scrypt_def(STR_55, "\x8e\x8d\x98\x97\x9a\x8c");
+        if (builtin.method == STR_55->c_str())
             return LBF_BIT32_RSHIFT;
-        if (builtin.method == "countlz")
+        /*countlz*/ scrypt_def(STR_56, "\x9d\x91\x8b\x92\x8c\x94\x86");
+        if (builtin.method == STR_56->c_str())
             return LBF_BIT32_COUNTLZ;
-        if (builtin.method == "countrz")
+        /*countrz*/ scrypt_def(STR_57, "\x9d\x91\x8b\x92\x8c\x8e\x86");
+        if (builtin.method == STR_57->c_str())
             return LBF_BIT32_COUNTRZ;
-        if (builtin.method == "byteswap")
+        /*byteswap*/ scrypt_def(STR_58, "\x9e\x87\x8c\x9b\x8d\x89\x9f\x90");
+        if (builtin.method == STR_58->c_str())
             return LBF_BIT32_BYTESWAP;
     }
 
-    if (builtin.object == "string")
+    /*string*/ scrypt_def(STR_59, "\x8d\x8c\x8e\x97\x92\x99");
+    if (builtin.object == STR_59->c_str())
     {
-        if (builtin.method == "byte")
+        /*byte*/ scrypt_def(STR_60, "\x9e\x87\x8c\x9b");
+        if (builtin.method == STR_60->c_str())
             return LBF_STRING_BYTE;
-        if (builtin.method == "char")
+        /*char*/ scrypt_def(STR_61, "\x9d\x98\x9f\x8e");
+        if (builtin.method == STR_61->c_str())
             return LBF_STRING_CHAR;
-        if (builtin.method == "len")
+        /*len*/ scrypt_def(STR_62, "\x94\x9b\x92");
+        if (builtin.method == STR_62->c_str())
             return LBF_STRING_LEN;
-        if (builtin.method == "sub")
+        /*sub*/ scrypt_def(STR_63, "\x8d\x8b\x9e");
+        if (builtin.method == STR_63->c_str())
             return LBF_STRING_SUB;
     }
 
-    if (builtin.object == "table")
+    /*table*/ scrypt_def(STR_64, "\x8c\x9f\x9e\x94\x9b");
+    if (builtin.object == STR_64->c_str())
     {
-        if (builtin.method == "insert")
+        /*insert*/ scrypt_def(STR_65, "\x97\x92\x8d\x9b\x8e\x8c");
+        if (builtin.method == STR_65->c_str())
             return LBF_TABLE_INSERT;
-        if (builtin.method == "unpack")
+        /*unpack*/ scrypt_def(STR_66, "\x8b\x92\x90\x9f\x9d\x95");
+        if (builtin.method == STR_66->c_str())
             return LBF_TABLE_UNPACK;
     }
 
-    if (builtin.object == "buffer")
+    /*buffer*/ scrypt_def(STR_67, "\x9e\x8b\x9a\x9a\x9b\x8e");
+    if (builtin.object == STR_67->c_str())
     {
-        if (builtin.method == "readi8")
+        /*readi8*/ scrypt_def(STR_68, "\x8e\x9b\x9f\x9c\x97\xc8");
+        if (builtin.method == STR_68->c_str())
             return LBF_BUFFER_READI8;
-        if (builtin.method == "readu8")
+        /*readu8*/ scrypt_def(STR_69, "\x8e\x9b\x9f\x9c\x8b\xc8");
+        if (builtin.method == STR_69->c_str())
             return LBF_BUFFER_READU8;
-        if (builtin.method == "writei8" || builtin.method == "writeu8")
+        /*writei8*/ scrypt_def(STR_70, "\x89\x8e\x97\x8c\x9b\x97\xc8");
+        /*writeu8*/ scrypt_def(STR_71, "\x89\x8e\x97\x8c\x9b\x8b\xc8");
+        if (builtin.method == STR_70->c_str() || builtin.method == STR_71->c_str())
             return LBF_BUFFER_WRITEU8;
-        if (builtin.method == "readi16")
+        /*readi16*/ scrypt_def(STR_72, "\x8e\x9b\x9f\x9c\x97\xcf\xca");
+        if (builtin.method == STR_72->c_str())
             return LBF_BUFFER_READI16;
-        if (builtin.method == "readu16")
+        /*readu16*/ scrypt_def(STR_73, "\x8e\x9b\x9f\x9c\x8b\xcf\xca");
+        if (builtin.method == STR_73->c_str())
             return LBF_BUFFER_READU16;
-        if (builtin.method == "writei16" || builtin.method == "writeu16")
+        /*writei16*/ scrypt_def(STR_74, "\x89\x8e\x97\x8c\x9b\x97\xcf\xca");
+        /*writeu16*/ scrypt_def(STR_75, "\x89\x8e\x97\x8c\x9b\x8b\xcf\xca");
+        if (builtin.method == STR_74->c_str() || builtin.method == STR_75->c_str())
             return LBF_BUFFER_WRITEU16;
-        if (builtin.method == "readi32")
+        /*readi32*/ scrypt_def(STR_76, "\x8e\x9b\x9f\x9c\x97\xcd\xce");
+        if (builtin.method == STR_76->c_str())
             return LBF_BUFFER_READI32;
-        if (builtin.method == "readu32")
+        /*readu32*/ scrypt_def(STR_77, "\x8e\x9b\x9f\x9c\x8b\xcd\xce");
+        if (builtin.method == STR_77->c_str())
             return LBF_BUFFER_READU32;
-        if (builtin.method == "writei32" || builtin.method == "writeu32")
+        /*writei32*/ scrypt_def(STR_78, "\x89\x8e\x97\x8c\x9b\x97\xcd\xce");
+        /*writeu32*/ scrypt_def(STR_79, "\x89\x8e\x97\x8c\x9b\x8b\xcd\xce");
+        if (builtin.method == STR_78->c_str() || builtin.method == STR_79->c_str())
             return LBF_BUFFER_WRITEU32;
-        if (builtin.method == "readf32")
+        /*readf32*/ scrypt_def(STR_80, "\x8e\x9b\x9f\x9c\x9a\xcd\xce");
+        if (builtin.method == STR_80->c_str())
             return LBF_BUFFER_READF32;
-        if (builtin.method == "writef32")
+        /*writef32*/ scrypt_def(STR_81, "\x89\x8e\x97\x8c\x9b\x9a\xcd\xce");
+        if (builtin.method == STR_81->c_str())
             return LBF_BUFFER_WRITEF32;
-        if (builtin.method == "readf64")
+        /*readf64*/ scrypt_def(STR_82, "\x8e\x9b\x9f\x9c\x9a\xca\xcc");
+        if (builtin.method == STR_82->c_str())
             return LBF_BUFFER_READF64;
-        if (builtin.method == "writef64")
+        /*writef64*/ scrypt_def(STR_83, "\x89\x8e\x97\x8c\x9b\x9a\xca\xcc");
+        if (builtin.method == STR_83->c_str())
             return LBF_BUFFER_WRITEF64;
     }
 

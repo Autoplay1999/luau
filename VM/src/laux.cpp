@@ -94,9 +94,8 @@ void luaL_where(lua_State* L, int level)
     lua_Debug ar;
     if (lua_getinfo(L, level, STR_0->c_str(), &ar) && ar.currentline > 0)
     {
-        #define STR_0 /*%s:%d: */ scrypt("\xdb\x8d\xc6\xdb\x9c\xc6\xe0").c_str()
-        lua_pushfstring(L, STR_0, ar.short_src, ar.currentline);
-        #undef STR_0
+        /*%s:%d: */ scrypt_def(STR_1, "\xdb\x8d\xc6\xdb\x9c\xc6\xe0");
+        lua_pushfstring(L, STR_1->c_str(), ar.short_src, ar.currentline);
         return;
     }
     lua_pushliteral(L, ""); // else, no information available...
@@ -122,9 +121,8 @@ int luaL_checkoption(lua_State* L, int narg, const char* def, const char* const 
     for (i = 0; lst[i]; i++)
         if (strcmp(lst[i], name) == 0)
             return i;
-    #define STR_0 /*invalid option '%s'*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x91\x90\x8c\x97\x91\x92\xe0\xd9\xdb\x8d\xd9").c_str()
-    const char* msg = lua_pushfstring(L, STR_0, name);
-    #undef STR_0
+    /*invalid option '%s'*/ scrypt_def(STR_0, "\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x91\x90\x8c\x97\x91\x92\xe0\xd9\xdb\x8d\xd9");
+    const char* msg = lua_pushfstring(L, STR_0->c_str(), name);
     luaL_argerrorL(L, narg, msg);
 }
 

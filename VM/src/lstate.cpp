@@ -52,14 +52,16 @@ static void freestack(lua_State* L, lua_State* L1)
 */
 static void f_luaopen(lua_State* L, void* ud)
 {
+    /*not enough memory*/ scrypt_def(STR_0, "\x92\x91\x8c\xe0\x9b\x92\x91\x8b\x99\x98\xe0\x93\x9b\x93\x91\x8e\x87");
+    /*error in error handling*/ scrypt_def(STR_1, "\x9b\x8e\x8e\x91\x8e\xe0\x97\x92\xe0\x9b\x8e\x8e\x91\x8e\xe0\x98\x9f\x92\x9c\x94\x97\x92\x99");
     global_State* g = L->global;
     stack_init(L, L);                             // init stack
     L->gt = luaH_new(L, 0, 2);                    // table of globals
     sethvalue(L, registry(L), luaH_new(L, 0, 2)); // registry
     luaS_resize(L, LUA_MINSTRTABSIZE);            // initial size of string table
     luaT_init(L);
-    luaS_fix(luaS_newliteral(L, LUA_MEMERRMSG)); // pin to make sure we can always throw this error
-    luaS_fix(luaS_newliteral(L, LUA_ERRERRMSG)); // pin to make sure we can always throw this error
+    luaS_fix(luaS_newlstr(L, STR_0->c_str(), STR_0->length())); // pin to make sure we can always throw this error
+    luaS_fix(luaS_newlstr(L, STR_1->c_str(), STR_1->length())); // pin to make sure we can always throw this error
     g->GCthreshold = 4 * g->totalbytes;
 }
 
