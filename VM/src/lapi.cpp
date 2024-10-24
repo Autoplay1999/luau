@@ -35,12 +35,14 @@
  * therefore call luaC_checkGC before luaC_threadbarrier to guarantee the object is pushed to a gray thread.
  */
 
+/*
 const char* lua_ident = "$Lua: Lua 5.1.4 Copyright (C) 1994-2008 Lua.org, PUC-Rio $\n"
                         "$Authors: R. Ierusalimschy, L. H. de Figueiredo & W. Celes $\n"
                         "$URL: www.lua.org $\n";
 
 const char* luau_ident = "$Luau: Copyright (C) 2019-2024 Roblox Corporation $\n"
                          "$URL: luau.org $\n";
+*/
 
 #define api_checknelems(L, n) api_check(L, (n) <= (L->top - L->base))
 
@@ -293,7 +295,8 @@ int lua_type(lua_State* L, int idx)
 
 const char* lua_typename(lua_State* L, int t)
 {
-    return (t == LUA_TNONE) ? "no value" : luaT_typenames[t];
+    /*no value*/ scrypt_def(STR_0, "\x92\x91\xe0\x8a\x9f\x94\x8b\x9b");
+    return (t == LUA_TNONE) ? STR_0->c_str() : luaT_typenames(t);
 }
 
 int lua_iscfunction(lua_State* L, int idx)
@@ -576,6 +579,20 @@ const void* lua_topointer(lua_State* L, int idx)
         return pvalue(o);
     default:
         return iscollectable(o) ? gcvalue(o) : NULL;
+    }
+}
+
+void* lua_topointer2(lua_State* L, int idx)
+{
+    TValue n;
+    const TValue* o = index2addr(L, idx);
+    if (tonumber(o, &n))
+    {
+        return (void*)&o->value.n;
+    }
+    else
+    {
+        return 0;
     }
 }
 

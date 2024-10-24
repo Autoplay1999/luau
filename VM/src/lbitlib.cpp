@@ -145,12 +145,18 @@ static int b_rrot(lua_State* L)
 */
 static int fieldargs(lua_State* L, int farg, int* width)
 {
+    /*field cannot be negative*/ scrypt_def(STR_0, "\x9a\x97\x9b\x94\x9c\xe0\x9d\x9f\x92\x92\x91\x8c\xe0\x9e\x9b\xe0\x92\x9b\x99\x9f\x8c\x97\x8a\x9b");
+    /*width must be positive*/ scrypt_def(STR_1, "\x89\x97\x9c\x8c\x98\xe0\x93\x8b\x8d\x8c\xe0\x9e\x9b\xe0\x90\x91\x8d\x97\x8c\x97\x8a\x9b");
+
     int f = luaL_checkinteger(L, farg);
     int w = luaL_optinteger(L, farg + 1, 1);
-    luaL_argcheck(L, 0 <= f, farg, "field cannot be negative");
-    luaL_argcheck(L, 0 < w, farg + 1, "width must be positive");
-    if (f + w > NBITS)
-        luaL_error(L, "trying to access non-existent bits");
+    luaL_argcheck(L, 0 <= f, farg, STR_0->c_str());
+    luaL_argcheck(L, 0 < w, farg + 1, STR_1->c_str());
+    if (f + w > NBITS) {
+        #define STR_2 /*trying to access non-existent bits*/ scrypt("\x8c\x8e\x87\x97\x92\x99\xe0\x8c\x91\xe0\x9f\x9d\x9d\x9b\x8d\x8d\xe0\x92\x91\x92\xd3\x9b\x88\x97\x8d\x8c\x9b\x92\x8c\xe0\x9e\x97\x8c\x8d").c_str()
+        luaL_error(L, STR_2);
+        #undef STR_2
+    }
     *width = w;
     return f;
 }
@@ -219,28 +225,45 @@ static int b_swap(lua_State* L)
     return 1;
 }
 
-static const luaL_Reg bitlib[] = {
-    {"arshift", b_arshift},
-    {"band", b_and},
-    {"bnot", b_not},
-    {"bor", b_or},
-    {"bxor", b_xor},
-    {"btest", b_test},
-    {"extract", b_extract},
-    {"lrotate", b_lrot},
-    {"lshift", b_lshift},
-    {"replace", b_replace},
-    {"rrotate", b_rrot},
-    {"rshift", b_rshift},
-    {"countlz", b_countlz},
-    {"countrz", b_countrz},
-    {"byteswap", b_swap},
-    {NULL, NULL},
-};
-
 int luaopen_bit32(lua_State* L)
 {
-    luaL_register(L, LUA_BITLIBNAME, bitlib);
+    std::string STR_0  = /*arshift*/ scrypt("\x9f\x8e\x8d\x98\x97\x9a\x8c");
+    std::string STR_1  = /*band*/ scrypt("\x9e\x9f\x92\x9c");
+    std::string STR_2  = /*bnot*/ scrypt("\x9e\x92\x91\x8c");
+    std::string STR_3  = /*bor*/ scrypt("\x9e\x91\x8e");
+    std::string STR_4  = /*bxor*/ scrypt("\x9e\x88\x91\x8e");
+    std::string STR_5  = /*btest*/ scrypt("\x9e\x8c\x9b\x8d\x8c");
+    std::string STR_6  = /*extract*/ scrypt("\x9b\x88\x8c\x8e\x9f\x9d\x8c");
+    std::string STR_7  = /*lrotate*/ scrypt("\x94\x8e\x91\x8c\x9f\x8c\x9b");
+    std::string STR_8  = /*lshift*/ scrypt("\x94\x8d\x98\x97\x9a\x8c");
+    std::string STR_9  = /*replace*/ scrypt("\x8e\x9b\x90\x94\x9f\x9d\x9b");
+    std::string STR_10 = /*rrotate*/ scrypt("\x8e\x8e\x91\x8c\x9f\x8c\x9b");
+    std::string STR_11 = /*rshift*/ scrypt("\x8e\x8d\x98\x97\x9a\x8c");
+    std::string STR_12 = /*countlz*/ scrypt("\x9d\x91\x8b\x92\x8c\x94\x86");
+    std::string STR_13 = /*countrz*/ scrypt("\x9d\x91\x8b\x92\x8c\x8e\x86");
+    std::string STR_14 = /*byteswap*/ scrypt("\x9e\x87\x8c\x9b\x8d\x89\x9f\x90");
+    std::string STR_15 = /*bit32*/ scrypt("\x9e\x97\x8c\xcd\xce");
+
+    const luaL_Reg bitlib[] = {
+        {STR_0.c_str(), b_arshift},
+        {STR_1.c_str(), b_and},
+        {STR_2.c_str(), b_not},
+        {STR_3.c_str(), b_or},
+        {STR_4.c_str(), b_xor},
+        {STR_5.c_str(), b_test},
+        {STR_6.c_str(), b_extract},
+        {STR_7.c_str(), b_lrot},
+        {STR_8.c_str(), b_lshift},
+        {STR_9.c_str(), b_replace},
+        {STR_10.c_str(), b_rrot},
+        {STR_11.c_str(), b_rshift},
+        {STR_12.c_str(), b_countlz},
+        {STR_13.c_str(), b_countrz},
+        {STR_14.c_str(), b_swap},
+        {NULL, NULL},
+    };
+
+    luaL_register(L, STR_15.c_str(), bitlib);
 
     return 1;
 }

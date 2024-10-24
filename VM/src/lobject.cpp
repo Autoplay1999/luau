@@ -138,10 +138,11 @@ const char* luaO_chunkid(char* buf, size_t buflen, const char* source, size_t sr
     else
     {                                         // buf = [string "string"]
         size_t len = strcspn(source, "\n\r"); // stop at first newline
+        /*[string "*/ scrypt_def(STR_0, "\xa5\x8d\x8c\x8e\x97\x92\x99\xe0\xde");
         buflen -= sizeof("[string \"...\"]");
         if (len > buflen)
             len = buflen;
-        strcpy(buf, "[string \"");
+        strcpy(buf, STR_0->c_str());
         if (source[len] != '\0')
         { // must truncate?
             strncat(buf, source, len);

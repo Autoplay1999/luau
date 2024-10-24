@@ -89,18 +89,24 @@ public:
             if (const char* str = lua_tostring(L, -1))
                 return str;
 
+        /*lua_exception: runtime error*/ scrypt_def(STR_0, "\x94\x8b\x9f\xa1\x9b\x88\x9d\x9b\x90\x8c\x97\x91\x92\xc6\xe0\x8e\x8b\x92\x8c\x97\x93\x9b\xe0\x9b\x8e\x8e\x91\x8e");
+        /*lua_exception: syntax error*/ scrypt_def(STR_1, "\x94\x8b\x9f\xa1\x9b\x88\x9d\x9b\x90\x8c\x97\x91\x92\xc6\xe0\x8d\x87\x92\x8c\x9f\x88\xe0\x9b\x8e\x8e\x91\x8e");
+        /*lua_exception: not enough memory*/ scrypt_def(STR_2, "\x94\x8b\x9f\xa1\x9b\x88\x9d\x9b\x90\x8c\x97\x91\x92\xc6\xe0\x92\x91\x8c\xe0\x9b\x92\x91\x8b\x99\x98\xe0\x93\x9b\x93\x91\x8e\x87");
+        /*lua_exception: error in error handling*/ scrypt_def(STR_3, "\x94\x8b\x9f\xa1\x9b\x88\x9d\x9b\x90\x8c\x97\x91\x92\xc6\xe0\x9b\x8e\x8e\x91\x8e\xe0\x97\x92\xe0\x9b\x8e\x8e\x91\x8e\xe0\x98\x9f\x92\x9c\x94\x97\x92\x99");
+        /*lua_exception: unexpected exception status*/ scrypt_def(STR_4, "\x94\x8b\x9f\xa1\x9b\x88\x9d\x9b\x90\x8c\x97\x91\x92\xc6\xe0\x8b\x92\x9b\x88\x90\x9b\x9d\x8c\x9b\x9c\xe0\x9b\x88\x9d\x9b\x90\x8c\x97\x91\x92\xe0\x8d\x8c\x9f\x8c\x8b\x8d");
+
         switch (status)
         {
         case LUA_ERRRUN:
-            return "lua_exception: runtime error";
+            return STR_0->c_str();
         case LUA_ERRSYNTAX:
-            return "lua_exception: syntax error";
+            return STR_1->c_str();
         case LUA_ERRMEM:
-            return "lua_exception: " LUA_MEMERRMSG;
+            return STR_2->c_str();
         case LUA_ERRERR:
-            return "lua_exception: " LUA_ERRERRMSG;
+            return STR_3->c_str();
         default:
-            return "lua_exception: unexpected exception status";
+            return STR_4->c_str();
         }
     }
 
@@ -225,8 +231,11 @@ CallInfo* luaD_growCI(lua_State* L)
     int request = L->size_ci * 2;
     luaD_reallocCI(L, L->size_ci >= LUAI_MAXCALLS ? hardlimit : request < LUAI_MAXCALLS ? request : LUAI_MAXCALLS);
 
-    if (L->size_ci > LUAI_MAXCALLS)
-        luaG_runerror(L, "stack overflow");
+    if (L->size_ci > LUAI_MAXCALLS) {
+        #define STR_0 /*stack overflow*/ scrypt("\x8d\x8c\x9f\x9d\x95\xe0\x91\x8a\x9b\x8e\x9a\x94\x91\x89").c_str()
+        luaG_runerror(L, STR_0);
+        #undef STR_0
+    }
 
     return ++L->ci;
 }
@@ -236,8 +245,11 @@ void luaD_checkCstack(lua_State* L)
     // allow extra stack space to handle stack overflow in xpcall
     const int hardlimit = LUAI_MAXCCALLS + (LUAI_MAXCCALLS >> 3);
 
-    if (L->nCcalls == LUAI_MAXCCALLS)
-        luaG_runerror(L, "C stack overflow");
+    if (L->nCcalls == LUAI_MAXCCALLS) {
+        #define STR_0 /*C stack overflow*/ scrypt("\xbd\xe0\x8d\x8c\x9f\x9d\x95\xe0\x91\x8a\x9b\x8e\x9a\x94\x91\x89").c_str()
+        luaG_runerror(L, STR_0);
+        #undef STR_0
+    }
     else if (L->nCcalls >= hardlimit)
         luaD_throw(L, LUA_ERRERR); // error while handling stack error
 }
@@ -338,8 +350,11 @@ static void resume(lua_State* L, void* ud)
     {
         // start coroutine
         LUAU_ASSERT(L->ci == L->base_ci && firstArg >= L->base);
-        if (firstArg == L->base)
-            luaG_runerror(L, "cannot resume dead coroutine");
+        if (firstArg == L->base) {
+            #define STR_0 /*cannot resume dead coroutine*/ scrypt("\x9d\x9f\x92\x92\x91\x8c\xe0\x8e\x9b\x8d\x8b\x93\x9b\xe0\x9c\x9b\x9f\x9c\xe0\x9d\x91\x8e\x91\x8b\x8c\x97\x92\x9b").c_str()
+            luaG_runerror(L, STR_0);
+            #undef STR_0
+        }
 
         if (luau_precall(L, firstArg - 1, LUA_MULTRET) != PCRLUA)
             return;
@@ -463,12 +478,18 @@ static void resume_finish(lua_State* L, int status)
 int lua_resume(lua_State* L, lua_State* from, int nargs)
 {
     int status;
-    if (L->status != LUA_YIELD && L->status != LUA_BREAK && (L->status != 0 || L->ci != L->base_ci))
-        return resume_error(L, "cannot resume non-suspended coroutine", nargs);
+    if (L->status != LUA_YIELD && L->status != LUA_BREAK && (L->status != 0 || L->ci != L->base_ci)) {
+        #define STR_0 /*cannot resume non-suspended coroutine*/ scrypt("\x9d\x9f\x92\x92\x91\x8c\xe0\x8e\x9b\x8d\x8b\x93\x9b\xe0\x92\x91\x92\xd3\x8d\x8b\x8d\x90\x9b\x92\x9c\x9b\x9c\xe0\x9d\x91\x8e\x91\x8b\x8c\x97\x92\x9b").c_str()
+        return resume_error(L, STR_0, nargs);
+        #undef STR_0
+    }
 
     L->nCcalls = from ? from->nCcalls : 0;
-    if (L->nCcalls >= LUAI_MAXCCALLS)
-        return resume_error(L, "C stack overflow", nargs);
+    if (L->nCcalls >= LUAI_MAXCCALLS) {
+        #define STR_1 /*C stack overflow*/ scrypt("\xbd\xe0\x8d\x8c\x9f\x9d\x95\xe0\x91\x8a\x9b\x8e\x9a\x94\x91\x89").c_str()
+        return resume_error(L, STR_1, nargs);
+        #undef STR_1
+    }
 
     L->baseCcalls = ++L->nCcalls;
     L->isactive = true;
@@ -492,12 +513,18 @@ int lua_resume(lua_State* L, lua_State* from, int nargs)
 int lua_resumeerror(lua_State* L, lua_State* from)
 {
     int status;
-    if (L->status != LUA_YIELD && L->status != LUA_BREAK && (L->status != 0 || L->ci != L->base_ci))
-        return resume_error(L, "cannot resume non-suspended coroutine", 1);
+    if (L->status != LUA_YIELD && L->status != LUA_BREAK && (L->status != 0 || L->ci != L->base_ci)) {
+        #define STR_0 /*cannot resume non-suspended coroutine*/ scrypt("\x9d\x9f\x92\x92\x91\x8c\xe0\x8e\x9b\x8d\x8b\x93\x9b\xe0\x92\x91\x92\xd3\x8d\x8b\x8d\x90\x9b\x92\x9c\x9b\x9c\xe0\x9d\x91\x8e\x91\x8b\x8c\x97\x92\x9b").c_str()
+        return resume_error(L, STR_0, 1);
+        #undef STR_0
+    }
 
     L->nCcalls = from ? from->nCcalls : 0;
-    if (L->nCcalls >= LUAI_MAXCCALLS)
-        return resume_error(L, "C stack overflow", 1);
+    if (L->nCcalls >= LUAI_MAXCCALLS) {
+        #define STR_1 /*C stack overflow*/ scrypt("\xbd\xe0\x8d\x8c\x9f\x9d\x95\xe0\x91\x8a\x9b\x8e\x9a\x94\x91\x89").c_str()
+        return resume_error(L, STR_1, 1);
+        #undef STR_1
+    }
 
     L->baseCcalls = ++L->nCcalls;
     L->isactive = true;
@@ -520,8 +547,11 @@ int lua_resumeerror(lua_State* L, lua_State* from)
 
 int lua_yield(lua_State* L, int nresults)
 {
-    if (L->nCcalls > L->baseCcalls)
-        luaG_runerror(L, "attempt to yield across metamethod/C-call boundary");
+    if (L->nCcalls > L->baseCcalls) {
+        #define STR_0 /*attempt to yield across metamethod/C-call boundary*/ scrypt("\x9f\x8c\x8c\x9b\x93\x90\x8c\xe0\x8c\x91\xe0\x87\x97\x9b\x94\x9c\xe0\x9f\x9d\x8e\x91\x8d\x8d\xe0\x93\x9b\x8c\x9f\x93\x9b\x8c\x98\x91\x9c\xd1\xbd\xd3\x9d\x9f\x94\x94\xe0\x9e\x91\x8b\x92\x9c\x9f\x8e\x87").c_str()
+        luaG_runerror(L, STR_0);
+        #undef STR_0
+    }
     L->base = L->top - nresults; // protect stack slots below
     L->status = LUA_YIELD;
     return -1;
@@ -529,8 +559,11 @@ int lua_yield(lua_State* L, int nresults)
 
 int lua_break(lua_State* L)
 {
-    if (L->nCcalls > L->baseCcalls)
-        luaG_runerror(L, "attempt to break across metamethod/C-call boundary");
+    if (L->nCcalls > L->baseCcalls) {
+        #define STR_0 /*attempt to break across metamethod/C-call boundary*/ scrypt("\x9f\x8c\x8c\x9b\x93\x90\x8c\xe0\x8c\x91\xe0\x9e\x8e\x9b\x9f\x95\xe0\x9f\x9d\x8e\x91\x8d\x8d\xe0\x93\x9b\x8c\x9f\x93\x9b\x8c\x98\x91\x9c\xd1\xbd\xd3\x9d\x9f\x94\x94\xe0\x9e\x91\x8b\x92\x9c\x9f\x8e\x87").c_str()
+        luaG_runerror(L, STR_0);
+        #undef STR_0
+    }
     L->status = LUA_BREAK;
     return -1;
 }

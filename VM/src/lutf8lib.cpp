@@ -61,13 +61,15 @@ static const char* utf8_decode(const char* o, int* val)
 */
 static int utflen(lua_State* L)
 {
+    /*initial position out of string*/ scrypt_def(STR_0, "\x97\x92\x97\x8c\x97\x9f\x94\xe0\x90\x91\x8d\x97\x8c\x97\x91\x92\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x8d\x8c\x8e\x97\x92\x99");
+    /*final position out of string*/ scrypt_def(STR_1, "\x9a\x97\x92\x9f\x94\xe0\x90\x91\x8d\x97\x8c\x97\x91\x92\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x8d\x8c\x8e\x97\x92\x99");
     int n = 0;
     size_t len;
     const char* s = luaL_checklstring(L, 1, &len);
     int posi = u_posrelat(luaL_optinteger(L, 2, 1), len);
     int posj = u_posrelat(luaL_optinteger(L, 3, -1), len);
-    luaL_argcheck(L, 1 <= posi && --posi <= (int)len, 2, "initial position out of string");
-    luaL_argcheck(L, --posj < (int)len, 3, "final position out of string");
+    luaL_argcheck(L, 1 <= posi && --posi <= (int)len, 2, STR_0->c_str());
+    luaL_argcheck(L, --posj < (int)len, 3, STR_1->c_str());
     while (posi <= posj)
     {
         const char* s1 = utf8_decode(s + posi, NULL);
@@ -90,28 +92,33 @@ static int utflen(lua_State* L)
 */
 static int codepoint(lua_State* L)
 {
+    /*out of range*/ scrypt_def(STR_0, "\x91\x8b\x8c\xe0\x91\x9a\xe0\x8e\x9f\x92\x99\x9b");
+    /*string slice too long*/ scrypt_def(STR_1, "\x8d\x8c\x8e\x97\x92\x99\xe0\x8d\x94\x97\x9d\x9b\xe0\x8c\x91\x91\xe0\x94\x91\x92\x99");
     size_t len;
     const char* s = luaL_checklstring(L, 1, &len);
     int posi = u_posrelat(luaL_optinteger(L, 2, 1), len);
     int pose = u_posrelat(luaL_optinteger(L, 3, posi), len);
     int n;
     const char* se;
-    luaL_argcheck(L, posi >= 1, 2, "out of range");
-    luaL_argcheck(L, pose <= (int)len, 3, "out of range");
+    luaL_argcheck(L, posi >= 1, 2, STR_0->c_str());
+    luaL_argcheck(L, pose <= (int)len, 3, STR_0->c_str());
     if (posi > pose)
         return 0;               // empty interval; return no values
     if (pose - posi >= INT_MAX) // (int -> int) overflow?
-        luaL_error(L, "string slice too long");
+        luaL_error(L, STR_1->c_str());
     n = (int)(pose - posi) + 1;
-    luaL_checkstack(L, n, "string slice too long");
+    luaL_checkstack(L, n, STR_1->c_str());
     n = 0;
     se = s + pose;
     for (s += posi - 1; s < se;)
     {
         int code;
         s = utf8_decode(s, &code);
-        if (s == NULL)
-            luaL_error(L, "invalid UTF-8 code");
+        if (s == NULL) {
+            #define STR_2 /*invalid UTF-8 code*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\xab\xac\xba\xd3\xc8\xe0\x9d\x91\x9c\x9b").c_str()
+            luaL_error(L, STR_2);
+            #undef STR_2
+        }
         lua_pushinteger(L, code);
         n++;
     }
@@ -145,8 +152,9 @@ static int luaO_utf8esc(char* buff, unsigned long x)
 // lighter replacement for pushutfchar; doesn't push any string onto the stack
 static int buffutfchar(lua_State* L, int arg, char* buff, const char** charstr)
 {
+    /*value out of range*/ scrypt_def(STR_0, "\x8a\x9f\x94\x8b\x9b\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x8e\x9f\x92\x99\x9b");
     int code = luaL_checkinteger(L, arg);
-    luaL_argcheck(L, 0 <= code && code <= MAXUNICODE, arg, "value out of range");
+    luaL_argcheck(L, 0 <= code && code <= MAXUNICODE, arg, STR_0->c_str());
     int l = luaO_utf8esc(buff, cast_to(long, code));
     *charstr = buff + UTF8BUFFSZ - l;
     return l;
@@ -195,7 +203,8 @@ static int byteoffset(lua_State* L)
     int n = luaL_checkinteger(L, 2);
     int posi = (n >= 0) ? 1 : (int)len + 1;
     posi = u_posrelat(luaL_optinteger(L, 3, posi), len);
-    luaL_argcheck(L, 1 <= posi && --posi <= (int)len, 3, "position out of range");
+    /*position out of range*/ scrypt_def(STR_0, "\x90\x91\x8d\x97\x8c\x97\x91\x92\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x8e\x9f\x92\x99\x9b");
+    luaL_argcheck(L, 1 <= posi && --posi <= (int)len, 3, STR_0->c_str());
     if (n == 0)
     {
         // find beginning of current byte sequence
@@ -204,8 +213,11 @@ static int byteoffset(lua_State* L)
     }
     else
     {
-        if (iscont(s + posi))
-            luaL_error(L, "initial position is a continuation byte");
+        if (iscont(s + posi)) {
+            #define STR_0 /*initial position is a continuation byte*/ scrypt("\x97\x92\x97\x8c\x97\x9f\x94\xe0\x90\x91\x8d\x97\x8c\x97\x91\x92\xe0\x97\x8d\xe0\x9f\xe0\x9d\x91\x92\x8c\x97\x92\x8b\x9f\x8c\x97\x91\x92\xe0\x9e\x87\x8c\x9b").c_str()
+            luaL_error(L, STR_0);
+            #undef STR_0
+        }
         if (n < 0)
         {
             while (n < 0 && posi > 0)
@@ -256,8 +268,11 @@ static int iter_aux(lua_State* L)
     {
         int code;
         const char* next = utf8_decode(s + n, &code);
-        if (next == NULL || iscont(next))
-            luaL_error(L, "invalid UTF-8 code");
+        if (next == NULL || iscont(next)) {
+            #define STR_0 /*invalid UTF-8 code*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\xab\xac\xba\xd3\xc8\xe0\x9d\x91\x9c\x9b").c_str()
+            luaL_error(L, STR_0);
+            #undef STR_0
+        }
         lua_pushinteger(L, n + 1);
         lua_pushinteger(L, code);
         return 2;
@@ -276,21 +291,29 @@ static int iter_codes(lua_State* L)
 // pattern to match a single UTF-8 character
 #define UTF8PATT "[\0-\x7F\xC2-\xF4][\x80-\xBF]*"
 
-static const luaL_Reg funcs[] = {
-    {"offset", byteoffset},
-    {"codepoint", codepoint},
-    {"char", utfchar},
-    {"len", utflen},
-    {"codes", iter_codes},
-    {NULL, NULL},
-};
-
 int luaopen_utf8(lua_State* L)
 {
-    luaL_register(L, LUA_UTF8LIBNAME, funcs);
+    std::string STR_0 = /*offset*/ scrypt("\x91\x9a\x9a\x8d\x9b\x8c");
+    std::string STR_1 = /*codepoint*/ scrypt("\x9d\x91\x9c\x9b\x90\x91\x97\x92\x8c");
+    std::string STR_2 = /*char*/ scrypt("\x9d\x98\x9f\x8e");
+    std::string STR_3 = /*len*/ scrypt("\x94\x9b\x92");
+    std::string STR_4 = /*codes*/ scrypt("\x9d\x91\x9c\x9b\x8d");
+    std::string STR_5 = /*charpattern*/ scrypt("\x9d\x98\x9f\x8e\x90\x9f\x8c\x8c\x9b\x8e\x92");
+    std::string STR_6 = /*utf8*/ scrypt("\x8b\x8c\x9a\xc8");
+
+    static const luaL_Reg funcs[] = {
+        {STR_0.c_str(), byteoffset},
+        {STR_1.c_str(), codepoint},
+        {STR_2.c_str(), utfchar},
+        {STR_3.c_str(), utflen},
+        {STR_4.c_str(), iter_codes},
+        {NULL, NULL},
+    };
+
+    luaL_register(L, STR_6.c_str(), funcs);
 
     lua_pushlstring(L, UTF8PATT, sizeof(UTF8PATT) / sizeof(char) - 1);
-    lua_setfield(L, -2, "charpattern");
+    lua_setfield(L, -2, STR_5.c_str());
 
     return 1;
 }

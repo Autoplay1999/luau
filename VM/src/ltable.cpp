@@ -190,7 +190,9 @@ static int findindex(lua_State* L, Table* t, StkId key)
                 break;
             n += gnext(n);
         }
-        luaG_runerror(L, "invalid key to 'next'"); // key not found
+        #define STR_0 /*invalid key to 'next'*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x95\x9b\x87\xe0\x8c\x91\xe0\xd9\x92\x9b\x88\x8c\xd9").c_str()
+        luaG_runerror(L, STR_0); // key not found
+        #undef STR_0
     }
 }
 
@@ -319,8 +321,11 @@ static int numusehash(const Table* t, int* nums, int* pnasize)
 
 static void setarrayvector(lua_State* L, Table* t, int size)
 {
-    if (size > MAXSIZE)
-        luaG_runerror(L, "table overflow");
+    if (size > MAXSIZE) {
+        #define STR_0 /*table overflow*/ scrypt("\x8c\x9f\x9e\x94\x9b\xe0\x91\x8a\x9b\x8e\x9a\x94\x91\x89").c_str()
+        luaG_runerror(L, STR_0);
+        #undef STR_0
+    }
     luaM_reallocarray(L, t->array, t->sizearray, size, TValue, t->memcat);
     TValue* array = t->array;
     for (int i = t->sizearray; i < size; i++)
@@ -340,8 +345,11 @@ static void setnodevector(lua_State* L, Table* t, int size)
     {
         int i;
         lsize = ceillog2(size);
-        if (lsize > MAXBITS)
-            luaG_runerror(L, "table overflow");
+        if (lsize > MAXBITS) {
+            #define STR_0 /*table overflow*/ scrypt("\x8c\x9f\x9e\x94\x9b\xe0\x91\x8a\x9b\x8e\x9a\x94\x91\x89").c_str()
+            luaG_runerror(L, STR_0);
+            #undef STR_0
+        }
         size = twoto(lsize);
         t->node = luaM_newarray(L, size, LuaNode, t->memcat);
         for (i = 0; i < size; i++)
@@ -375,8 +383,11 @@ static TValue* arrayornewkey(lua_State* L, Table* t, const TValue* key)
 
 static void resize(lua_State* L, Table* t, int nasize, int nhsize)
 {
-    if (nasize > MAXSIZE || nhsize > MAXSIZE)
-        luaG_runerror(L, "table overflow");
+    if (nasize > MAXSIZE || nhsize > MAXSIZE) {
+        #define STR_0 /*table overflow*/ scrypt("\x8c\x9f\x9e\x94\x9b\xe0\x91\x8a\x9b\x8e\x9a\x94\x91\x89").c_str()
+        luaG_runerror(L, STR_0);
+        #undef STR_0
+    }
     int oldasize = t->sizearray;
     int oldhsize = t->lsizenode;
     LuaNode* nold = t->node; // save old hash ...
@@ -689,12 +700,24 @@ TValue* luaH_set(lua_State* L, Table* t, const TValue* key)
 
 TValue* luaH_newkey(lua_State* L, Table* t, const TValue* key)
 {
-    if (ttisnil(key))
-        luaG_runerror(L, "table index is nil");
-    else if (ttisnumber(key) && luai_numisnan(nvalue(key)))
-        luaG_runerror(L, "table index is NaN");
-    else if (ttisvector(key) && luai_vecisnan(vvalue(key)))
-        luaG_runerror(L, "table index contains NaN");
+    /*table index is NaN*/ scrypt_def(STR_1, "\x8c\x9f\x9e\x94\x9b\xe0\x97\x92\x9c\x9b\x88\xe0\x97\x8d\xe0\xb2\x9f\xb2");
+    /*table index contains NaN*/ scrypt_def(STR_2, "\x8c\x9f\x9e\x94\x9b\xe0\x97\x92\x9c\x9b\x88\xe0\x9d\x91\x92\x8c\x9f\x97\x92\x8d\xe0\xb2\x9f\xb2");
+
+    if (ttisnil(key)) {
+        #define STR_0 /*table index is nil*/ scrypt("\x8c\x9f\x9e\x94\x9b\xe0\x97\x92\x9c\x9b\x88\xe0\x97\x8d\xe0\x92\x97\x94").c_str()
+        luaG_runerror(L, STR_0);
+        #undef STR_0
+    }
+    else if (ttisnumber(key) && luai_numisnan(nvalue(key))) {
+        #define STR_1 /*table index is NaN*/ scrypt("\x8c\x9f\x9e\x94\x9b\xe0\x97\x92\x9c\x9b\x88\xe0\x97\x8d\xe0\xb2\x9f\xb2").c_str()
+        luaG_runerror(L, STR_1);
+        #undef STR_1
+    }
+    else if (ttisvector(key) && luai_vecisnan(vvalue(key))) {
+        #define STR_2 /*table index contains NaN*/ scrypt("\x8c\x9f\x9e\x94\x9b\xe0\x97\x92\x9c\x9b\x88\xe0\x9d\x91\x92\x8c\x9f\x97\x92\x8d\xe0\xb2\x9f\xb2").c_str()
+        luaG_runerror(L, STR_2);
+        #undef STR_2
+    }
     return newkey(L, t, key);
 }
 

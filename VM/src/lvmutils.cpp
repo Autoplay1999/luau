@@ -125,7 +125,9 @@ void luaV_gettable(lua_State* L, const TValue* t, TValue* key, StkId val)
         }
         t = tm; // else repeat with `tm'
     }
-    luaG_runerror(L, "'__index' chain too long; possible loop");
+    #define STR_0 /*'__index' chain too long; possible loop*/ scrypt("\xd9\xa1\xa1\x97\x92\x9c\x9b\x88\xd9\xe0\x9d\x98\x9f\x97\x92\xe0\x8c\x91\x91\xe0\x94\x91\x92\x99\xc5\xe0\x90\x91\x8d\x8d\x97\x9e\x94\x9b\xe0\x94\x91\x91\x90").c_str()
+    luaG_runerror(L, STR_0);
+    #undef STR_0
 }
 
 void luaV_settable(lua_State* L, const TValue* t, TValue* key, StkId val)
@@ -171,7 +173,9 @@ void luaV_settable(lua_State* L, const TValue* t, TValue* key, StkId val)
         setobj(L, &temp, tm); // avoid pointing inside table (may rehash)
         t = &temp;
     }
-    luaG_runerror(L, "'__newindex' chain too long; possible loop");
+    #define STR_0 /*'__newindex' chain too long; possible loop*/ scrypt("\xd9\xa1\xa1\x92\x9b\x89\x97\x92\x9c\x9b\x88\xd9\xe0\x9d\x98\x9f\x97\x92\xe0\x8c\x91\x91\xe0\x94\x91\x92\x99\xc5\xe0\x90\x91\x8d\x8d\x97\x9e\x94\x9b\xe0\x94\x91\x91\x90").c_str()
+    luaG_runerror(L, STR_0);
+    #undef STR_0
 }
 
 static int call_binTM(lua_State* L, const TValue* p1, const TValue* p2, StkId res, TMS event)
@@ -333,8 +337,11 @@ void luaV_concat(lua_State* L, int total, int last)
             for (n = 1; n < total && tostring(L, top - n - 1); n++)
             {
                 size_t l = tsvalue(top - n - 1)->len;
-                if (l > MAXSSIZE - tl)
-                    luaG_runerror(L, "string length overflow");
+                if (l > MAXSSIZE - tl) {
+                    #define STR_0 /*string length overflow*/ scrypt("\x8d\x8c\x8e\x97\x92\x99\xe0\x94\x9b\x92\x99\x8c\x98\xe0\x91\x8a\x9b\x8e\x9a\x94\x91\x89").c_str()
+                    luaG_runerror(L, STR_0);
+                    #undef STR_0
+                }
                 tl += l;
             }
 
@@ -551,22 +558,36 @@ void luaV_dolen(lua_State* L, StkId ra, const TValue* rb)
         tm = luaT_gettmbyobj(L, rb, TM_LEN);
     }
 
-    if (ttisnil(tm))
-        luaG_typeerror(L, rb, "get length of");
+    if (ttisnil(tm)) {
+        #define STR_0 /*get length of*/ scrypt("\x99\x9b\x8c\xe0\x94\x9b\x92\x99\x8c\x98\xe0\x91\x9a").c_str()
+        luaG_typeerror(L, rb, STR_0);
+        #undef STR_0
+    }
 
     StkId res = callTMres(L, ra, tm, rb, luaO_nilobject);
-    if (!ttisnumber(res))
-        luaG_runerror(L, "'__len' must return a number"); // note, we can't access rb since stack may have been reallocated
+    if (!ttisnumber(res)) {
+        #define STR_1 /*'__len' must return a number*/ scrypt("\xd9\xa1\xa1\x94\x9b\x92\xd9\xe0\x93\x8b\x8d\x8c\xe0\x8e\x9b\x8c\x8b\x8e\x92\xe0\x9f\xe0\x92\x8b\x93\x9e\x9b\x8e").c_str()
+        luaG_runerror(L, STR_1); // note, we can't access rb since stack may have been reallocated
+        #undef STR_1
+    }
 }
 
 LUAU_NOINLINE void luaV_prepareFORN(lua_State* L, StkId plimit, StkId pstep, StkId pinit)
 {
+    #define STR_0 /*initial value*/ scrypt("\x97\x92\x97\x8c\x97\x9f\x94\xe0\x8a\x9f\x94\x8b\x9b").c_str()
+    #define STR_1 /*limit*/ scrypt("\x94\x97\x93\x97\x8c").c_str()
+    #define STR_2 /*step*/ scrypt("\x8d\x8c\x9b\x90").c_str()
+
     if (!ttisnumber(pinit) && !luaV_tonumber(pinit, pinit))
-        luaG_forerror(L, pinit, "initial value");
+        luaG_forerror(L, pinit, STR_0);
     if (!ttisnumber(plimit) && !luaV_tonumber(plimit, plimit))
-        luaG_forerror(L, plimit, "limit");
+        luaG_forerror(L, plimit, STR_1);
     if (!ttisnumber(pstep) && !luaV_tonumber(pstep, pstep))
-        luaG_forerror(L, pstep, "step");
+        luaG_forerror(L, pstep, STR_2);
+
+    #undef STR_0
+    #undef STR_1
+    #undef STR_2
 }
 
 // calls a C function f with no yielding support; optionally save one resulting value to the res register
@@ -629,8 +650,10 @@ LUAU_NOINLINE void luaV_callTM(lua_State* L, int nparams, int res)
 LUAU_NOINLINE void luaV_tryfuncTM(lua_State* L, StkId func)
 {
     const TValue* tm = luaT_gettmbyobj(L, func, TM_CALL);
-    if (!ttisfunction(tm))
-        luaG_typeerror(L, func, "call");
+    if (!ttisfunction(tm)) {
+        #define STR_0 /*call*/ scrypt("\x9d\x9f\x94\x94").c_str()
+        luaG_typeerror(L, func, STR_0);
+    }
     for (StkId p = L->top; p > func; p--) // open space for metamethod
         setobj2s(L, p, p - 1);
     L->top++;              // stack space pre-allocated by the caller

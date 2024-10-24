@@ -34,9 +34,11 @@ inline T buffer_swapbe(T v)
 
 static int buffer_create(lua_State* L)
 {
+    /*size*/ scrypt_def(STR_0, "\x8d\x97\x86\x9b");
+
     int size = luaL_checkinteger(L, 1);
 
-    luaL_argcheck(L, size >= 0, 1, "size");
+    luaL_argcheck(L, size >= 0, 1, STR_0->c_str());
 
     lua_newbuffer(L, size);
     return 1;
@@ -68,8 +70,11 @@ static int buffer_readinteger(lua_State* L)
     void* buf = luaL_checkbuffer(L, 1, &len);
     int offset = luaL_checkinteger(L, 2);
 
-    if (isoutofbounds(offset, len, sizeof(T)))
-        luaL_error(L, "buffer access out of bounds");
+    if (isoutofbounds(offset, len, sizeof(T))) {
+        #define STR_0 /*buffer access out of bounds*/ scrypt("\x9e\x8b\x9a\x9a\x9b\x8e\xe0\x9f\x9d\x9d\x9b\x8d\x8d\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x9e\x91\x8b\x92\x9c\x8d").c_str()
+        luaL_error(L, STR_0);
+        #undef STR_0
+    }
 
     T val;
     memcpy(&val, (char*)buf + offset, sizeof(T));
@@ -90,8 +95,11 @@ static int buffer_writeinteger(lua_State* L)
     int offset = luaL_checkinteger(L, 2);
     int value = luaL_checkunsigned(L, 3);
 
-    if (isoutofbounds(offset, len, sizeof(T)))
-        luaL_error(L, "buffer access out of bounds");
+    if (isoutofbounds(offset, len, sizeof(T))) {
+        #define STR_0 /*buffer access out of bounds*/ scrypt("\x9e\x8b\x9a\x9a\x9b\x8e\xe0\x9f\x9d\x9d\x9b\x8d\x8d\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x9e\x91\x8b\x92\x9c\x8d").c_str()
+        luaL_error(L, STR_0);
+        #undef STR_0
+    }
 
     T val = T(value);
 
@@ -110,13 +118,18 @@ static int buffer_readfp(lua_State* L)
     void* buf = luaL_checkbuffer(L, 1, &len);
     int offset = luaL_checkinteger(L, 2);
 
-    if (isoutofbounds(offset, len, sizeof(T)))
-        luaL_error(L, "buffer access out of bounds");
+    if (isoutofbounds(offset, len, sizeof(T))) {
+        #define STR_0 /*buffer access out of bounds*/ scrypt("\x9e\x8b\x9a\x9a\x9b\x8e\xe0\x9f\x9d\x9d\x9b\x8d\x8d\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x9e\x91\x8b\x92\x9c\x8d").c_str()
+        luaL_error(L, STR_0);
+        #undef STR_0
+    }
 
     T val;
 
 #if defined(LUAU_BIG_ENDIAN)
-    static_assert(sizeof(T) == sizeof(StorageType), "type size must match to reinterpret data");
+    #define STR_1 /*type size must match to reinterpret data*/ scrypt("\x8c\x87\x90\x9b\xe0\x8d\x97\x86\x9b\xe0\x93\x8b\x8d\x8c\xe0\x93\x9f\x8c\x9d\x98\xe0\x8c\x91\xe0\x8e\x9b\x97\x92\x8c\x9b\x8e\x90\x8e\x9b\x8c\xe0\x9c\x9f\x8c\x9f").c_str()
+    static_assert(sizeof(T) == sizeof(StorageType), STR_1);
+    #undef STR_1
     StorageType tmp;
     memcpy(&tmp, (char*)buf + offset, sizeof(tmp));
     tmp = buffer_swapbe(tmp);
@@ -138,8 +151,11 @@ static int buffer_writefp(lua_State* L)
     int offset = luaL_checkinteger(L, 2);
     double value = luaL_checknumber(L, 3);
 
-    if (isoutofbounds(offset, len, sizeof(T)))
-        luaL_error(L, "buffer access out of bounds");
+    if (isoutofbounds(offset, len, sizeof(T))) {
+        #define STR_0 /*buffer access out of bounds*/ scrypt("\x9e\x8b\x9a\x9a\x9b\x8e\xe0\x9f\x9d\x9d\x9b\x8d\x8d\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x9e\x91\x8b\x92\x9c\x8d").c_str()
+        luaL_error(L, STR_0);
+        #undef STR_0
+    }
 
     T val = T(value);
 
@@ -164,10 +180,14 @@ static int buffer_readstring(lua_State* L)
     int offset = luaL_checkinteger(L, 2);
     int size = luaL_checkinteger(L, 3);
 
-    luaL_argcheck(L, size >= 0, 3, "size");
+    /*size*/ scrypt_def(STR_0, "\x8d\x97\x86\x9b");
+    luaL_argcheck(L, size >= 0, 3, STR_0->c_str());
 
-    if (isoutofbounds(offset, len, unsigned(size)))
-        luaL_error(L, "buffer access out of bounds");
+    if (isoutofbounds(offset, len, unsigned(size))) {
+        #define STR_1 /*buffer access out of bounds*/ scrypt("\x9e\x8b\x9a\x9a\x9b\x8e\xe0\x9f\x9d\x9d\x9b\x8d\x8d\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x9e\x91\x8b\x92\x9c\x8d").c_str()
+        luaL_error(L, STR_1);
+        #undef STR_1
+    }
 
     lua_pushlstring(L, (char*)buf + offset, size);
     return 1;
@@ -175,6 +195,8 @@ static int buffer_readstring(lua_State* L)
 
 static int buffer_writestring(lua_State* L)
 {
+    /*count*/ scrypt_def(STR_0, "\x9d\x91\x8b\x92\x8c");
+
     size_t len = 0;
     void* buf = luaL_checkbuffer(L, 1, &len);
     int offset = luaL_checkinteger(L, 2);
@@ -182,14 +204,20 @@ static int buffer_writestring(lua_State* L)
     const char* val = luaL_checklstring(L, 3, &size);
     int count = luaL_optinteger(L, 4, int(size));
 
-    luaL_argcheck(L, count >= 0, 4, "count");
+    luaL_argcheck(L, count >= 0, 4, STR_0->c_str());
 
-    if (size_t(count) > size)
-        luaL_error(L, "string length overflow");
+    if (size_t(count) > size) {
+        #define STR_1 /*string length overflow*/ scrypt("\x8d\x8c\x8e\x97\x92\x99\xe0\x94\x9b\x92\x99\x8c\x98\xe0\x91\x8a\x9b\x8e\x9a\x94\x91\x89").c_str()
+        luaL_error(L, STR_1);
+        #undef STR_1
+    }
 
     // string size can't exceed INT_MAX at this point
-    if (isoutofbounds(offset, len, unsigned(count)))
-        luaL_error(L, "buffer access out of bounds");
+    if (isoutofbounds(offset, len, unsigned(count))) {
+        #define STR_2 /*buffer access out of bounds*/ scrypt("\x9e\x8b\x9a\x9a\x9b\x8e\xe0\x9f\x9d\x9d\x9b\x8d\x8d\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x9e\x91\x8b\x92\x9c\x8d").c_str()
+        luaL_error(L, STR_2);
+        #undef STR_2
+    }
 
     memcpy((char*)buf + offset, val, count);
     return 0;
@@ -206,6 +234,8 @@ static int buffer_len(lua_State* L)
 
 static int buffer_copy(lua_State* L)
 {
+#define STR_0 /*buffer access out of bounds*/ scrypt("\x9e\x8b\x9a\x9a\x9b\x8e\xe0\x9f\x9d\x9d\x9b\x8d\x8d\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x9e\x91\x8b\x92\x9c\x8d").c_str()
+
     size_t tlen = 0;
     void* tbuf = luaL_checkbuffer(L, 1, &tlen);
     int toffset = luaL_checkinteger(L, 2);
@@ -217,20 +247,24 @@ static int buffer_copy(lua_State* L)
     int size = luaL_optinteger(L, 5, int(slen) - soffset);
 
     if (size < 0)
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, STR_0);
 
     if (isoutofbounds(soffset, slen, unsigned(size)))
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, STR_0);
 
     if (isoutofbounds(toffset, tlen, unsigned(size)))
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, STR_0);
 
     memmove((char*)tbuf + toffset, (char*)sbuf + soffset, size);
     return 0;
+
+#undef STR_0
 }
 
 static int buffer_fill(lua_State* L)
 {
+#define STR_0 /*buffer access out of bounds*/ scrypt("\x9e\x8b\x9a\x9a\x9b\x8e\xe0\x9f\x9d\x9d\x9b\x8d\x8d\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x9e\x91\x8b\x92\x9c\x8d").c_str()
+
     size_t len = 0;
     void* buf = luaL_checkbuffer(L, 1, &len);
     int offset = luaL_checkinteger(L, 2);
@@ -238,46 +272,74 @@ static int buffer_fill(lua_State* L)
     int size = luaL_optinteger(L, 4, int(len) - offset);
 
     if (size < 0)
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, STR_0);
 
     if (isoutofbounds(offset, len, unsigned(size)))
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, STR_0);
 
     memset((char*)buf + offset, value & 0xff, size);
     return 0;
-}
 
-static const luaL_Reg bufferlib[] = {
-    {"create", buffer_create},
-    {"fromstring", buffer_fromstring},
-    {"tostring", buffer_tostring},
-    {"readi8", buffer_readinteger<int8_t>},
-    {"readu8", buffer_readinteger<uint8_t>},
-    {"readi16", buffer_readinteger<int16_t>},
-    {"readu16", buffer_readinteger<uint16_t>},
-    {"readi32", buffer_readinteger<int32_t>},
-    {"readu32", buffer_readinteger<uint32_t>},
-    {"readf32", buffer_readfp<float, uint32_t>},
-    {"readf64", buffer_readfp<double, uint64_t>},
-    {"writei8", buffer_writeinteger<int8_t>},
-    {"writeu8", buffer_writeinteger<uint8_t>},
-    {"writei16", buffer_writeinteger<int16_t>},
-    {"writeu16", buffer_writeinteger<uint16_t>},
-    {"writei32", buffer_writeinteger<int32_t>},
-    {"writeu32", buffer_writeinteger<uint32_t>},
-    {"writef32", buffer_writefp<float, uint32_t>},
-    {"writef64", buffer_writefp<double, uint64_t>},
-    {"readstring", buffer_readstring},
-    {"writestring", buffer_writestring},
-    {"len", buffer_len},
-    {"copy", buffer_copy},
-    {"fill", buffer_fill},
-    {NULL, NULL},
-};
+#undef STR_0
+}
 
 int luaopen_buffer(lua_State* L)
 {
-    luaL_register(L, LUA_BUFFERLIBNAME, bufferlib);
+    std::string STR_0  = /*create*/ scrypt("\x9d\x8e\x9b\x9f\x8c\x9b");
+    std::string STR_1  = /*fromstring*/ scrypt("\x9a\x8e\x91\x93\x8d\x8c\x8e\x97\x92\x99");
+    std::string STR_2  = /*tostring*/ scrypt("\x8c\x91\x8d\x8c\x8e\x97\x92\x99");
+    std::string STR_3  = /*readi8*/ scrypt("\x8e\x9b\x9f\x9c\x97\xc8");
+    std::string STR_4  = /*readu8*/ scrypt("\x8e\x9b\x9f\x9c\x8b\xc8");
+    std::string STR_5  = /*readi16*/ scrypt("\x8e\x9b\x9f\x9c\x97\xcf\xca");
+    std::string STR_6  = /*readu16*/ scrypt("\x8e\x9b\x9f\x9c\x8b\xcf\xca");
+    std::string STR_7  = /*readi32*/ scrypt("\x8e\x9b\x9f\x9c\x97\xcd\xce");
+    std::string STR_8  = /*readu32*/ scrypt("\x8e\x9b\x9f\x9c\x8b\xcd\xce");
+    std::string STR_9  = /*readf32*/ scrypt("\x8e\x9b\x9f\x9c\x9a\xcd\xce");
+    std::string STR_10 = /*readf64*/ scrypt("\x8e\x9b\x9f\x9c\x9a\xca\xcc");
+    std::string STR_11 = /*writei8*/ scrypt("\x89\x8e\x97\x8c\x9b\x97\xc8");
+    std::string STR_12 = /*writeu8*/ scrypt("\x89\x8e\x97\x8c\x9b\x8b\xc8");
+    std::string STR_13 = /*writei16*/ scrypt("\x89\x8e\x97\x8c\x9b\x97\xcf\xca");
+    std::string STR_14 = /*writeu16*/ scrypt("\x89\x8e\x97\x8c\x9b\x8b\xcf\xca");
+    std::string STR_15 = /*writei32*/ scrypt("\x89\x8e\x97\x8c\x9b\x97\xcd\xce");
+    std::string STR_16 = /*writeu32*/ scrypt("\x89\x8e\x97\x8c\x9b\x8b\xcd\xce");
+    std::string STR_17 = /*writef32*/ scrypt("\x89\x8e\x97\x8c\x9b\x9a\xcd\xce");
+    std::string STR_18 = /*writef64*/ scrypt("\x89\x8e\x97\x8c\x9b\x9a\xca\xcc");
+    std::string STR_19 = /*readstring*/ scrypt("\x8e\x9b\x9f\x9c\x8d\x8c\x8e\x97\x92\x99");
+    std::string STR_20 = /*writestring*/ scrypt("\x89\x8e\x97\x8c\x9b\x8d\x8c\x8e\x97\x92\x99");
+    std::string STR_21 = /*len*/ scrypt("\x94\x9b\x92");
+    std::string STR_22 = /*copy*/ scrypt("\x9d\x91\x90\x87");
+    std::string STR_23 = /*fill*/ scrypt("\x9a\x97\x94\x94");
+    std::string STR_24 = /*buffer*/ scrypt("\x9e\x8b\x9a\x9a\x9b\x8e");
+
+    const luaL_Reg bufferlib[] = {
+        {STR_0.c_str(), buffer_create},
+        {STR_1.c_str(), buffer_fromstring},
+        {STR_2.c_str(), buffer_tostring},
+        {STR_3.c_str(), buffer_readinteger<int8_t>},
+        {STR_4.c_str(), buffer_readinteger<uint8_t>},
+        {STR_5.c_str(), buffer_readinteger<int16_t>},
+        {STR_6.c_str(), buffer_readinteger<uint16_t>},
+        {STR_7.c_str(), buffer_readinteger<int32_t>},
+        {STR_8.c_str(), buffer_readinteger<uint32_t>},
+        {STR_9.c_str(), buffer_readfp<float, uint32_t>},
+        {STR_10.c_str(), buffer_readfp<double, uint64_t>},
+        {STR_11.c_str(), buffer_writeinteger<int8_t>},
+        {STR_12.c_str(), buffer_writeinteger<uint8_t>},
+        {STR_13.c_str(), buffer_writeinteger<int16_t>},
+        {STR_14.c_str(), buffer_writeinteger<uint16_t>},
+        {STR_15.c_str(), buffer_writeinteger<int32_t>},
+        {STR_16.c_str(), buffer_writeinteger<uint32_t>},
+        {STR_17.c_str(), buffer_writefp<float, uint32_t>},
+        {STR_18.c_str(), buffer_writefp<double, uint64_t>},
+        {STR_19.c_str(), buffer_readstring},
+        {STR_20.c_str(), buffer_writestring},
+        {STR_21.c_str(), buffer_len},
+        {STR_22.c_str(), buffer_copy},
+        {STR_23.c_str(), buffer_fill},
+        {NULL, NULL},
+    };
+
+    luaL_register(L, STR_24.c_str(), bufferlib);
 
     return 1;
 }

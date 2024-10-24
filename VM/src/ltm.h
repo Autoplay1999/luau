@@ -48,8 +48,8 @@ typedef enum
 #define fasttm(l, et, e) gfasttm(l->global, et, e)
 #define fastnotm(et, e) ((et) == NULL || ((et)->tmcache & (1u << (e))))
 
-LUAI_DATA const char* const luaT_typenames[];
-LUAI_DATA const char* const luaT_eventname[];
+LUAI_DATA const char* const luaT_typenames(int i);
+LUAI_DATA const char* const luaT_eventname(int i);
 
 LUAI_FUNC const TValue* luaT_gettm(Table* events, TMS event, TString* ename);
 LUAI_FUNC const TValue* luaT_gettmbyobj(lua_State* L, const TValue* o, TMS event);

@@ -260,9 +260,10 @@ int luau_load(lua_State* L, const char* chunkname, const char* data, size_t size
 
     if (version < LBC_VERSION_MIN || version > LBC_VERSION_MAX)
     {
+        /*%s: bytecode version mismatch (expected [%d..%d], got %d)*/ scrypt_def(STR_0, "\xdb\x8d\xc6\xe0\x9e\x87\x8c\x9b\x9d\x91\x9c\x9b\xe0\x8a\x9b\x8e\x8d\x97\x91\x92\xe0\x93\x97\x8d\x93\x9f\x8c\x9d\x98\xe0\xd8\x9b\x88\x90\x9b\x9d\x8c\x9b\x9c\xe0\xa5\xdb\x9c\xd2\xd2\xdb\x9c\xa3\xd4\xe0\x99\x91\x8c\xe0\xdb\x9c\xd7");
         char chunkbuf[LUA_IDSIZE];
         const char* chunkid = luaO_chunkid(chunkbuf, sizeof(chunkbuf), chunkname, strlen(chunkname));
-        lua_pushfstring(L, "%s: bytecode version mismatch (expected [%d..%d], got %d)", chunkid, LBC_VERSION_MIN, LBC_VERSION_MAX, version);
+        lua_pushfstring(L, STR_0->c_str(), chunkid, LBC_VERSION_MIN, LBC_VERSION_MAX, version);
         return 1;
     }
 
@@ -287,8 +288,9 @@ int luau_load(lua_State* L, const char* chunkname, const char* data, size_t size
         {
             char chunkbuf[LUA_IDSIZE];
             const char* chunkid = luaO_chunkid(chunkbuf, sizeof(chunkbuf), chunkname, strlen(chunkname));
+            /*%s: bytecode type version mismatch (expected [%d..%d], got %d)*/ scrypt_def(STR_0, "\xdb\x8d\xc6\xe0\x9e\x87\x8c\x9b\x9d\x91\x9c\x9b\xe0\x8c\x87\x90\x9b\xe0\x8a\x9b\x8e\x8d\x97\x91\x92\xe0\x93\x97\x8d\x93\x9f\x8c\x9d\x98\xe0\xd8\x9b\x88\x90\x9b\x9d\x8c\x9b\x9c\xe0\xa5\xdb\x9c\xd2\xd2\xdb\x9c\xa3\xd4\xe0\x99\x91\x8c\xe0\xdb\x9c\xd7");
             lua_pushfstring(
-                L, "%s: bytecode type version mismatch (expected [%d..%d], got %d)", chunkid, LBC_TYPE_VERSION_MIN, LBC_TYPE_VERSION_MAX, typesversion
+                L, STR_0->c_str(), chunkid, LBC_TYPE_VERSION_MIN, LBC_TYPE_VERSION_MAX, typesversion
             );
             return 1;
         }

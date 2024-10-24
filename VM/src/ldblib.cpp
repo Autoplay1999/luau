@@ -42,16 +42,21 @@ static int db_info(lua_State* L)
     int level;
     if (lua_isnumber(L, arg + 1))
     {
+        #define STR_0 /*level can't be negative*/ scrypt("\x94\x9b\x8a\x9b\x94\xe0\x9d\x9f\x92\xd9\x8c\xe0\x9e\x9b\xe0\x92\x9b\x99\x9f\x8c\x97\x8a\x9b").c_str()
         level = (int)lua_tointeger(L, arg + 1);
-        luaL_argcheck(L, level >= 0, arg + 1, "level can't be negative");
+        luaL_argcheck(L, level >= 0, arg + 1, STR_0);
+        #undef STR_0
     }
     else if (arg == 0 && lua_isfunction(L, 1))
     {
         // convert absolute index to relative index
         level = -lua_gettop(L);
     }
-    else
-        luaL_argerror(L, arg + 1, "function or level expected");
+    else {
+        #define STR_1 /*function or level expected*/ scrypt("\x9a\x8b\x92\x9d\x8c\x97\x91\x92\xe0\x91\x8e\xe0\x94\x9b\x8a\x9b\x94\xe0\x9b\x88\x90\x9b\x9d\x8c\x9b\x9c").c_str()
+        luaL_argerror(L, arg + 1, STR_1);
+        #undef STR_1
+    }
 
     const char* options = luaL_checkstring(L, arg + 2);
 
@@ -72,7 +77,9 @@ static int db_info(lua_State* L)
                 if (L != L1)
                     lua_settop(L1, l1top);
 
-                luaL_argerror(L, arg + 2, "duplicate option");
+                #define STR_2 /*duplicate option*/ scrypt("\x9c\x8b\x90\x94\x97\x9d\x9f\x8c\x9b\xe0\x91\x90\x8c\x97\x91\x92").c_str()
+                luaL_argerror(L, arg + 2, STR_2);
+                #undef STR_2
             }
             occurs[*it - 'a'] = true;
         }
@@ -113,7 +120,9 @@ static int db_info(lua_State* L)
             if (DFFlag::LuauDebugInfoInvArgLeftovers && L != L1)
                 lua_settop(L1, l1top);
 
-            luaL_argerror(L, arg + 2, "invalid option");
+            #define STR_3 /*invalid option*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x91\x90\x8c\x97\x91\x92").c_str()
+            luaL_argerror(L, arg + 2, STR_3);
+            #undef STR_3
         }
     }
 
@@ -122,11 +131,13 @@ static int db_info(lua_State* L)
 
 static int db_traceback(lua_State* L)
 {
+    /*level can't be negative*/ scrypt_def(STR_0, "\x94\x9b\x8a\x9b\x94\xe0\x9d\x9f\x92\xd9\x8c\xe0\x9e\x9b\xe0\x92\x9b\x99\x9f\x8c\x97\x8a\x9b");
+
     int arg;
     lua_State* L1 = getthread(L, &arg);
     const char* msg = luaL_optstring(L, arg + 1, NULL);
     int level = luaL_optinteger(L, arg + 2, (L == L1) ? 1 : 0);
-    luaL_argcheck(L, level >= 0, arg + 2, "level can't be negative");
+    luaL_argcheck(L, level >= 0, arg + 2, STR_0->c_str());
 
     luaL_Strbuf buf;
     luaL_buffinit(L, &buf);
@@ -160,7 +171,8 @@ static int db_traceback(lua_State* L)
 
         if (ar.name)
         {
-            luaL_addstring(&buf, " function ");
+            /* function */ scrypt_def(STR_1, "\xe0\x9a\x8b\x92\x9d\x8c\x97\x91\x92\xe0");
+            luaL_addstring(&buf, STR_1->c_str());
             luaL_addstring(&buf, ar.name);
         }
 
@@ -171,14 +183,18 @@ static int db_traceback(lua_State* L)
     return 1;
 }
 
-static const luaL_Reg dblib[] = {
-    {"info", db_info},
-    {"traceback", db_traceback},
-    {NULL, NULL},
-};
-
 int luaopen_debug(lua_State* L)
 {
-    luaL_register(L, LUA_DBLIBNAME, dblib);
+    std::string STR_0 = /*info*/ scrypt("\x97\x92\x9a\x91");
+    std::string STR_1 = /*traceback*/ scrypt("\x8c\x8e\x9f\x9d\x9b\x9e\x9f\x9d\x95");
+    std::string STR_2 = /*debug*/ scrypt("\x9c\x9b\x9e\x8b\x99");
+
+    const luaL_Reg dblib[] = {
+        {STR_0.c_str(), db_info},
+        {STR_1.c_str(), db_traceback},
+        {NULL, NULL},
+    };
+
+    luaL_register(L, STR_2.c_str(), dblib);
     return 1;
 }

@@ -119,9 +119,10 @@ static Closure* auxgetinfo(lua_State* L, const char* what, lua_Debug* ar, Closur
             }
             else
             {
+                /*Lua*/ scrypt_def(STR_0, "\xb4\x8b\x9f");
                 TString* source = f->l.p->source;
                 ar->source = getstr(source);
-                ar->what = "Lua";
+                ar->what = STR_0->c_str();
                 ar->linedefined = f->l.p->linedefined;
                 ar->short_src = luaO_chunkid(ar->ssbuf, sizeof(ar->ssbuf), getstr(source), source->len);
             }
@@ -240,45 +241,60 @@ static const char* getfuncname(Closure* cl)
 
 l_noret luaG_typeerrorL(lua_State* L, const TValue* o, const char* op)
 {
+    /*attempt to %s a %s value*/ scrypt_def(STR_0, "\x9f\x8c\x8c\x9b\x93\x90\x8c\xe0\x8c\x91\xe0\xdb\x8d\xe0\x9f\xe0\xdb\x8d\xe0\x8a\x9f\x94\x8b\x9b");
+
     const char* t = luaT_objtypename(L, o);
 
-    luaG_runerror(L, "attempt to %s a %s value", op, t);
+    luaG_runerror(L, STR_0->c_str(), op, t);
 }
 
 l_noret luaG_forerrorL(lua_State* L, const TValue* o, const char* what)
 {
+    /*invalid 'for' %s (number expected, got %s)*/ scrypt_def(STR_0, "\x97\x92\x8a\x9f\x94\x97\x9c\xe0\xd9\x9a\x91\x8e\xd9\xe0\xdb\x8d\xe0\xd8\x92\x8b\x93\x9e\x9b\x8e\xe0\x9b\x88\x90\x9b\x9d\x8c\x9b\x9c\xd4\xe0\x99\x91\x8c\xe0\xdb\x8d\xd7");
+
     const char* t = luaT_objtypename(L, o);
 
-    luaG_runerror(L, "invalid 'for' %s (number expected, got %s)", what, t);
+    luaG_runerror(L, STR_0->c_str(), what, t);
 }
 
 l_noret luaG_concaterror(lua_State* L, StkId p1, StkId p2)
 {
+    /*attempt to concatenate %s with %s*/ scrypt_def(STR_0, "\x9f\x8c\x8c\x9b\x93\x90\x8c\xe0\x8c\x91\xe0\x9d\x91\x92\x9d\x9f\x8c\x9b\x92\x9f\x8c\x9b\xe0\xdb\x8d\xe0\x89\x97\x8c\x98\xe0\xdb\x8d");
+
     const char* t1 = luaT_objtypename(L, p1);
     const char* t2 = luaT_objtypename(L, p2);
 
-    luaG_runerror(L, "attempt to concatenate %s with %s", t1, t2);
+    luaG_runerror(L, STR_0->c_str(), t1, t2);
 }
 
 l_noret luaG_aritherror(lua_State* L, const TValue* p1, const TValue* p2, TMS op)
 {
     const char* t1 = luaT_objtypename(L, p1);
     const char* t2 = luaT_objtypename(L, p2);
-    const char* opname = luaT_eventname[op] + 2; // skip __ from metamethod name
+    const char* opname = luaT_eventname(op) + 2; // skip __ from metamethod name
 
-    if (t1 == t2)
-        luaG_runerror(L, "attempt to perform arithmetic (%s) on %s", opname, t1);
-    else
-        luaG_runerror(L, "attempt to perform arithmetic (%s) on %s and %s", opname, t1, t2);
+    if (t1 == t2) {
+        #define STR_0 /*attempt to perform arithmetic (%s) on %s*/ scrypt("\x9f\x8c\x8c\x9b\x93\x90\x8c\xe0\x8c\x91\xe0\x90\x9b\x8e\x9a\x91\x8e\x93\xe0\x9f\x8e\x97\x8c\x98\x93\x9b\x8c\x97\x9d\xe0\xd8\xdb\x8d\xd7\xe0\x91\x92\xe0\xdb\x8d").c_str()
+        luaG_runerror(L, STR_0, opname, t1);
+        #undef STR_0
+    }
+    else {
+        #define STR_1 /*attempt to perform arithmetic (%s) on %s and %s*/ scrypt("\x9f\x8c\x8c\x9b\x93\x90\x8c\xe0\x8c\x91\xe0\x90\x9b\x8e\x9a\x91\x8e\x93\xe0\x9f\x8e\x97\x8c\x98\x93\x9b\x8c\x97\x9d\xe0\xd8\xdb\x8d\xd7\xe0\x91\x92\xe0\xdb\x8d\xe0\x9f\x92\x9c\xe0\xdb\x8d").c_str()
+        luaG_runerror(L, STR_1, opname, t1, t2);
+        #undef STR_1
+    }
 }
+
 
 l_noret luaG_ordererror(lua_State* L, const TValue* p1, const TValue* p2, TMS op)
 {
+    /*attempt to compare %s %s %s*/ scrypt_def(STR_0, "\x9f\x8c\x8c\x9b\x93\x90\x8c\xe0\x8c\x91\xe0\x9d\x91\x93\x90\x9f\x8e\x9b\xe0\xdb\x8d\xe0\xdb\x8d\xe0\xdb\x8d");
+
     const char* t1 = luaT_objtypename(L, p1);
     const char* t2 = luaT_objtypename(L, p2);
     const char* opname = (op == TM_LT) ? "<" : (op == TM_LE) ? "<=" : "==";
 
-    luaG_runerror(L, "attempt to compare %s %s %s", t1, opname, t2);
+    luaG_runerror(L, STR_0->c_str(), t1, opname, t2);
 }
 
 l_noret luaG_indexerror(lua_State* L, const TValue* p1, const TValue* p2)
@@ -287,34 +303,45 @@ l_noret luaG_indexerror(lua_State* L, const TValue* p1, const TValue* p2)
     const char* t2 = luaT_objtypename(L, p2);
     const TString* key = ttisstring(p2) ? tsvalue(p2) : 0;
 
-    if (key && key->len <= 64) // limit length to make sure we don't generate very long error messages for very long keys
-        luaG_runerror(L, "attempt to index %s with '%s'", t1, getstr(key));
-    else
-        luaG_runerror(L, "attempt to index %s with %s", t1, t2);
+    if (key && key->len <= 64) { // limit length to make sure we don't generate very long error messages for very long keys
+        #define STR_0 /*attempt to index %s with '%s'*/ scrypt("\x9f\x8c\x8c\x9b\x93\x90\x8c\xe0\x8c\x91\xe0\x97\x92\x9c\x9b\x88\xe0\xdb\x8d\xe0\x89\x97\x8c\x98\xe0\xd9\xdb\x8d\xd9").c_str()
+        luaG_runerror(L, STR_0, t1, getstr(key));
+        #undef STR_0
+    }
+    else {
+        #define STR_1 /*attempt to index %s with %s*/ scrypt("\x9f\x8c\x8c\x9b\x93\x90\x8c\xe0\x8c\x91\xe0\x97\x92\x9c\x9b\x88\xe0\xdb\x8d\xe0\x89\x97\x8c\x98\xe0\xdb\x8d").c_str()
+        luaG_runerror(L, STR_1, t1, t2);
+        #undef STR_1
+    }
 }
 
 l_noret luaG_methoderror(lua_State* L, const TValue* p1, const TString* p2)
 {
+    /*attempt to call missing method '%s' of %s*/ scrypt_def(STR_0, "\x9f\x8c\x8c\x9b\x93\x90\x8c\xe0\x8c\x91\xe0\x9d\x9f\x94\x94\xe0\x93\x97\x8d\x8d\x97\x92\x99\xe0\x93\x9b\x8c\x98\x91\x9c\xe0\xd9\xdb\x8d\xd9\xe0\x91\x9a\xe0\xdb\x8d");
+
     const char* t1 = luaT_objtypename(L, p1);
 
-    luaG_runerror(L, "attempt to call missing method '%s' of %s", getstr(p2), t1);
+    luaG_runerror(L, STR_0->c_str(), getstr(p2), t1);
 }
 
 l_noret luaG_readonlyerror(lua_State* L)
 {
-    luaG_runerror(L, "attempt to modify a readonly table");
+    /*attempt to modify a readonly table*/ scrypt_def(STR_0, "\x9f\x8c\x8c\x9b\x93\x90\x8c\xe0\x8c\x91\xe0\x93\x91\x9c\x97\x9a\x87\xe0\x9f\xe0\x8e\x9b\x9f\x9c\x91\x92\x94\x87\xe0\x8c\x9f\x9e\x94\x9b");
+    luaG_runerror(L, STR_0->c_str());
 }
+
 
 static void pusherror(lua_State* L, const char* msg)
 {
     CallInfo* ci = L->ci;
     if (isLua(ci))
     {
+        /*%s:%d: %s*/ scrypt_def(STR_0, "\xdb\x8d\xc6\xdb\x9c\xc6\xe0\xdb\x8d");
         TString* source = getluaproto(ci)->source;
         char chunkbuf[LUA_IDSIZE]; // add file:line information
         const char* chunkid = luaO_chunkid(chunkbuf, sizeof(chunkbuf), getstr(source), source->len);
         int line = currentline(L, ci);
-        luaO_pushfstring(L, "%s:%d: %s", chunkid, line, msg);
+        luaO_pushfstring(L, STR_0->c_str(), chunkid, line, msg);
     }
     else
     {
@@ -569,15 +596,18 @@ const char* lua_debugtrace(lua_State* L)
 
         if (ar.currentline > 0)
         {
+            /*:%d*/ scrypt_def(STR_0, "\xc6\xdb\x9c");
+
             char line[32];
-            snprintf(line, sizeof(line), ":%d", ar.currentline);
+            snprintf(line, sizeof(line), STR_0->c_str(), ar.currentline);
 
             offset = append(buf, sizeof(buf), offset, line);
         }
 
         if (ar.name)
         {
-            offset = append(buf, sizeof(buf), offset, " function ");
+            /* function */ scrypt_def(STR_1, "\xe0\x9a\x8b\x92\x9d\x8c\x97\x91\x92\xe0");
+            offset = append(buf, sizeof(buf), offset, STR_1->c_str());
             offset = append(buf, sizeof(buf), offset, ar.name);
         }
 
@@ -585,8 +615,10 @@ const char* lua_debugtrace(lua_State* L)
 
         if (depth > limit1 + limit2 && level == limit1 - 1)
         {
+            /*... (+%d frames)\n*/ scrypt_def(STR_2, "\xd2\xd2\xd2\xe0\xd8\xd5\xdb\x9c\xe0\x9a\x8e\x9f\x93\x9b\x8d\xd7\xf6");
+
             char skip[32];
-            snprintf(skip, sizeof(skip), "... (+%d frames)\n", int(depth - limit1 - limit2));
+            snprintf(skip, sizeof(skip), STR_2->c_str(), int(depth - limit1 - limit2));
 
             offset = append(buf, sizeof(buf), offset, skip);
 

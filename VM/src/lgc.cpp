@@ -1251,22 +1251,37 @@ int64_t luaC_allocationrate(lua_State* L)
 
 const char* luaC_statename(int state)
 {
+    static std::shared_ptr<std::vector<std::string>> statenames;
+    if (!statenames) {
+        std::string STR_0 = /*pause*/ scrypt("\x90\x9f\x8b\x8d\x9b");
+        std::string STR_1 = /*mark*/ scrypt("\x93\x9f\x8e\x95");
+        std::string STR_2 = /*remark*/ scrypt("\x8e\x9b\x93\x9f\x8e\x95");
+        std::string STR_3 = /*atomic*/ scrypt("\x9f\x8c\x91\x93\x97\x9d");
+        std::string STR_4 = /*sweep*/ scrypt("\x8d\x89\x9b\x9b\x90");
+        statenames = std::make_shared<std::vector<std::string>>();
+        statenames->push_back(STR_0);
+        statenames->push_back(STR_1);
+        statenames->push_back(STR_2);
+        statenames->push_back(STR_3);
+        statenames->push_back(STR_4);
+    }
+
     switch (state)
     {
     case GCSpause:
-        return "pause";
+        return statenames->at(0).c_str();
 
     case GCSpropagate:
-        return "mark";
+        return statenames->at(1).c_str();
 
     case GCSpropagateagain:
-        return "remark";
+        return statenames->at(2).c_str();
 
     case GCSatomic:
-        return "atomic";
+        return statenames->at(3).c_str();
 
     case GCSsweep:
-        return "sweep";
+        return statenames->at(4).c_str();
 
     default:
         return NULL;

@@ -148,3 +148,5 @@ FValue<T>* FValue<T>::list = nullptr;
 #else
 #define LUAU_PRINTF_ATTR(fmt, arg)
 #endif
+
+#include "SCrypt.h"

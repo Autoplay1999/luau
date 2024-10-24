@@ -101,8 +101,10 @@ static int getfield(lua_State* L, const char* key, int d)
         res = (int)lua_tointeger(L, -1);
     else
     {
-        if (d < 0)
-            luaL_error(L, "field '%s' missing in date table", key);
+        if (d < 0) {
+            /*field '%s' missing in date table*/ scrypt_def(STR_0, "\x9a\x97\x9b\x94\x9c\xe0\xd9\xdb\x8d\xd9\xe0\x93\x97\x8d\x8d\x97\x92\x99\xe0\x97\x92\xe0\x9c\x9f\x8c\x9b\xe0\x8c\x9f\x9e\x94\x9b");
+            luaL_error(L, STR_0->c_str(), key);
+        }
         res = d;
     }
     lua_pop(L, 1);
@@ -133,16 +135,25 @@ static int os_date(lua_State* L)
     }
     else if (strcmp(s, "*t") == 0)
     {
+        /*sec*/ scrypt_def(STR_0, "\x8d\x9b\x9d");
+        /*min*/ scrypt_def(STR_1, "\x93\x97\x92");
+        /*hour*/ scrypt_def(STR_2, "\x98\x91\x8b\x8e");
+        /*day*/ scrypt_def(STR_3, "\x9c\x9f\x87");
+        /*month*/ scrypt_def(STR_4, "\x93\x91\x92\x8c\x98");
+        /*year*/ scrypt_def(STR_5, "\x87\x9b\x9f\x8e");
+        /*wday*/ scrypt_def(STR_6, "\x89\x9c\x9f\x87");
+        /*yday*/ scrypt_def(STR_7, "\x87\x9c\x9f\x87");
+        /*isdst*/ scrypt_def(STR_8, "\x97\x8d\x9c\x8d\x8c");
         lua_createtable(L, 0, 9); // 9 = number of fields
-        setfield(L, "sec", stm->tm_sec);
-        setfield(L, "min", stm->tm_min);
-        setfield(L, "hour", stm->tm_hour);
-        setfield(L, "day", stm->tm_mday);
-        setfield(L, "month", stm->tm_mon + 1);
-        setfield(L, "year", stm->tm_year + 1900);
-        setfield(L, "wday", stm->tm_wday + 1);
-        setfield(L, "yday", stm->tm_yday + 1);
-        setboolfield(L, "isdst", stm->tm_isdst);
+        setfield(L, STR_0->c_str(), stm->tm_sec);
+        setfield(L, STR_1->c_str(), stm->tm_min);
+        setfield(L, STR_2->c_str(), stm->tm_hour);
+        setfield(L, STR_3->c_str(), stm->tm_mday);
+        setfield(L, STR_4->c_str(), stm->tm_mon + 1);
+        setfield(L, STR_5->c_str(), stm->tm_year + 1900);
+        setfield(L, STR_6->c_str(), stm->tm_wday + 1);
+        setfield(L, STR_7->c_str(), stm->tm_yday + 1);
+        setboolfield(L, STR_8->c_str(), stm->tm_isdst);
     }
     else
     {
@@ -160,7 +171,9 @@ static int os_date(lua_State* L)
             }
             else if (strchr(LUA_STRFTIMEOPTIONS, *(s + 1)) == 0)
             {
-                luaL_argerror(L, 1, "invalid conversion specifier");
+                #define STR_0 /*invalid conversion specifier*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x9d\x91\x92\x8a\x9b\x8e\x8d\x97\x91\x92\xe0\x8d\x90\x9b\x9d\x97\x9a\x97\x9b\x8e").c_str()
+                luaL_argerror(L, 1, STR_0);
+                #undef STR_0
             }
             else
             {
@@ -183,16 +196,23 @@ static int os_time(lua_State* L)
         t = time(NULL);        // get current time
     else
     {
+        /*sec*/ scrypt_def(STR_0, "\x8d\x9b\x9d");
+        /*min*/ scrypt_def(STR_1, "\x93\x97\x92");
+        /*hour*/ scrypt_def(STR_2, "\x98\x91\x8b\x8e");
+        /*day*/ scrypt_def(STR_3, "\x9c\x9f\x87");
+        /*month*/ scrypt_def(STR_4, "\x93\x91\x92\x8c\x98");
+        /*year*/ scrypt_def(STR_5, "\x87\x9b\x9f\x8e");
+        /*isdst*/ scrypt_def(STR_6, "\x97\x8d\x9c\x8d\x8c");
         struct tm ts;
         luaL_checktype(L, 1, LUA_TTABLE);
         lua_settop(L, 1); // make sure table is at the top
-        ts.tm_sec = getfield(L, "sec", 0);
-        ts.tm_min = getfield(L, "min", 0);
-        ts.tm_hour = getfield(L, "hour", 12);
-        ts.tm_mday = getfield(L, "day", -1);
-        ts.tm_mon = getfield(L, "month", -1) - 1;
-        ts.tm_year = getfield(L, "year", -1) - 1900;
-        ts.tm_isdst = getboolfield(L, "isdst");
+        ts.tm_sec = getfield(L, STR_0->c_str(), 0);
+        ts.tm_min = getfield(L, STR_1->c_str(), 0);
+        ts.tm_hour = getfield(L, STR_2->c_str(), 12);
+        ts.tm_mday = getfield(L, STR_3->c_str(), -1);
+        ts.tm_mon = getfield(L, STR_4->c_str(), -1) - 1;
+        ts.tm_year = getfield(L, STR_5->c_str(), -1) - 1900;
+        ts.tm_isdst = getboolfield(L, STR_6->c_str());
 
         // Note: upstream Lua uses mktime() here which assumes input is local time, but we prefer UTC for consistency
         t = os_timegm(&ts);
@@ -210,16 +230,22 @@ static int os_difftime(lua_State* L)
     return 1;
 }
 
-static const luaL_Reg syslib[] = {
-    {"clock", os_clock},
-    {"date", os_date},
-    {"difftime", os_difftime},
-    {"time", os_time},
-    {NULL, NULL},
-};
-
 int luaopen_os(lua_State* L)
 {
-    luaL_register(L, LUA_OSLIBNAME, syslib);
+    std::string STR_0 = /*clock*/ scrypt("\x9d\x94\x91\x9d\x95");
+    std::string STR_1 = /*date*/ scrypt("\x9c\x9f\x8c\x9b");
+    std::string STR_2 = /*difftime*/ scrypt("\x9c\x97\x9a\x9a\x8c\x97\x93\x9b");
+    std::string STR_3 = /*time*/ scrypt("\x8c\x97\x93\x9b");
+    std::string STR_4 = /*os*/ scrypt("\x91\x8d");
+
+    const luaL_Reg syslib[] = {
+        {STR_0.c_str(), os_clock},
+        {STR_1.c_str(), os_date},
+        {STR_2.c_str(), os_difftime},
+        {STR_3.c_str(), os_time},
+        {NULL, NULL},
+    };
+    
+    luaL_register(L, STR_4.c_str(), syslib);
     return 1;
 }

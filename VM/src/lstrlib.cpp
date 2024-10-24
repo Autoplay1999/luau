@@ -92,8 +92,11 @@ static int str_rep(lua_State* L)
         return 1;
     }
 
-    if (l > MAXSSIZE / (size_t)n) // may overflow?
-        luaL_error(L, "resulting string too large");
+    if (l > MAXSSIZE / (size_t)n) { // may overflow?
+        #define STR_0 /*resulting string too large*/ scrypt("\x8e\x9b\x8d\x8b\x94\x8c\x97\x92\x99\xe0\x8d\x8c\x8e\x97\x92\x99\xe0\x8c\x91\x91\xe0\x94\x9f\x8e\x99\x9b").c_str()
+        luaL_error(L, STR_0);
+        #undef STR_0
+    }
 
     luaL_Strbuf b;
     char* ptr = luaL_buffinitsize(L, &b, l * n);
@@ -139,9 +142,10 @@ static int str_byte(lua_State* L)
     if (posi > pose)
         return 0; // empty interval; return no values
     n = (int)(pose - posi + 1);
+    /*string slice too long*/ scrypt_def(STR_0, "\x8d\x8c\x8e\x97\x92\x99\xe0\x8d\x94\x97\x9d\x9b\xe0\x8c\x91\x91\xe0\x94\x91\x92\x99");
     if (posi + n <= pose) // overflow?
-        luaL_error(L, "string slice too long");
-    luaL_checkstack(L, n, "string slice too long");
+        luaL_error(L, STR_0->c_str());
+    luaL_checkstack(L, n, STR_0->c_str());
     for (i = 0; i < n; i++)
         lua_pushinteger(L, uchar(s[posi + i - 1]));
     return n;
@@ -153,11 +157,12 @@ static int str_char(lua_State* L)
 
     luaL_Strbuf b;
     char* ptr = luaL_buffinitsize(L, &b, n);
+    /*invalid value*/ scrypt_def(STR_0, "\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x8a\x9f\x94\x8b\x9b");
 
     for (int i = 1; i <= n; i++)
     {
         int c = luaL_checkinteger(L, i);
-        luaL_argcheck(L, uchar(c) == c, i, "invalid value");
+        luaL_argcheck(L, uchar(c) == c, i, STR_0->c_str());
 
         *ptr++ = uchar(c);
     }
@@ -198,8 +203,11 @@ static const char* match(MatchState* ms, const char* s, const char* p);
 static int check_capture(MatchState* ms, int l)
 {
     l -= '1';
-    if (l < 0 || l >= ms->level || ms->capture[l].len == CAP_UNFINISHED)
-        luaL_error(ms->L, "invalid capture index %%%d", l + 1);
+    if (l < 0 || l >= ms->level || ms->capture[l].len == CAP_UNFINISHED) {
+        #define STR_0 /*invalid capture index %%%d*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x9d\x9f\x90\x8c\x8b\x8e\x9b\xe0\x97\x92\x9c\x9b\x88\xe0\xdb\xdb\xdb\x9c").c_str()
+        luaL_error(ms->L, STR_0, l + 1);
+        #undef STR_0
+    }
     return l;
 }
 
@@ -209,7 +217,9 @@ static int capture_to_close(MatchState* ms)
     for (level--; level >= 0; level--)
         if (ms->capture[level].len == CAP_UNFINISHED)
             return level;
-    luaL_error(ms->L, "invalid pattern capture");
+    #define STR_0 /*invalid pattern capture*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x90\x9f\x8c\x8c\x9b\x8e\x92\xe0\x9d\x9f\x90\x8c\x8b\x8e\x9b").c_str()
+    luaL_error(ms->L, STR_0);
+    #undef STR_0
 }
 
 static const char* classend(MatchState* ms, const char* p)
@@ -218,8 +228,11 @@ static const char* classend(MatchState* ms, const char* p)
     {
     case L_ESC:
     {
-        if (p == ms->p_end)
-            luaL_error(ms->L, "malformed pattern (ends with '%%')");
+        if (p == ms->p_end) {
+            #define STR_0 /*malformed pattern (ends with '%%')*/ scrypt("\x93\x9f\x94\x9a\x91\x8e\x93\x9b\x9c\xe0\x90\x9f\x8c\x8c\x9b\x8e\x92\xe0\xd8\x9b\x92\x9c\x8d\xe0\x89\x97\x8c\x98\xe0\xd9\xdb\xdb\xd9\xd7").c_str()
+            luaL_error(ms->L, STR_0);
+            #undef STR_0
+        }
         return p + 1;
     }
     case '[':
@@ -228,8 +241,11 @@ static const char* classend(MatchState* ms, const char* p)
             p++;
         do
         { // look for a `]'
-            if (p == ms->p_end)
-                luaL_error(ms->L, "malformed pattern (missing ']')");
+            if (p == ms->p_end) {
+                #define STR_0 /*malformed pattern (missing ']')*/ scrypt("\x93\x9f\x94\x9a\x91\x8e\x93\x9b\x9c\xe0\x90\x9f\x8c\x8c\x9b\x8e\x92\xe0\xd8\x93\x97\x8d\x8d\x97\x92\x99\xe0\xd9\xa3\xd9\xd7").c_str()
+                luaL_error(ms->L, STR_0);
+                #undef STR_0
+            }
             if (*(p++) == L_ESC && p < ms->p_end)
                 p++; // skip escapes (e.g. `%]')
         } while (*p != ']');
@@ -337,8 +353,11 @@ static int singlematch(MatchState* ms, const char* s, const char* p, const char*
 
 static const char* matchbalance(MatchState* ms, const char* s, const char* p)
 {
-    if (p >= ms->p_end - 1)
-        luaL_error(ms->L, "malformed pattern (missing arguments to '%%b')");
+    if (p >= ms->p_end - 1) {
+        #define STR_0 /*malformed pattern (missing arguments to '%%b')*/ scrypt("\x93\x9f\x94\x9a\x91\x8e\x93\x9b\x9c\xe0\x90\x9f\x8c\x8c\x9b\x8e\x92\xe0\xd8\x93\x97\x8d\x8d\x97\x92\x99\xe0\x9f\x8e\x99\x8b\x93\x9b\x92\x8c\x8d\xe0\x8c\x91\xe0\xd9\xdb\xdb\x9e\xd9\xd7").c_str()
+        luaL_error(ms->L, STR_0);
+        #undef STR_0
+    }
     if (*s != *p)
         return NULL;
     else
@@ -394,8 +413,11 @@ static const char* start_capture(MatchState* ms, const char* s, const char* p, i
 {
     const char* res;
     int level = ms->level;
-    if (level >= LUA_MAXCAPTURES)
-        luaL_error(ms->L, "too many captures");
+    if (level >= LUA_MAXCAPTURES) {
+        #define STR_0 /*too many captures*/ scrypt("\x8c\x91\x91\xe0\x93\x9f\x92\x87\xe0\x9d\x9f\x90\x8c\x8b\x8e\x9b\x8d").c_str()
+        luaL_error(ms->L, STR_0);
+        #undef STR_0
+    }
     ms->capture[level].init = s;
     ms->capture[level].len = what;
     ms->level = level + 1;
@@ -427,8 +449,11 @@ static const char* match_capture(MatchState* ms, const char* s, int l)
 
 static const char* match(MatchState* ms, const char* s, const char* p)
 {
-    if (ms->matchdepth-- == 0)
-        luaL_error(ms->L, "pattern too complex");
+    if (ms->matchdepth-- == 0) {
+        #define STR_0 /*pattern too complex*/ scrypt("\x90\x9f\x8c\x8c\x9b\x8e\x92\xe0\x8c\x91\x91\xe0\x9d\x91\x93\x90\x94\x9b\x88").c_str()
+        luaL_error(ms->L, STR_0);
+        #undef STR_0
+    }
 
     lua_State* L = ms->L;
     void (*interrupt)(lua_State*, int) = L->global->cb.interrupt;
@@ -485,8 +510,11 @@ init: // using goto's to optimize tail recursion
                 const char* ep;
                 char previous;
                 p += 2;
-                if (*p != '[')
-                    luaL_error(ms->L, "missing '[' after '%%f' in pattern");
+                if (*p != '[') {
+                    #define STR_1 /*missing '[' after '%%f' in pattern*/ scrypt("\x93\x97\x8d\x8d\x97\x92\x99\xe0\xd9\xa5\xd9\xe0\x9f\x9a\x8c\x9b\x8e\xe0\xd9\xdb\xdb\x9a\xd9\xe0\x97\x92\xe0\x90\x9f\x8c\x8c\x9b\x8e\x92").c_str()
+                    luaL_error(ms->L, STR_1);
+                    #undef STR_1
+                }
                 ep = classend(ms, p); // points to what is next
                 previous = (s == ms->src_init) ? '\0' : *(s - 1);
                 if (!matchbracketclass(uchar(previous), p, ep - 1) && matchbracketclass(uchar(*s), p, ep - 1))
@@ -607,14 +635,20 @@ static void push_onecapture(MatchState* ms, int i, const char* s, const char* e)
     {
         if (i == 0)                           // ms->level == 0, too
             lua_pushlstring(ms->L, s, e - s); // add whole match
-        else
-            luaL_error(ms->L, "invalid capture index");
+        else {
+            #define STR_0 /*invalid capture index*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x9d\x9f\x90\x8c\x8b\x8e\x9b\xe0\x97\x92\x9c\x9b\x88").c_str()
+            luaL_error(ms->L, STR_0);
+            #undef STR_0
+        }
     }
     else
     {
         ptrdiff_t l = ms->capture[i].len;
-        if (l == CAP_UNFINISHED)
-            luaL_error(ms->L, "unfinished capture");
+        if (l == CAP_UNFINISHED) {
+            #define STR_1 /*unfinished capture*/ scrypt("\x8b\x92\x9a\x97\x92\x97\x8d\x98\x9b\x9c\xe0\x9d\x9f\x90\x8c\x8b\x8e\x9b").c_str()
+            luaL_error(ms->L, STR_1);
+            #undef STR_1
+        }
         if (l == CAP_POSITION)
             lua_pushinteger(ms->L, (int)(ms->capture[i].init - ms->src_init) + 1);
         else
@@ -626,7 +660,8 @@ static int push_captures(MatchState* ms, const char* s, const char* e)
 {
     int i;
     int nlevels = (ms->level == 0 && s) ? 1 : ms->level;
-    luaL_checkstack(ms->L, nlevels, "too many captures");
+    /*too many captures*/ scrypt_def(STR_0, "\x8c\x91\x91\xe0\x93\x9f\x92\x87\xe0\x9d\x9f\x90\x8c\x8b\x8e\x9b\x8d");
+    luaL_checkstack(ms->L, nlevels, STR_0->c_str());
     for (i = 0; i < nlevels; i++)
         push_onecapture(ms, i, s, e);
     return nlevels; // number of strings pushed
@@ -778,8 +813,11 @@ static void add_s(MatchState* ms, luaL_Strbuf* b, const char* s, const char* e)
             i++; // skip ESC
             if (!isdigit(uchar(news[i])))
             {
-                if (news[i] != L_ESC)
-                    luaL_error(ms->L, "invalid use of '%c' in replacement string", L_ESC);
+                if (news[i] != L_ESC) {
+                    #define STR_0 /*invalid use of '%c' in replacement string*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x8b\x8d\x9b\xe0\x91\x9a\xe0\xd9\xdb\x9d\xd9\xe0\x97\x92\xe0\x8e\x9b\x90\x94\x9f\x9d\x9b\x93\x9b\x92\x8c\xe0\x8d\x8c\x8e\x97\x92\x99").c_str()
+                    luaL_error(ms->L, STR_0, L_ESC);
+                    #undef STR_0
+                }
                 luaL_addchar(b, news[i]);
             }
             else if (news[i] == '0')
@@ -823,8 +861,11 @@ static void add_value(MatchState* ms, luaL_Strbuf* b, const char* s, const char*
         lua_pop(L, 1);
         lua_pushlstring(L, s, e - s); // keep original text
     }
-    else if (!lua_isstring(L, -1))
-        luaL_error(L, "invalid replacement value (a %s)", luaL_typename(L, -1));
+    else if (!lua_isstring(L, -1)) {
+        #define STR_0 /*invalid replacement value (a %s)*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x8e\x9b\x90\x94\x9f\x9d\x9b\x93\x9b\x92\x8c\xe0\x8a\x9f\x94\x8b\x9b\xe0\xd8\x9f\xe0\xdb\x8d\xd7").c_str()
+        luaL_error(L, STR_0, luaL_typename(L, -1));
+        #undef STR_0
+    }
     luaL_addvalue(b); // add result to accumulator
 }
 
@@ -927,8 +968,11 @@ static const char* scanformat(lua_State* L, const char* strfrmt, char* form, siz
     const char* p = strfrmt;
     while (*p != '\0' && strchr(FLAGS, *p) != NULL)
         p++; // skip flags
-    if ((size_t)(p - strfrmt) >= sizeof(FLAGS))
-        luaL_error(L, "invalid format (repeated flags)");
+    if ((size_t)(p - strfrmt) >= sizeof(FLAGS)) {
+        #define STR_0 /*invalid format (repeated flags)*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x9a\x91\x8e\x93\x9f\x8c\xe0\xd8\x8e\x9b\x90\x9b\x9f\x8c\x9b\x9c\xe0\x9a\x94\x9f\x99\x8d\xd7").c_str()
+        luaL_error(L, STR_0);
+        #undef STR_0
+    }
     if (isdigit(uchar(*p)))
         p++; // skip width
     if (isdigit(uchar(*p)))
@@ -941,8 +985,11 @@ static const char* scanformat(lua_State* L, const char* strfrmt, char* form, siz
         if (isdigit(uchar(*p)))
             p++; // (2 digits at most)
     }
-    if (isdigit(uchar(*p)))
-        luaL_error(L, "invalid format (width or precision too long)");
+    if (isdigit(uchar(*p))) {
+        #define STR_0 /*invalid format (width or precision too long)*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x9a\x91\x8e\x93\x9f\x8c\xe0\xd8\x89\x97\x9c\x8c\x98\xe0\x91\x8e\xe0\x90\x8e\x9b\x9d\x97\x8d\x97\x91\x92\xe0\x8c\x91\x91\xe0\x94\x91\x92\x99\xd7").c_str()
+        luaL_error(L, STR_0);
+        #undef STR_0
+    }
     *(form++) = '%';
     *size = p - strfrmt + 1;
     strncpy(form, strfrmt, *size);
@@ -981,8 +1028,11 @@ static int str_format(lua_State* L)
         else if (*strfrmt == '*')
         {
             strfrmt++;
-            if (++arg > top)
-                luaL_error(L, "missing argument #%d", arg);
+            if (++arg > top) {
+                #define STR_0 /*missing argument #%d*/ scrypt("\x93\x97\x8d\x8d\x97\x92\x99\xe0\x9f\x8e\x99\x8b\x93\x9b\x92\x8c\xe0\xdd\xdb\x9c").c_str()
+                luaL_error(L, STR_0, arg);
+                #undef STR_0
+            }
 
             luaL_addvalueany(&b, arg);
         }
@@ -990,8 +1040,11 @@ static int str_format(lua_State* L)
         {                          // format item
             char form[MAX_FORMAT]; // to store the format (`%...')
             char buff[MAX_ITEM];   // to store the formatted item
-            if (++arg > top)
-                luaL_error(L, "missing argument #%d", arg);
+            if (++arg > top) {
+                #define STR_1 /*missing argument #%d*/ scrypt("\x93\x97\x8d\x8d\x97\x92\x99\xe0\x9f\x8e\x99\x8b\x93\x9b\x92\x8c\xe0\xdd\xdb\x9c").c_str()
+                luaL_error(L, STR_1, arg);
+                #undef STR_1
+            }
             size_t formatItemSize = 0;
             strfrmt = scanformat(L, strfrmt, form, &formatItemSize);
             char formatIndicator = *strfrmt++;
@@ -1053,11 +1106,15 @@ static int str_format(lua_State* L)
             case '*':
             {
                 // %* is parsed above, so if we got here we must have %...*
-                luaL_error(L, "'%%*' does not take a form");
+                #define STR_2 /*'%%*' does not take a form*/ scrypt("\xd9\xdb\xdb\xd6\xd9\xe0\x9c\x91\x9b\x8d\xe0\x92\x91\x8c\xe0\x8c\x9f\x95\x9b\xe0\x9f\xe0\x9a\x91\x8e\x93").c_str()
+                luaL_error(L, STR_2);
+                #undef STR_2
             }
             default:
             { // also treat cases `pnLlh'
-                luaL_error(L, "invalid option '%%%c' to 'format'", *(strfrmt - 1));
+                #define STR_3 /*invalid option '%%%c' to 'format'*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x91\x90\x8c\x97\x91\x92\xe0\xd9\xdb\xdb\xdb\x9d\xd9\xe0\x8c\x91\xe0\xd9\x9a\x91\x8e\x93\x9f\x8c\xd9").c_str()
+                luaL_error(L, STR_3, *(strfrmt - 1));
+                #undef STR_3
             }
             }
             luaL_addlstring(&b, buff, strlen(buff));
@@ -1205,8 +1262,11 @@ static int getnum(Header* h, const char** fmt, int df)
         {
             a = a * 10 + (*((*fmt)++) - '0');
         } while (digit(**fmt) && a <= (INT_MAX - 9) / 10);
-        if (a > MAXSSIZE || digit(**fmt))
-            luaL_error(h->L, "size specifier is too large");
+        if (a > MAXSSIZE || digit(**fmt)) {
+            #define STR_0 /*size specifier is too large*/ scrypt("\x8d\x97\x86\x9b\xe0\x8d\x90\x9b\x9d\x97\x9a\x97\x9b\x8e\xe0\x97\x8d\xe0\x8c\x91\x91\xe0\x94\x9f\x8e\x99\x9b").c_str()
+            luaL_error(h->L, STR_0);
+            #undef STR_0
+        }
         return a;
     }
 }
@@ -1218,8 +1278,11 @@ static int getnum(Header* h, const char** fmt, int df)
 static int getnumlimit(Header* h, const char** fmt, int df)
 {
     int sz = getnum(h, fmt, df);
-    if (sz > MAXINTSIZE || sz <= 0)
-        luaL_error(h->L, "integral size (%d) out of limits [1,%d]", sz, MAXINTSIZE);
+    if (sz > MAXINTSIZE || sz <= 0) {
+        #define STR_0 /*integral size (%d) out of limits [1,%d]*/ scrypt("\x97\x92\x8c\x9b\x99\x8e\x9f\x94\xe0\x8d\x97\x86\x9b\xe0\xd8\xdb\x9c\xd7\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x94\x97\x93\x97\x8c\x8d\xe0\xa5\xcf\xd4\xdb\x9c\xa3").c_str()
+        luaL_error(h->L, STR_0, sz, MAXINTSIZE);
+        #undef STR_0
+    }
     return sz;
 }
 
@@ -1289,8 +1352,11 @@ static KOption getoption(Header* h, const char** fmt, int* size)
         return Kstring;
     case 'c':
         *size = getnum(h, fmt, -1);
-        if (*size == -1)
-            luaL_error(h->L, "missing size for format option 'c'");
+        if (*size == -1) {
+            #define STR_0 /*missing size for format option 'c'*/ scrypt("\x93\x97\x8d\x8d\x97\x92\x99\xe0\x8d\x97\x86\x9b\xe0\x9a\x91\x8e\xe0\x9a\x91\x8e\x93\x9f\x8c\xe0\x91\x90\x8c\x97\x91\x92\xe0\xd9\x9d\xd9").c_str()
+            luaL_error(h->L, STR_0);
+            #undef STR_0
+        }
         return Kchar;
     case 'z':
         return Kzstr;
@@ -1314,7 +1380,9 @@ static KOption getoption(Header* h, const char** fmt, int* size)
         h->maxalign = getnumlimit(h, fmt, MAXALIGN);
         break;
     default:
-        luaL_error(h->L, "invalid format option '%c'", opt);
+        #define STR_1 /*invalid format option '%c'*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x9a\x91\x8e\x93\x9f\x8c\xe0\x91\x90\x8c\x97\x91\x92\xe0\xd9\xdb\x9d\xd9").c_str()
+        luaL_error(h->L, STR_1, opt);
+        #undef STR_1
     }
     return Knop;
 }
@@ -1334,8 +1402,11 @@ static KOption getdetails(Header* h, size_t totalsize, const char** fmt, int* ps
     int align = *psize; // usually, alignment follows size
     if (opt == Kpaddalign)
     { // 'X' gets alignment from following option
-        if (**fmt == '\0' || getoption(h, fmt, &align) == Kchar || align == 0)
-            luaL_argerror(h->L, 1, "invalid next option for option 'X'");
+        if (**fmt == '\0' || getoption(h, fmt, &align) == Kchar || align == 0) {
+            #define STR_0 /*invalid next option for option 'X'*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x92\x9b\x88\x8c\xe0\x91\x90\x8c\x97\x91\x92\xe0\x9a\x91\x8e\xe0\x91\x90\x8c\x97\x91\x92\xe0\xd9\xa8\xd9").c_str()
+            luaL_argerror(h->L, 1, STR_0);
+            #undef STR_0
+        }
     }
     if (align <= 1 || opt == Kchar) // need no alignment?
         *ntoalign = 0;
@@ -1343,8 +1414,11 @@ static KOption getdetails(Header* h, size_t totalsize, const char** fmt, int* ps
     {
         if (align > h->maxalign) // enforce maximum alignment
             align = h->maxalign;
-        if ((align & (align - 1)) != 0) // is 'align' not a power of 2?
-            luaL_argerror(h->L, 1, "format asks for alignment not power of 2");
+        if ((align & (align - 1)) != 0) { // is 'align' not a power of 2?
+            #define STR_1 /*format asks for alignment not power of 2*/ scrypt("\x9a\x91\x8e\x93\x9f\x8c\xe0\x9f\x8d\x95\x8d\xe0\x9a\x91\x8e\xe0\x9f\x94\x97\x99\x92\x93\x9b\x92\x8c\xe0\x92\x91\x8c\xe0\x90\x91\x89\x9b\x8e\xe0\x91\x9a\xe0\xce").c_str()
+            luaL_argerror(h->L, 1, STR_1);
+            #undef STR_1
+        }
         *ntoalign = (align - (int)(totalsize & (align - 1))) & (align - 1);
     }
     return opt;
@@ -1419,8 +1493,9 @@ static int str_pack(lua_State* L)
             long long n = (long long)luaL_checknumber(L, arg);
             if (size < SZINT)
             { // need overflow check?
+                /*integer overflow*/ scrypt_def(STR_0, "\x97\x92\x8c\x9b\x99\x9b\x8e\xe0\x91\x8a\x9b\x8e\x9a\x94\x91\x89");
                 long long lim = (long long)1 << ((size * NB) - 1);
-                luaL_argcheck(L, -lim <= n && n < lim, arg, "integer overflow");
+                luaL_argcheck(L, -lim <= n && n < lim, arg, STR_0->c_str());
             }
             packint(&b, n, h.islittle, size, (n < 0));
             break;
@@ -1428,8 +1503,10 @@ static int str_pack(lua_State* L)
         case Kuint:
         { // unsigned integers
             long long n = (long long)luaL_checknumber(L, arg);
-            if (size < SZINT) // need overflow check?
-                luaL_argcheck(L, (unsigned long long)n < ((unsigned long long)1 << (size * NB)), arg, "unsigned overflow");
+            if (size < SZINT) { // need overflow check?
+                /*unsigned overflow*/ scrypt_def(STR_1, "\x8b\x92\x8d\x97\x99\x92\x9b\x9c\xe0\x91\x8a\x9b\x8e\x9a\x94\x91\x89");
+                luaL_argcheck(L, (unsigned long long)n < ((unsigned long long)1 << (size * NB)), arg, STR_1->c_str());
+            }
             packint(&b, (unsigned long long)n, h.islittle, size, 0);
             break;
         }
@@ -1453,7 +1530,8 @@ static int str_pack(lua_State* L)
         { // fixed-size string
             size_t len;
             const char* s = luaL_checklstring(L, arg, &len);
-            luaL_argcheck(L, len <= (size_t)size, arg, "string longer than given size");
+            /*string longer than given size*/ scrypt_def(STR_2, "\x8d\x8c\x8e\x97\x92\x99\xe0\x94\x91\x92\x99\x9b\x8e\xe0\x8c\x98\x9f\x92\xe0\x99\x97\x8a\x9b\x92\xe0\x8d\x97\x86\x9b");
+            luaL_argcheck(L, len <= (size_t)size, arg, STR_2->c_str());
             luaL_addlstring(&b, s, len); // add string
             while (len++ < (size_t)size) // pad extra space
                 luaL_addchar(&b, LUAL_PACKPADBYTE);
@@ -1463,7 +1541,8 @@ static int str_pack(lua_State* L)
         { // strings with length count
             size_t len;
             const char* s = luaL_checklstring(L, arg, &len);
-            luaL_argcheck(L, size >= (int)sizeof(size_t) || len < ((size_t)1 << (size * NB)), arg, "string length does not fit in given size");
+            /*string length does not fit in given size*/ scrypt_def(STR_3, "\x8d\x8c\x8e\x97\x92\x99\xe0\x94\x9b\x92\x99\x8c\x98\xe0\x9c\x91\x9b\x8d\xe0\x92\x91\x8c\xe0\x9a\x97\x8c\xe0\x97\x92\xe0\x99\x97\x8a\x9b\x92\xe0\x8d\x97\x86\x9b");
+            luaL_argcheck(L, size >= (int)sizeof(size_t) || len < ((size_t)1 << (size * NB)), arg, STR_3->c_str());
             packint(&b, len, h.islittle, size, 0); // pack length
             luaL_addlstring(&b, s, len);
             totalsize += len;
@@ -1473,7 +1552,8 @@ static int str_pack(lua_State* L)
         { // zero-terminated string
             size_t len;
             const char* s = luaL_checklstring(L, arg, &len);
-            luaL_argcheck(L, strlen(s) == len, arg, "string contains zeros");
+            /*string contains zeros*/ scrypt_def(STR_4, "\x8d\x8c\x8e\x97\x92\x99\xe0\x9d\x91\x92\x8c\x9f\x97\x92\x8d\xe0\x86\x9b\x8e\x91\x8d");
+            luaL_argcheck(L, strlen(s) == len, arg, STR_4->c_str());
             luaL_addlstring(&b, s, len);
             luaL_addchar(&b, '\0'); // add zero at the end
             totalsize += len + 1;
@@ -1498,13 +1578,15 @@ static int str_packsize(lua_State* L)
     const char* fmt = luaL_checkstring(L, 1); // format string
     int totalsize = 0;                        // accumulate total size of result
     initheader(L, &h);
+    /*variable-length format*/ scrypt_def(STR_0, "\x8a\x9f\x8e\x97\x9f\x9e\x94\x9b\xd3\x94\x9b\x92\x99\x8c\x98\xe0\x9a\x91\x8e\x93\x9f\x8c");
+    /*format result too large*/ scrypt_def(STR_1, "\x9a\x91\x8e\x93\x9f\x8c\xe0\x8e\x9b\x8d\x8b\x94\x8c\xe0\x8c\x91\x91\xe0\x94\x9f\x8e\x99\x9b");
     while (*fmt != '\0')
     {
         int size, ntoalign;
         KOption opt = getdetails(&h, totalsize, &fmt, &size, &ntoalign);
-        luaL_argcheck(L, opt != Kstring && opt != Kzstr, 1, "variable-length format");
+        luaL_argcheck(L, opt != Kstring && opt != Kzstr, 1, STR_0->c_str());
         size += ntoalign; // total space used by option
-        luaL_argcheck(L, totalsize <= MAXSSIZE - size, 1, "format result too large");
+        luaL_argcheck(L, totalsize <= MAXSSIZE - size, 1, STR_1->c_str());
         totalsize += size;
     }
     lua_pushinteger(L, totalsize);
@@ -1542,8 +1624,11 @@ static long long unpackint(lua_State* L, const char* str, int islittle, int size
         int mask = (!issigned || (long long)res >= 0) ? 0 : MC;
         for (i = limit; i < size; i++)
         {
-            if ((unsigned char)str[islittle ? i : size - 1 - i] != mask)
-                luaL_error(L, "%d-byte integer does not fit into Lua Integer", size);
+            if ((unsigned char)str[islittle ? i : size - 1 - i] != mask) {
+                #define STR_0 /*%d-byte integer does not fit into Lua Integer*/ scrypt("\xdb\x9c\xd3\x9e\x87\x8c\x9b\xe0\x97\x92\x8c\x9b\x99\x9b\x8e\xe0\x9c\x91\x9b\x8d\xe0\x92\x91\x8c\xe0\x9a\x97\x8c\xe0\x97\x92\x8c\x91\xe0\xb4\x8b\x9f\xe0\xb7\x92\x8c\x9b\x99\x9b\x8e").c_str()
+                luaL_error(L, STR_0, size);
+                #undef STR_0
+            }
         }
     }
     return (long long)res;
@@ -1559,16 +1644,20 @@ static int str_unpack(lua_State* L)
     if (pos < 0)
         pos = 0;
     int n = 0; // number of results
-    luaL_argcheck(L, size_t(pos) <= ld, 3, "initial position out of string");
+    /*initial position out of string*/ scrypt_def(STR_0, "\x97\x92\x97\x8c\x97\x9f\x94\xe0\x90\x91\x8d\x97\x8c\x97\x91\x92\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x8d\x8c\x8e\x97\x92\x99");
+    luaL_argcheck(L, size_t(pos) <= ld, 3, STR_0->c_str());
     initheader(L, &h);
+    /*data string too short*/ scrypt_def(STR_1, "\x9c\x9f\x8c\x9f\xe0\x8d\x8c\x8e\x97\x92\x99\xe0\x8c\x91\x91\xe0\x8d\x98\x91\x8e\x8c");
+    /*too many results*/ scrypt_def(STR_2, "\x8c\x91\x91\xe0\x93\x9f\x92\x87\xe0\x8e\x9b\x8d\x8b\x94\x8c\x8d");
+    /*unfinished string for format 'z'*/ scrypt_def(STR_3, "\x8b\x92\x9a\x97\x92\x97\x8d\x98\x9b\x9c\xe0\x8d\x8c\x8e\x97\x92\x99\xe0\x9a\x91\x8e\xe0\x9a\x91\x8e\x93\x9f\x8c\xe0\xd9\x86\xd9");
     while (*fmt != '\0')
     {
         int size, ntoalign;
         KOption opt = getdetails(&h, pos, &fmt, &size, &ntoalign);
-        luaL_argcheck(L, (size_t)ntoalign + size <= ld - pos, 2, "data string too short");
+        luaL_argcheck(L, (size_t)ntoalign + size <= ld - pos, 2, STR_1->c_str());
         pos += ntoalign; // skip alignment
         // stack space for item + next position
-        luaL_checkstack(L, 2, "too many results");
+        luaL_checkstack(L, 2, STR_2->c_str());
         n++;
         switch (opt)
         {
@@ -1606,7 +1695,7 @@ static int str_unpack(lua_State* L)
         case Kstring:
         {
             size_t len = (size_t)unpackint(L, data + pos, h.islittle, size, 0);
-            luaL_argcheck(L, len <= ld - pos - size, 2, "data string too short");
+            luaL_argcheck(L, len <= ld - pos - size, 2, STR_1->c_str());
             lua_pushlstring(L, data + pos + size, len);
             pos += (int)len; // skip string
             break;
@@ -1614,7 +1703,7 @@ static int str_unpack(lua_State* L)
         case Kzstr:
         {
             size_t len = strlen(data + pos);
-            luaL_argcheck(L, pos + len < ld, 2, "unfinished string for format 'z'");
+            luaL_argcheck(L, pos + len < ld, 2, STR_3->c_str());
             lua_pushlstring(L, data + pos, len);
             pos += (int)len + 1; // skip string plus final '\0'
             break;
@@ -1633,36 +1722,16 @@ static int str_unpack(lua_State* L)
 
 // }======================================================
 
-static const luaL_Reg strlib[] = {
-    {"byte", str_byte},
-    {"char", str_char},
-    {"find", str_find},
-    {"format", str_format},
-    {"gmatch", gmatch},
-    {"gsub", str_gsub},
-    {"len", str_len},
-    {"lower", str_lower},
-    {"match", str_match},
-    {"rep", str_rep},
-    {"reverse", str_reverse},
-    {"sub", str_sub},
-    {"upper", str_upper},
-    {"split", str_split},
-    {"pack", str_pack},
-    {"packsize", str_packsize},
-    {"unpack", str_unpack},
-    {NULL, NULL},
-};
-
 static void createmetatable(lua_State* L)
 {
+    /*__index*/ scrypt_def(STR_0, "\xa1\xa1\x97\x92\x9c\x9b\x88");
     lua_createtable(L, 0, 1); // create metatable for strings
     lua_pushliteral(L, "");   // dummy string
     lua_pushvalue(L, -2);
     lua_setmetatable(L, -2);        // set string metatable
     lua_pop(L, 1);                  // pop dummy string
     lua_pushvalue(L, -2);           // string library...
-    lua_setfield(L, -2, "__index"); // ...is the __index metamethod
+    lua_setfield(L, -2, STR_0->c_str()); // ...is the __index metamethod
     lua_pop(L, 1);                  // pop metatable
 }
 
@@ -1671,7 +1740,47 @@ static void createmetatable(lua_State* L)
 */
 int luaopen_string(lua_State* L)
 {
-    luaL_register(L, LUA_STRLIBNAME, strlib);
+    std::string STR_0 = /*byte*/ scrypt("\x9e\x87\x8c\x9b");
+    std::string STR_1 = /*char*/ scrypt("\x9d\x98\x9f\x8e");
+    std::string STR_2 = /*find*/ scrypt("\x9a\x97\x92\x9c");
+    std::string STR_3 = /*format*/ scrypt("\x9a\x91\x8e\x93\x9f\x8c");
+    std::string STR_4 = /*gmatch*/ scrypt("\x99\x93\x9f\x8c\x9d\x98");
+    std::string STR_5 = /*gsub*/ scrypt("\x99\x8d\x8b\x9e");
+    std::string STR_6 = /*len*/ scrypt("\x94\x9b\x92");
+    std::string STR_7 = /*lower*/ scrypt("\x94\x91\x89\x9b\x8e");
+    std::string STR_8 = /*match*/ scrypt("\x93\x9f\x8c\x9d\x98");
+    std::string STR_9 = /*rep*/ scrypt("\x8e\x9b\x90");
+    std::string STR_10 = /*reverse*/ scrypt("\x8e\x9b\x8a\x9b\x8e\x8d\x9b");
+    std::string STR_11 = /*sub*/ scrypt("\x8d\x8b\x9e");
+    std::string STR_12 = /*upper*/ scrypt("\x8b\x90\x90\x9b\x8e");
+    std::string STR_13 = /*split*/ scrypt("\x8d\x90\x94\x97\x8c");
+    std::string STR_14 = /*pack*/ scrypt("\x90\x9f\x9d\x95");
+    std::string STR_15 = /*packsize*/ scrypt("\x90\x9f\x9d\x95\x8d\x97\x86\x9b");
+    std::string STR_16 = /*unpack*/ scrypt("\x8b\x92\x90\x9f\x9d\x95");
+    std::string STR_17 = /*string*/ scrypt("\x8d\x8c\x8e\x97\x92\x99");
+
+    static const luaL_Reg strlib[] = {
+        {STR_0.c_str(), str_byte},
+        {STR_1.c_str(), str_char},
+        {STR_2.c_str(), str_find},
+        {STR_3.c_str(), str_format},
+        {STR_4.c_str(), gmatch},
+        {STR_5.c_str(), str_gsub},
+        {STR_6.c_str(), str_len},
+        {STR_7.c_str(), str_lower},
+        {STR_8.c_str(), str_match},
+        {STR_9.c_str(), str_rep},
+        {STR_10.c_str(), str_reverse},
+        {STR_11.c_str(), str_sub},
+        {STR_12.c_str(), str_upper},
+        {STR_13.c_str(), str_split},
+        {STR_14.c_str(), str_pack},
+        {STR_15.c_str(), str_packsize},
+        {STR_16.c_str(), str_unpack},
+        {NULL, NULL},
+    };
+
+    luaL_register(L, STR_17.c_str(), strlib);
     createmetatable(L);
 
     return 1;
