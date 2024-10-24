@@ -670,10 +670,11 @@ static int push_captures(MatchState* ms, const char* s, const char* e)
 // check whether pattern has no special characters
 static int nospecials(const char* p, size_t l)
 {
+    /*^$*+?.([%-*/ scrypt_def(STR_0, "\xa2\xdc\xd6\xd5\xc1\xd2\xd8\xa5\xdb\xd3");
     size_t upto = 0;
     do
     {
-        if (strpbrk(p + upto, SPECIALS))
+        if (strpbrk(p + upto, STR_0->c_str()))
             return 0;                 // pattern has a special character
         upto += strlen(p + upto) + 1; // may have more after \0
     } while (upto <= l);
@@ -871,6 +872,8 @@ static void add_value(MatchState* ms, luaL_Strbuf* b, const char* s, const char*
 
 static int str_gsub(lua_State* L)
 {
+    /*string/function/table*/ scrypt_def(STR_0, "\x8d\x8c\x8e\x97\x92\x99\xd1\x9a\x8b\x92\x9d\x8c\x97\x91\x92\xd1\x8c\x9f\x9e\x94\x9b");
+
     size_t srcl, lp;
     const char* src = luaL_checklstring(L, 1, &srcl);
     const char* p = luaL_checklstring(L, 2, &lp);
@@ -880,7 +883,7 @@ static int str_gsub(lua_State* L)
     int n = 0;
     MatchState ms;
     luaL_Strbuf b;
-    luaL_argexpected(L, tr == LUA_TNUMBER || tr == LUA_TSTRING || tr == LUA_TFUNCTION || tr == LUA_TTABLE, 3, "string/function/table");
+    luaL_argexpected(L, tr == LUA_TNUMBER || tr == LUA_TSTRING || tr == LUA_TFUNCTION || tr == LUA_TTABLE, 3, STR_0->c_str());
     luaL_buffinit(L, &b);
     if (anchor)
     {
@@ -965,8 +968,9 @@ static void addquoted(lua_State* L, luaL_Strbuf* b, int arg)
 
 static const char* scanformat(lua_State* L, const char* strfrmt, char* form, size_t* size)
 {
+    /*-+ #0*/ scrypt_def(STR_0, "\xd3\xd5\xe0\xdd\xd0");
     const char* p = strfrmt;
-    while (*p != '\0' && strchr(FLAGS, *p) != NULL)
+    while (*p != '\0' && strchr(STR_0->c_str(), *p) != NULL)
         p++; // skip flags
     if ((size_t)(p - strfrmt) >= sizeof(FLAGS)) {
         #define STR_0 /*invalid format (repeated flags)*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x9a\x91\x8e\x93\x9f\x8c\xe0\xd8\x8e\x9b\x90\x9b\x9f\x8c\x9b\x9c\xe0\x9a\x94\x9f\x99\x8d\xd7").c_str()

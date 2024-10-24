@@ -1294,7 +1294,9 @@ static int luauF_tostring(lua_State* L, StkId res, TValue* arg0, int nresults, S
         }
         case LUA_TBOOLEAN:
         {
-            TString* s = bvalue(arg0) ? luaS_newliteral(L, "true") : luaS_newliteral(L, "false");
+            /*true*/ scrypt_def(STR_0, "\x8c\x8e\x8b\x9b");
+            /*false*/ scrypt_def(STR_1, "\x9a\x9f\x94\x8d\x9b");
+            TString* s = bvalue(arg0) ? luaS_newlstr(L, STR_0->c_str(), STR_0->length()) : luaS_newlstr(L, STR_1->c_str(), STR_1->length());
             setsvalue(L, res, s);
             return 1;
         }

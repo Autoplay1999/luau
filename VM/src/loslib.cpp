@@ -113,7 +113,8 @@ static int getfield(lua_State* L, const char* key, int d)
 
 static int os_date(lua_State* L)
 {
-    const char* s = luaL_optstring(L, 1, "%c");
+    /*%c*/ scrypt_def(STR_0, "\xdb\x9d");
+    const char* s = luaL_optstring(L, 1, STR_0->c_str());
     time_t t = luaL_opt(L, (time_t)luaL_checknumber, 2, time(NULL));
 
     struct tm tm;
@@ -129,11 +130,13 @@ static int os_date(lua_State* L)
         stm = t < 0 ? NULL : localtime_r(&t, &tm);
     }
 
+    /**t*/ scrypt_def(STR_0, "\xd6\x8c");
+
     if (stm == NULL) // invalid date?
     {
         lua_pushnil(L);
     }
-    else if (strcmp(s, "*t") == 0)
+    else if (strcmp(s, STR_0->c_str()) == 0)
     {
         /*sec*/ scrypt_def(STR_0, "\x8d\x9b\x9d");
         /*min*/ scrypt_def(STR_1, "\x93\x97\x92");
@@ -157,6 +160,8 @@ static int os_date(lua_State* L)
     }
     else
     {
+        /*aAbBcdHIjmMpSUwWxXyYzZ%*/ scrypt_def(STR_0, "\x9f\xbf\x9e\xbe\x9d\x9c\xb8\xb7\x96\x93\xb3\x90\xad\xab\x89\xa9\x88\xa8\x87\xa7\x86\xa6\xdb");
+
         char cc[3];
         cc[0] = '%';
         cc[2] = '\0';
@@ -169,7 +174,7 @@ static int os_date(lua_State* L)
             {
                 luaL_addchar(&b, *s);
             }
-            else if (strchr(LUA_STRFTIMEOPTIONS, *(s + 1)) == 0)
+            else if (strchr(STR_0->c_str(), *(s + 1)) == 0)
             {
                 #define STR_0 /*invalid conversion specifier*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x9d\x91\x92\x8a\x9b\x8e\x8d\x97\x91\x92\xe0\x8d\x90\x9b\x9d\x97\x9a\x97\x9b\x8e").c_str()
                 luaL_argerror(L, 1, STR_0);

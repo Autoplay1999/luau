@@ -54,22 +54,28 @@ static Constant ctype(const Constant& c)
 {
     LUAU_ASSERT(c.type != Constant::Type_Unknown);
 
+    /*nil*/ scrypt_def(STR_0, "\x92\x97\x94");
+    /*boolean*/ scrypt_def(STR_1, "\x9e\x91\x91\x94\x9b\x9f\x92");
+    /*number*/ scrypt_def(STR_2, "\x92\x8b\x93\x9e\x9b\x8e");
+    /*vector*/ scrypt_def(STR_3, "\x8a\x9b\x9d\x8c\x91\x8e");
+    /*string*/ scrypt_def(STR_4, "\x8d\x8c\x8e\x97\x92\x99");
+
     switch (c.type)
     {
     case Constant::Type_Nil:
-        return cstring("nil");
+        return cstring(STR_0->c_str());
 
     case Constant::Type_Boolean:
-        return cstring("boolean");
+        return cstring(STR_1->c_str());
 
     case Constant::Type_Number:
-        return cstring("number");
+        return cstring(STR_2->c_str());
 
     case Constant::Type_Vector:
-        return cstring("vector");
+        return cstring(STR_3->c_str());
 
     case Constant::Type_String:
-        return cstring("string");
+        return cstring(STR_4->c_str());
 
     default:
         LUAU_ASSERT(!"Unsupported constant type");
