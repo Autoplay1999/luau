@@ -130,37 +130,37 @@ static int os_date(lua_State* L)
         stm = t < 0 ? NULL : localtime_r(&t, &tm);
     }
 
-    /**t*/ scrypt_def(STR_0, "\xd6\x8c");
+    /**t*/ scrypt_def(STR_1, "\xd6\x8c");
 
     if (stm == NULL) // invalid date?
     {
         lua_pushnil(L);
     }
-    else if (strcmp(s, STR_0->c_str()) == 0)
+    else if (strcmp(s, STR_1->c_str()) == 0)
     {
-        /*sec*/ scrypt_def(STR_0, "\x8d\x9b\x9d");
-        /*min*/ scrypt_def(STR_1, "\x93\x97\x92");
-        /*hour*/ scrypt_def(STR_2, "\x98\x91\x8b\x8e");
-        /*day*/ scrypt_def(STR_3, "\x9c\x9f\x87");
-        /*month*/ scrypt_def(STR_4, "\x93\x91\x92\x8c\x98");
-        /*year*/ scrypt_def(STR_5, "\x87\x9b\x9f\x8e");
-        /*wday*/ scrypt_def(STR_6, "\x89\x9c\x9f\x87");
-        /*yday*/ scrypt_def(STR_7, "\x87\x9c\x9f\x87");
-        /*isdst*/ scrypt_def(STR_8, "\x97\x8d\x9c\x8d\x8c");
+        /*sec*/ scrypt_def(STR_2, "\x8d\x9b\x9d");
+        /*min*/ scrypt_def(STR_3, "\x93\x97\x92");
+        /*hour*/ scrypt_def(STR_4, "\x98\x91\x8b\x8e");
+        /*day*/ scrypt_def(STR_5, "\x9c\x9f\x87");
+        /*month*/ scrypt_def(STR_6, "\x93\x91\x92\x8c\x98");
+        /*year*/ scrypt_def(STR_7, "\x87\x9b\x9f\x8e");
+        /*wday*/ scrypt_def(STR_8, "\x89\x9c\x9f\x87");
+        /*yday*/ scrypt_def(STR_9, "\x87\x9c\x9f\x87");
+        /*isdst*/ scrypt_def(STR_10, "\x97\x8d\x9c\x8d\x8c");
         lua_createtable(L, 0, 9); // 9 = number of fields
-        setfield(L, STR_0->c_str(), stm->tm_sec);
-        setfield(L, STR_1->c_str(), stm->tm_min);
-        setfield(L, STR_2->c_str(), stm->tm_hour);
-        setfield(L, STR_3->c_str(), stm->tm_mday);
-        setfield(L, STR_4->c_str(), stm->tm_mon + 1);
-        setfield(L, STR_5->c_str(), stm->tm_year + 1900);
-        setfield(L, STR_6->c_str(), stm->tm_wday + 1);
-        setfield(L, STR_7->c_str(), stm->tm_yday + 1);
-        setboolfield(L, STR_8->c_str(), stm->tm_isdst);
+        setfield(L, STR_2->c_str(), stm->tm_sec);
+        setfield(L, STR_3->c_str(), stm->tm_min);
+        setfield(L, STR_4->c_str(), stm->tm_hour);
+        setfield(L, STR_5->c_str(), stm->tm_mday);
+        setfield(L, STR_6->c_str(), stm->tm_mon + 1);
+        setfield(L, STR_7->c_str(), stm->tm_year + 1900);
+        setfield(L, STR_8->c_str(), stm->tm_wday + 1);
+        setfield(L, STR_9->c_str(), stm->tm_yday + 1);
+        setboolfield(L, STR_10->c_str(), stm->tm_isdst);
     }
     else
     {
-        /*aAbBcdHIjmMpSUwWxXyYzZ%*/ scrypt_def(STR_0, "\x9f\xbf\x9e\xbe\x9d\x9c\xb8\xb7\x96\x93\xb3\x90\xad\xab\x89\xa9\x88\xa8\x87\xa7\x86\xa6\xdb");
+        /*aAbBcdHIjmMpSUwWxXyYzZ%*/ scrypt_def(STR_11, "\x9f\xbf\x9e\xbe\x9d\x9c\xb8\xb7\x96\x93\xb3\x90\xad\xab\x89\xa9\x88\xa8\x87\xa7\x86\xa6\xdb");
 
         char cc[3];
         cc[0] = '%';
@@ -174,11 +174,11 @@ static int os_date(lua_State* L)
             {
                 luaL_addchar(&b, *s);
             }
-            else if (strchr(STR_0->c_str(), *(s + 1)) == 0)
+            else if (strchr(STR_11->c_str(), *(s + 1)) == 0)
             {
-                #define STR_0 /*invalid conversion specifier*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x9d\x91\x92\x8a\x9b\x8e\x8d\x97\x91\x92\xe0\x8d\x90\x9b\x9d\x97\x9a\x97\x9b\x8e").c_str()
-                luaL_argerror(L, 1, STR_0);
-                #undef STR_0
+                #define STR_12 /*invalid conversion specifier*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x9d\x91\x92\x8a\x9b\x8e\x8d\x97\x91\x92\xe0\x8d\x90\x9b\x9d\x97\x9a\x97\x9b\x8e").c_str()
+                luaL_argerror(L, 1, STR_12);
+                #undef STR_12
             }
             else
             {
