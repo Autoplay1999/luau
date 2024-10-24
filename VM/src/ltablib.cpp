@@ -168,7 +168,9 @@ static int tinsert(lua_State* L)
     }
     default:
     {
-        luaL_error(L, "wrong number of arguments to 'insert'");
+        #define STR_0 /*wrong number of arguments to 'insert'*/ scrypt("\x89\x8e\x91\x92\x99\xe0\x92\x8b\x93\x9e\x9b\x8e\xe0\x91\x9a\xe0\x9f\x8e\x99\x8b\x93\x9b\x92\x8c\x8d\xe0\x8c\x91\xe0\xd9\x97\x92\x8d\x9b\x8e\x8c\xd9").c_str()
+        luaL_error(L, STR_0);
+        #undef STR_0
     }
     }
     lua_rawseti(L, 1, pos); // t[pos] = v
@@ -209,9 +211,12 @@ static int tmove(lua_State* L)
 
     if (e >= f)
     { // otherwise, nothing to move
-        luaL_argcheck(L, f > 0 || e < INT_MAX + f, 3, "too many elements to move");
+        /*too many elements to move*/ scrypt_def(STR_0, "\x8c\x91\x91\xe0\x93\x9f\x92\x87\xe0\x9b\x94\x9b\x93\x9b\x92\x8c\x8d\xe0\x8c\x91\xe0\x93\x91\x8a\x9b");
+        /*destination wrap around*/ scrypt_def(STR_1, "\x9c\x9b\x8d\x8c\x97\x92\x9f\x8c\x97\x91\x92\xe0\x89\x8e\x9f\x90\xe0\x9f\x8e\x91\x8b\x92\x9c");
+
+        luaL_argcheck(L, f > 0 || e < INT_MAX + f, 3, STR_0->c_str());
         int n = e - f + 1; // number of elements to move
-        luaL_argcheck(L, t <= INT_MAX - n + 1, 4, "destination wrap around");
+        luaL_argcheck(L, t <= INT_MAX - n + 1, 4, STR_1->c_str());
 
         Table* dst = hvalue(L->base + (tt - 1));
 
@@ -239,8 +244,11 @@ static void addfield(lua_State* L, luaL_Strbuf* b, int i, Table* t)
     else
     {
         int tt = lua_rawgeti(L, 1, i);
-        if (tt != LUA_TSTRING && tt != LUA_TNUMBER)
-            luaL_error(L, "invalid value (%s) at index %d in table for 'concat'", luaL_typename(L, -1), i);
+        if (tt != LUA_TSTRING && tt != LUA_TNUMBER) {
+            #define STR_0 /*invalid value (%s) at index %d in table for 'concat'*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x8a\x9f\x94\x8b\x9b\xe0\xd8\xdb\x8d\xd7\xe0\x9f\x8c\xe0\x97\x92\x9c\x9b\x88\xe0\xdb\x9c\xe0\x97\x92\xe0\x8c\x9f\x9e\x94\x9b\xe0\x9a\x91\x8e\xe0\xd9\x9d\x91\x92\x9d\x9f\x8c\xd9").c_str()
+            luaL_error(L, STR_0, luaL_typename(L, -1), i);
+            #undef STR_0
+        }
         luaL_addvalue(b);
     }
 }
@@ -299,8 +307,11 @@ static int tunpack(lua_State* L)
     if (i > e)
         return 0;                 // empty range
     unsigned n = (unsigned)e - i; // number of elements minus 1 (avoid overflows)
-    if (n >= (unsigned int)INT_MAX || !lua_checkstack(L, (int)(++n)))
-        luaL_error(L, "too many results to unpack");
+    if (n >= (unsigned int)INT_MAX || !lua_checkstack(L, (int)(++n))) {
+        #define STR_0 /*too many results to unpack*/ scrypt("\x8c\x91\x91\xe0\x93\x9f\x92\x87\xe0\x8e\x9b\x8d\x8b\x94\x8c\x8d\xe0\x8c\x91\xe0\x8b\x92\x90\x9f\x9d\x95").c_str()
+        luaL_error(L, STR_0);
+        #undef STR_0
+    }
 
     // fast-path: direct array-to-stack copy
     if (i == 1 && int(n) <= t->sizearray)
@@ -357,8 +368,11 @@ inline int sort_less(lua_State* L, Table* t, int i, int j, SortPredicate pred)
     int res = pred(L, &arr[i], &arr[j]);
 
     // predicate call may resize the table, which is invalid
-    if (t->sizearray != n)
-        luaL_error(L, "table modified during sorting");
+    if (t->sizearray != n) {
+        #define STR_0 /*table modified during sorting*/ scrypt("\x8c\x9f\x9e\x94\x9b\xe0\x93\x91\x9c\x97\x9a\x97\x9b\x9c\xe0\x9c\x8b\x8e\x97\x92\x99\xe0\x8d\x91\x8e\x8c\x97\x92\x99").c_str()
+        luaL_error(L, STR_0);
+        #undef STR_0
+    }
 
     return res;
 }
@@ -437,20 +451,23 @@ static void sort_rec(lua_State* L, Table* t, int l, int u, int limit, SortPredic
         for (;;)
         { // invariant: a[l..i] <= P <= a[j..u]
             // repeat ++i until a[i] >= P
+            #define STR_0 /*invalid order function for sorting*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x91\x8e\x9c\x9b\x8e\xe0\x9a\x8b\x92\x9d\x8c\x97\x91\x92\xe0\x9a\x91\x8e\xe0\x8d\x91\x8e\x8c\x97\x92\x99").c_str()
+
             while (sort_less(L, t, ++i, p, pred))
             {
                 if (i >= u)
-                    luaL_error(L, "invalid order function for sorting");
+                    luaL_error(L, STR_0);
             }
             // repeat --j until a[j] <= P
             while (sort_less(L, t, p, --j, pred))
             {
                 if (j <= l)
-                    luaL_error(L, "invalid order function for sorting");
+                    luaL_error(L, STR_0);
             }
             if (j < i)
                 break;
             sort_swap(L, t, i, j);
+            #undef STR_0
         }
 
         // swap pivot a[p] with a[i], which is the new midpoint
@@ -498,8 +515,11 @@ static int tsort(lua_State* L)
 static int tcreate(lua_State* L)
 {
     int size = luaL_checkinteger(L, 1);
-    if (size < 0)
-        luaL_argerror(L, 1, "size out of range");
+    if (size < 0) {
+        #define STR_0 /*size out of range*/ scrypt("\x8d\x97\x86\x9b\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x8e\x9f\x92\x99\x9b").c_str()
+        luaL_argerror(L, 1, STR_0);
+        #undef STR_0
+    }
 
     if (!lua_isnoneornil(L, 2))
     {
@@ -527,8 +547,11 @@ static int tfind(lua_State* L)
     luaL_checktype(L, 1, LUA_TTABLE);
     luaL_checkany(L, 2);
     int init = luaL_optinteger(L, 3, 1);
-    if (init < 1)
-        luaL_argerror(L, 3, "index out of range");
+    if (init < 1) {
+        #define STR_0 /*index out of range*/ scrypt("\x97\x92\x9c\x9b\x88\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x8e\x9f\x92\x99\x9b").c_str()
+        luaL_argerror(L, 3, STR_0);
+        #undef STR_0
+    }
 
     Table* t = hvalue(L->base);
     StkId v = L->base + 1;
@@ -564,9 +587,13 @@ static int tclear(lua_State* L)
 
 static int tfreeze(lua_State* L)
 {
+    /*table is already frozen*/ scrypt_def(STR_0, "\x8c\x9f\x9e\x94\x9b\xe0\x97\x8d\xe0\x9f\x94\x8e\x9b\x9f\x9c\x87\xe0\x9a\x8e\x91\x86\x9b\x92");
+    /*__metatable*/ scrypt_def(STR_1, "\xa1\xa1\x93\x9b\x8c\x9f\x8c\x9f\x9e\x94\x9b");
+    /*table has a protected metatable*/ scrypt_def(STR_2, "\x8c\x9f\x9e\x94\x9b\xe0\x98\x9f\x8d\xe0\x9f\xe0\x90\x8e\x91\x8c\x9b\x9d\x8c\x9b\x9c\xe0\x93\x9b\x8c\x9f\x8c\x9f\x9e\x94\x9b");
+
     luaL_checktype(L, 1, LUA_TTABLE);
-    luaL_argcheck(L, !lua_getreadonly(L, 1), 1, "table is already frozen");
-    luaL_argcheck(L, !luaL_getmetafield(L, 1, "__metatable"), 1, "table has a protected metatable");
+    luaL_argcheck(L, !lua_getreadonly(L, 1), 1, STR_0->c_str());
+    luaL_argcheck(L, !luaL_getmetafield(L, 1, STR_1->c_str()), 1, STR_2->c_str());
 
     lua_setreadonly(L, 1, true);
 
@@ -584,8 +611,11 @@ static int tisfrozen(lua_State* L)
 
 static int tclone(lua_State* L)
 {
+    /*__metatable*/ scrypt_def(STR_0, "\xa1\xa1\x93\x9b\x8c\x9f\x8c\x9f\x9e\x94\x9b");
+    /*table has a protected metatable*/ scrypt_def(STR_1, "\x8c\x9f\x9e\x94\x9b\xe0\x98\x9f\x8d\xe0\x9f\xe0\x90\x8e\x91\x8c\x9b\x9d\x8c\x9b\x9c\xe0\x93\x9b\x8c\x9f\x8c\x9f\x9e\x94\x9b");
+
     luaL_checktype(L, 1, LUA_TTABLE);
-    luaL_argcheck(L, !luaL_getmetafield(L, 1, "__metatable"), 1, "table has a protected metatable");
+    luaL_argcheck(L, !luaL_getmetafield(L, 1, STR_0->c_str()), 1, STR_1->c_str());
 
     Table* tt = luaH_clone(L, hvalue(L->base));
 
@@ -596,34 +626,54 @@ static int tclone(lua_State* L)
     return 1;
 }
 
-static const luaL_Reg tab_funcs[] = {
-    {"concat", tconcat},
-    {"foreach", foreach},
-    {"foreachi", foreachi},
-    {"getn", getn},
-    {"maxn", maxn},
-    {"insert", tinsert},
-    {"remove", tremove},
-    {"sort", tsort},
-    {"pack", tpack},
-    {"unpack", tunpack},
-    {"move", tmove},
-    {"create", tcreate},
-    {"find", tfind},
-    {"clear", tclear},
-    {"freeze", tfreeze},
-    {"isfrozen", tisfrozen},
-    {"clone", tclone},
-    {NULL, NULL},
-};
-
 int luaopen_table(lua_State* L)
 {
-    luaL_register(L, LUA_TABLIBNAME, tab_funcs);
+    std::string STR_0 = /*concat*/ scrypt("\x9d\x91\x92\x9d\x9f\x8c");
+    std::string STR_1 = /*foreach*/ scrypt("\x9a\x91\x8e\x9b\x9f\x9d\x98");
+    std::string STR_2 = /*foreachi*/ scrypt("\x9a\x91\x8e\x9b\x9f\x9d\x98\x97");
+    std::string STR_3 = /*getn*/ scrypt("\x99\x9b\x8c\x92");
+    std::string STR_4 = /*maxn*/ scrypt("\x93\x9f\x88\x92");
+    std::string STR_5 = /*insert*/ scrypt("\x97\x92\x8d\x9b\x8e\x8c");
+    std::string STR_6 = /*remove*/ scrypt("\x8e\x9b\x93\x91\x8a\x9b");
+    std::string STR_7 = /*sort*/ scrypt("\x8d\x91\x8e\x8c");
+    std::string STR_8 = /*pack*/ scrypt("\x90\x9f\x9d\x95");
+    std::string STR_9 = /*unpack*/ scrypt("\x8b\x92\x90\x9f\x9d\x95");
+    std::string STR_10 = /*move*/ scrypt("\x93\x91\x8a\x9b");
+    std::string STR_11 = /*create*/ scrypt("\x9d\x8e\x9b\x9f\x8c\x9b");
+    std::string STR_12 = /*find*/ scrypt("\x9a\x97\x92\x9c");
+    std::string STR_13 = /*clear*/ scrypt("\x9d\x94\x9b\x9f\x8e");
+    std::string STR_14 = /*freeze*/ scrypt("\x9a\x8e\x9b\x9b\x86\x9b");
+    std::string STR_15 = /*isfrozen*/ scrypt("\x97\x8d\x9a\x8e\x91\x86\x9b\x92");
+    std::string STR_16 = /*clone*/ scrypt("\x9d\x94\x91\x92\x9b");
+    std::string STR_17 = /*unpack*/ scrypt("\x8b\x92\x90\x9f\x9d\x95");
+    std::string STR_18 = /*table*/ scrypt("\x8c\x9f\x9e\x94\x9b");
+
+    static const luaL_Reg tab_funcs[] = {
+        {STR_0.c_str(), tconcat},
+        {STR_1.c_str(), foreach},
+        {STR_2.c_str(), foreachi},
+        {STR_3.c_str(), getn}, 
+        {STR_4.c_str(), maxn},
+        {STR_5.c_str(), tinsert},
+        {STR_6.c_str(), tremove},
+        {STR_7.c_str(), tsort},
+        {STR_8.c_str(), tpack},
+        {STR_9.c_str(), tunpack},
+        {STR_10.c_str(), tmove},
+        {STR_11.c_str(), tcreate},
+        {STR_12.c_str(), tfind},
+        {STR_13.c_str(), tclear},
+        {STR_14.c_str(), tfreeze},
+        {STR_15.c_str(), tisfrozen},
+        {STR_16.c_str(), tclone},
+        {NULL, NULL},
+    };
+
+    luaL_register(L, STR_18.c_str(), tab_funcs);
 
     // Lua 5.1 compat
-    lua_pushcfunction(L, tunpack, "unpack");
-    lua_setglobal(L, "unpack");
+    lua_pushcfunction(L, tunpack, STR_17.c_str());
+    lua_setglobal(L, STR_17.c_str());
 
     return 1;
 }

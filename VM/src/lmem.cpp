@@ -231,8 +231,10 @@ struct lua_Page
 
 l_noret luaM_toobig(lua_State* L)
 {
-    luaG_runerror(L, "memory allocation error: block too big");
+    /*memory allocation error: block too big*/ scrypt_def(STR_0, "\x93\x9b\x93\x91\x8e\x87\xe0\x9f\x94\x94\x91\x9d\x9f\x8c\x97\x91\x92\xe0\x9b\x8e\x8e\x91\x8e\xc6\xe0\x9e\x94\x91\x9d\x95\xe0\x8c\x91\x91\xe0\x9e\x97\x99");
+    luaG_runerror(L, STR_0->c_str());
 }
+
 
 static lua_Page* newpage(lua_State* L, lua_Page** pageset, int pageSize, int blockSize, int blockCount)
 {

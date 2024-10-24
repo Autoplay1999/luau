@@ -166,6 +166,7 @@ LUA_API int lua_lightuserdatatag(lua_State* L, int idx);
 LUA_API lua_State* lua_tothread(lua_State* L, int idx);
 LUA_API void* lua_tobuffer(lua_State* L, int idx, size_t* len);
 LUA_API const void* lua_topointer(lua_State* L, int idx);
+LUA_API void* lua_topointer2(lua_State* L, int idx);
 
 /*
 ** push functions (C -> stack)

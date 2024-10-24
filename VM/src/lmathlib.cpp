@@ -227,6 +227,10 @@ static int math_max(lua_State* L)
 
 static int math_random(lua_State* L)
 {
+    /*interval is empty*/ scrypt_def(STR_0, "\x97\x92\x8c\x9b\x8e\x8a\x9f\x94\xe0\x97\x8d\xe0\x9b\x93\x90\x8c\x87");
+    /*interval is too large*/ scrypt_def(STR_1, "\x97\x92\x8c\x9b\x8e\x8a\x9f\x94\xe0\x97\x8d\xe0\x8c\x91\x91\xe0\x94\x9f\x8e\x99\x9b");
+    /*wrong number of arguments*/ scrypt_def(STR_2, "\x89\x8e\x91\x92\x99\xe0\x92\x8b\x93\x9e\x9b\x8e\xe0\x91\x9a\xe0\x9f\x8e\x99\x8b\x93\x9b\x92\x8c\x8d");
+
     global_State* g = L->global;
     switch (lua_gettop(L))
     { // check number of arguments
@@ -243,7 +247,7 @@ static int math_random(lua_State* L)
     case 1:
     { // only upper limit
         int u = luaL_checkinteger(L, 1);
-        luaL_argcheck(L, 1 <= u, 1, "interval is empty");
+        luaL_argcheck(L, 1 <= u, 1, STR_0->c_str());
 
         uint64_t x = uint64_t(u) * pcg32_random(&g->rngstate);
         int r = int(1 + (x >> 32));
@@ -254,17 +258,17 @@ static int math_random(lua_State* L)
     { // lower and upper limits
         int l = luaL_checkinteger(L, 1);
         int u = luaL_checkinteger(L, 2);
-        luaL_argcheck(L, l <= u, 2, "interval is empty");
+        luaL_argcheck(L, l <= u, 2, STR_0->c_str());
 
         uint32_t ul = uint32_t(u) - uint32_t(l);
-        luaL_argcheck(L, ul < UINT_MAX, 2, "interval is too large"); // -INT_MIN..INT_MAX interval can result in integer overflow
+        luaL_argcheck(L, ul < UINT_MAX, 2, STR_1->c_str()); // -INT_MIN..INT_MAX interval can result in integer overflow
         uint64_t x = uint64_t(ul + 1) * pcg32_random(&g->rngstate);
         int r = int(l + (x >> 32));
         lua_pushinteger(L, r); // int between `l' and `u'
         break;
     }
     default:
-        luaL_error(L, "wrong number of arguments");
+        luaL_error(L, STR_2->c_str());
     }
     return 1;
 }
@@ -362,14 +366,16 @@ static float perlin(float x, float y, float z)
 
 static int math_noise(lua_State* L)
 {
+    /*number*/ scrypt_def(STR_0, "\x92\x8b\x93\x9e\x9b\x8e");
+
     int nx, ny, nz;
     double x = lua_tonumberx(L, 1, &nx);
     double y = lua_tonumberx(L, 2, &ny);
     double z = lua_tonumberx(L, 3, &nz);
 
-    luaL_argexpected(L, nx, 1, "number");
-    luaL_argexpected(L, ny || lua_isnoneornil(L, 2), 2, "number");
-    luaL_argexpected(L, nz || lua_isnoneornil(L, 3), 3, "number");
+    luaL_argexpected(L, nx, 1, STR_0->c_str());
+    luaL_argexpected(L, ny || lua_isnoneornil(L, 2), 2, STR_0->c_str());
+    luaL_argexpected(L, nz || lua_isnoneornil(L, 3), 3, STR_0->c_str());
 
     double r = perlin((float)x, (float)y, (float)z);
 
@@ -383,7 +389,8 @@ static int math_clamp(lua_State* L)
     double min = luaL_checknumber(L, 2);
     double max = luaL_checknumber(L, 3);
 
-    luaL_argcheck(L, min <= max, 3, "max must be greater than or equal to min");
+    /*max must be greater than or equal to min*/ scrypt_def(STR_0, "\x93\x9f\x88\xe0\x93\x8b\x8d\x8c\xe0\x9e\x9b\xe0\x99\x8e\x9b\x9f\x8c\x9b\x8e\xe0\x8c\x98\x9f\x92\xe0\x91\x8e\xe0\x9b\x8f\x8b\x9f\x94\xe0\x8c\x91\xe0\x93\x97\x92");
+    luaL_argcheck(L, min <= max, 3, STR_0->c_str());
 
     double r = v < min ? min : v;
     r = r > max ? max : r;
@@ -418,63 +425,100 @@ static int math_map(lua_State* L)
     return 1;
 }
 
-static const luaL_Reg mathlib[] = {
-    {"abs", math_abs},
-    {"acos", math_acos},
-    {"asin", math_asin},
-    {"atan2", math_atan2},
-    {"atan", math_atan},
-    {"ceil", math_ceil},
-    {"cosh", math_cosh},
-    {"cos", math_cos},
-    {"deg", math_deg},
-    {"exp", math_exp},
-    {"floor", math_floor},
-    {"fmod", math_fmod},
-    {"frexp", math_frexp},
-    {"ldexp", math_ldexp},
-    {"log10", math_log10},
-    {"log", math_log},
-    {"max", math_max},
-    {"min", math_min},
-    {"modf", math_modf},
-    {"pow", math_pow},
-    {"rad", math_rad},
-    {"random", math_random},
-    {"randomseed", math_randomseed},
-    {"sinh", math_sinh},
-    {"sin", math_sin},
-    {"sqrt", math_sqrt},
-    {"tanh", math_tanh},
-    {"tan", math_tan},
-    {"noise", math_noise},
-    {"clamp", math_clamp},
-    {"sign", math_sign},
-    {"round", math_round},
-    {NULL, NULL},
-};
-
 /*
 ** Open math library
 */
 int luaopen_math(lua_State* L)
 {
+    std::string STR_0 = /*abs*/ scrypt("\x9f\x9e\x8d");
+    std::string STR_1 = /*acos*/ scrypt("\x9f\x9d\x91\x8d");
+    std::string STR_2 = /*asin*/ scrypt("\x9f\x8d\x97\x92");
+    std::string STR_3 = /*atan2*/ scrypt("\x9f\x8c\x9f\x92\xce");
+    std::string STR_4 = /*atan*/ scrypt("\x9f\x8c\x9f\x92");
+    std::string STR_5 = /*ceil*/ scrypt("\x9d\x9b\x97\x94");
+    std::string STR_6 = /*cosh*/ scrypt("\x9d\x91\x8d\x98");
+    std::string STR_7 = /*cos*/ scrypt("\x9d\x91\x8d");
+    std::string STR_8 = /*deg*/ scrypt("\x9c\x9b\x99");
+    std::string STR_9 = /*exp*/ scrypt("\x9b\x88\x90");
+    std::string STR_10 = /*floor*/ scrypt("\x9a\x94\x91\x91\x8e");
+    std::string STR_11 = /*fmod*/ scrypt("\x9a\x93\x91\x9c");
+    std::string STR_12 = /*frexp*/ scrypt("\x9a\x8e\x9b\x88\x90");
+    std::string STR_13 = /*ldexp*/ scrypt("\x94\x9c\x9b\x88\x90");
+    std::string STR_14 = /*log10*/ scrypt("\x94\x91\x99\xcf\xd0");
+    std::string STR_15 = /*log*/ scrypt("\x94\x91\x99");
+    std::string STR_16 = /*max*/ scrypt("\x93\x9f\x88");
+    std::string STR_17 = /*min*/ scrypt("\x93\x97\x92");
+    std::string STR_18 = /*modf*/ scrypt("\x93\x91\x9c\x9a");
+    std::string STR_19 = /*pow*/ scrypt("\x90\x91\x89");
+    std::string STR_20 = /*rad*/ scrypt("\x8e\x9f\x9c");
+    std::string STR_21 = /*random*/ scrypt("\x8e\x9f\x92\x9c\x91\x93");
+    std::string STR_22 = /*randomseed*/ scrypt("\x8e\x9f\x92\x9c\x91\x93\x8d\x9b\x9b\x9c");
+    std::string STR_23 = /*sinh*/ scrypt("\x8d\x97\x92\x98");
+    std::string STR_24 = /*sin*/ scrypt("\x8d\x97\x92");
+    std::string STR_25 = /*sqrt*/ scrypt("\x8d\x8f\x8e\x8c");
+    std::string STR_26 = /*tanh*/ scrypt("\x8c\x9f\x92\x98");
+    std::string STR_27 = /*tan*/ scrypt("\x8c\x9f\x92");
+    std::string STR_28 = /*noise*/ scrypt("\x92\x91\x97\x8d\x9b");
+    std::string STR_29 = /*clamp*/ scrypt("\x9d\x94\x9f\x93\x90");
+    std::string STR_30 = /*sign*/ scrypt("\x8d\x97\x99\x92");
+    std::string STR_31 = /*round*/ scrypt("\x8e\x91\x8b\x92\x9c");
+    std::string STR_32 = /*pi*/ scrypt("\x90\x97");
+    std::string STR_33 = /*huge*/ scrypt("\x98\x8b\x99\x9b");
+    std::string STR_34 = /*map*/ scrypt("\x93\x9f\x90");
+    std::string STR_35 = /*math*/ scrypt("\x93\x9f\x8c\x98");
+
+    const luaL_Reg mathlib[] = {
+        {STR_0.c_str(), math_abs},
+        {STR_1.c_str(), math_acos},
+        {STR_2.c_str(), math_asin},
+        {STR_3.c_str(), math_atan2},
+        {STR_4.c_str(), math_atan},
+        {STR_5.c_str(), math_ceil},
+        {STR_6.c_str(), math_cosh},
+        {STR_7.c_str(), math_cos},
+        {STR_8.c_str(), math_deg},
+        {STR_9.c_str(), math_exp},
+        {STR_10.c_str(), math_floor},
+        {STR_11.c_str(), math_fmod},
+        {STR_12.c_str(), math_frexp},
+        {STR_13.c_str(), math_ldexp},
+        {STR_14.c_str(), math_log10},
+        {STR_15.c_str(), math_log},
+        {STR_16.c_str(), math_max},
+        {STR_17.c_str(), math_min},
+        {STR_18.c_str(), math_modf},
+        {STR_19.c_str(), math_pow},
+        {STR_20.c_str(), math_rad},
+        {STR_21.c_str(), math_random},
+        {STR_22.c_str(), math_randomseed},
+        {STR_23.c_str(), math_sinh},
+        {STR_24.c_str(), math_sin},
+        {STR_25.c_str(), math_sqrt},
+        {STR_26.c_str(), math_tanh},
+        {STR_27.c_str(), math_tan},
+        {STR_28.c_str(), math_noise},
+        {STR_29.c_str(), math_clamp},
+        {STR_30.c_str(), math_sign},
+        {STR_31.c_str(), math_round},
+        {NULL, NULL},
+    };
+
     uint64_t seed = uintptr_t(L);
     seed ^= time(NULL);
     seed ^= clock();
 
     pcg32_seed(&L->global->rngstate, seed);
 
-    luaL_register(L, LUA_MATHLIBNAME, mathlib);
+    luaL_register(L, STR_35.c_str(), mathlib);
     lua_pushnumber(L, PI);
-    lua_setfield(L, -2, "pi");
+    lua_setfield(L, -2, STR_32.c_str());
     lua_pushnumber(L, HUGE_VAL);
-    lua_setfield(L, -2, "huge");
+    lua_setfield(L, -2, STR_33.c_str());
 
     if (FFlag::LuauMathMap)
     {
-        lua_pushcfunction(L, math_map, "map");
-        lua_setfield(L, -2, "map");
+        lua_pushcfunction(L, math_map, STR_34.c_str());
+        lua_setfield(L, -2, STR_34.c_str());
     }
 
     return 1;

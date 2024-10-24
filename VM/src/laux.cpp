@@ -22,10 +22,12 @@
 
 static const char* currfuncname(lua_State* L)
 {
+    /*__namecall*/ scrypt_def(STR_0, "\xa1\xa1\x92\x9f\x93\x9b\x9d\x9f\x94\x94");
+
     Closure* cl = L->ci > L->base_ci ? curr_func(L) : NULL;
     const char* debugname = cl && cl->isC ? cl->c.debugname + 0 : NULL;
 
-    if (debugname && strcmp(debugname, "__namecall") == 0)
+    if (debugname && strcmp(debugname, STR_0->c_str()) == 0)
         return L->namecall ? getstr(L->namecall) : NULL;
     else
         return debugname;
@@ -35,10 +37,16 @@ l_noret luaL_argerrorL(lua_State* L, int narg, const char* extramsg)
 {
     const char* fname = currfuncname(L);
 
-    if (fname)
-        luaL_error(L, "invalid argument #%d to '%s' (%s)", narg, fname, extramsg);
-    else
-        luaL_error(L, "invalid argument #%d (%s)", narg, extramsg);
+    if (fname) {
+        #define STR_0 /*invalid argument #%d to '%s' (%s)*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x9f\x8e\x99\x8b\x93\x9b\x92\x8c\xe0\xdd\xdb\x9c\xe0\x8c\x91\xe0\xd9\xdb\x8d\xd9\xe0\xd8\xdb\x8d\xd7").c_str()
+        luaL_error(L, STR_0, narg, fname, extramsg);
+        #undef STR_0
+    }
+    else {
+        #define STR_1 /*invalid argument #%d (%s)*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x9f\x8e\x99\x8b\x93\x9b\x92\x8c\xe0\xdd\xdb\x9c\xe0\xd8\xdb\x8d\xd7").c_str()
+        luaL_error(L, STR_1, narg, extramsg);
+        #undef STR_1
+    }
 }
 
 l_noret luaL_typeerrorL(lua_State* L, int narg, const char* tname)
@@ -48,17 +56,29 @@ l_noret luaL_typeerrorL(lua_State* L, int narg, const char* tname)
 
     if (obj)
     {
-        if (fname)
-            luaL_error(L, "invalid argument #%d to '%s' (%s expected, got %s)", narg, fname, tname, luaT_objtypename(L, obj));
-        else
-            luaL_error(L, "invalid argument #%d (%s expected, got %s)", narg, tname, luaT_objtypename(L, obj));
+        if (fname) {
+            #define STR_0 /*invalid argument #%d to '%s' (%s expected, got %s)*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x9f\x8e\x99\x8b\x93\x9b\x92\x8c\xe0\xdd\xdb\x9c\xe0\x8c\x91\xe0\xd9\xdb\x8d\xd9\xe0\xd8\xdb\x8d\xe0\x9b\x88\x90\x9b\x9d\x8c\x9b\x9c\xd4\xe0\x99\x91\x8c\xe0\xdb\x8d\xd7").c_str()
+            luaL_error(L, STR_0, narg, fname, tname, luaT_objtypename(L, obj));
+            #undef STR_0
+        }
+        else {
+            #define STR_1 /*invalid argument #%d (%s expected, got %s)*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x9f\x8e\x99\x8b\x93\x9b\x92\x8c\xe0\xdd\xdb\x9c\xe0\xd8\xdb\x8d\xe0\x9b\x88\x90\x9b\x9d\x8c\x9b\x9c\xd4\xe0\x99\x91\x8c\xe0\xdb\x8d\xd7").c_str()
+            luaL_error(L, STR_1, narg, tname, luaT_objtypename(L, obj));
+            #undef STR_1
+        }
     }
     else
     {
-        if (fname)
-            luaL_error(L, "missing argument #%d to '%s' (%s expected)", narg, fname, tname);
-        else
-            luaL_error(L, "missing argument #%d (%s expected)", narg, tname);
+        if (fname) {
+            #define STR_2 /*missing argument #%d to '%s' (%s expected)*/ scrypt("\x93\x97\x8d\x8d\x97\x92\x99\xe0\x9f\x8e\x99\x8b\x93\x9b\x92\x8c\xe0\xdd\xdb\x9c\xe0\x8c\x91\xe0\xd9\xdb\x8d\xd9\xe0\xd8\xdb\x8d\xe0\x9b\x88\x90\x9b\x9d\x8c\x9b\x9c\xd7").c_str()
+            luaL_error(L, STR_2, narg, fname, tname);
+            #undef STR_2
+        }
+        else {
+            #define STR_3 /*missing argument #%d (%s expected)*/ scrypt("\x93\x97\x8d\x8d\x97\x92\x99\xe0\x9f\x8e\x99\x8b\x93\x9b\x92\x8c\xe0\xdd\xdb\x9c\xe0\xd8\xdb\x8d\xe0\x9b\x88\x90\x9b\x9d\x8c\x9b\x9c\xd7").c_str()
+            luaL_error(L, STR_3, narg, tname);
+            #undef STR_3
+        }
     }
 }
 
@@ -69,10 +89,14 @@ static l_noret tag_error(lua_State* L, int narg, int tag)
 
 void luaL_where(lua_State* L, int level)
 {
+    /*sl*/ scrypt_def(STR_0, "\x8d\x94");
+
     lua_Debug ar;
-    if (lua_getinfo(L, level, "sl", &ar) && ar.currentline > 0)
+    if (lua_getinfo(L, level, STR_0->c_str(), &ar) && ar.currentline > 0)
     {
-        lua_pushfstring(L, "%s:%d: ", ar.short_src, ar.currentline);
+        #define STR_0 /*%s:%d: */ scrypt("\xdb\x8d\xc6\xdb\x9c\xc6\xe0").c_str()
+        lua_pushfstring(L, STR_0, ar.short_src, ar.currentline);
+        #undef STR_0
         return;
     }
     lua_pushliteral(L, ""); // else, no information available...
@@ -98,7 +122,9 @@ int luaL_checkoption(lua_State* L, int narg, const char* def, const char* const 
     for (i = 0; lst[i]; i++)
         if (strcmp(lst[i], name) == 0)
             return i;
-    const char* msg = lua_pushfstring(L, "invalid option '%s'", name);
+    #define STR_0 /*invalid option '%s'*/ scrypt("\x97\x92\x8a\x9f\x94\x97\x9c\xe0\x91\x90\x8c\x97\x91\x92\xe0\xd9\xdb\x8d\xd9").c_str()
+    const char* msg = lua_pushfstring(L, STR_0, name);
+    #undef STR_0
     luaL_argerrorL(L, narg, msg);
 }
 
@@ -142,8 +168,11 @@ void* luaL_checkbuffer(lua_State* L, int narg, size_t* len)
 
 void luaL_checkstack(lua_State* L, int space, const char* mes)
 {
-    if (!lua_checkstack(L, space))
-        luaL_error(L, "stack overflow (%s)", mes);
+    if (!lua_checkstack(L, space)) {
+        #define STR_0 /*stack overflow (%s)*/ scrypt("\x8d\x8c\x9f\x9d\x95\xe0\x91\x8a\x9b\x8e\x9a\x94\x91\x89\xe0\xd8\xdb\x8d\xd7").c_str()
+        luaL_error(L, STR_0, mes);
+        #undef STR_0
+    }
 }
 
 void luaL_checktype(lua_State* L, int narg, int t)
@@ -154,8 +183,11 @@ void luaL_checktype(lua_State* L, int narg, int t)
 
 void luaL_checkany(lua_State* L, int narg)
 {
-    if (lua_type(L, narg) == LUA_TNONE)
-        luaL_error(L, "missing argument #%d", narg);
+    if (lua_type(L, narg) == LUA_TNONE) {
+        #define STR_0 /*missing argument #%d*/ scrypt("\x93\x97\x8d\x8d\x97\x92\x99\xe0\x9f\x8e\x99\x8b\x93\x9b\x92\x8c\xe0\xdd\xdb\x9c").c_str()
+        luaL_error(L, STR_0, narg);
+        #undef STR_0
+    }
 }
 
 const char* luaL_checklstring(lua_State* L, int narg, size_t* len)
@@ -289,16 +321,20 @@ void luaL_register(lua_State* L, const char* libname, const luaL_Reg* l)
 {
     if (libname)
     {
+        /*_LOADED*/ scrypt_def(STR_0, "\xa1\xb4\xb1\xbf\xbc\xbb\xbc");
         int size = libsize(l);
         // check whether lib already exists
-        luaL_findtable(L, LUA_REGISTRYINDEX, "_LOADED", 1);
+        luaL_findtable(L, LUA_REGISTRYINDEX, STR_0->c_str(), 1);
         lua_getfield(L, -1, libname); // get _LOADED[libname]
         if (!lua_istable(L, -1))
         {                  // not found?
             lua_pop(L, 1); // remove previous result
             // try global variable (and create one if it does not exist)
-            if (luaL_findtable(L, LUA_GLOBALSINDEX, libname, size) != NULL)
-                luaL_error(L, "name conflict for module '%s'", libname);
+            if (luaL_findtable(L, LUA_GLOBALSINDEX, libname, size) != NULL) {
+                #define STR_1 /*name conflict for module '%s'*/ scrypt("\x92\x9f\x93\x9b\xe0\x9d\x91\x92\x9a\x94\x97\x9d\x8c\xe0\x9a\x91\x8e\xe0\x93\x91\x9c\x8b\x94\x9b\xe0\xd9\xdb\x8d\xd9").c_str()
+                luaL_error(L, STR_1, libname);
+                #undef STR_1
+            }
             lua_pushvalue(L, -1);
             lua_setfield(L, -3, libname); // _LOADED[libname] = new table
         }
@@ -343,8 +379,9 @@ const char* luaL_findtable(lua_State* L, int idx, const char* fname, int szhint)
 
 const char* luaL_typename(lua_State* L, int idx)
 {
+    /*no value*/ scrypt_def(STR_0, "\x92\x91\xe0\x8a\x9f\x94\x8b\x9b");
     const TValue* obj = luaA_toobject(L, idx);
-    return obj ? luaT_objtypename(L, obj) : "no value";
+    return obj ? luaT_objtypename(L, obj) : STR_0->c_str();
 }
 
 /*
@@ -358,8 +395,11 @@ static size_t getnextbuffersize(lua_State* L, size_t currentsize, size_t desired
     size_t newsize = currentsize + currentsize / 2;
 
     // check for size overflow
-    if (SIZE_MAX - desiredsize < currentsize)
-        luaL_error(L, "buffer too large");
+    if (SIZE_MAX - desiredsize < currentsize) {
+        #define STR_0 /*buffer too large*/ scrypt("\x9e\x8b\x9a\x9a\x9b\x8e\xe0\x8c\x91\x91\xe0\x94\x9f\x8e\x99\x9b").c_str()
+        luaL_error(L, STR_0);
+        #undef STR_0
+    }
 
     // growth factor might not be enough to satisfy the desired size
     if (newsize < desiredsize)
@@ -459,14 +499,20 @@ void luaL_addvalueany(luaL_Strbuf* B, int idx)
         LUAU_ASSERT(!"expected value");
         break;
     }
-    case LUA_TNIL:
-        luaL_addstring(B, "nil");
+    case LUA_TNIL: {
+        /*nil*/ scrypt_def(STR_0, "\x92\x97\x94");
+        luaL_addstring(B, STR_0->c_str());
         break;
+    }
     case LUA_TBOOLEAN:
-        if (lua_toboolean(L, idx))
-            luaL_addstring(B, "true");
-        else
-            luaL_addstring(B, "false");
+        if (lua_toboolean(L, idx)) {
+            /*true*/ scrypt_def(STR_1, "\x8c\x8e\x8b\x9b");
+            luaL_addstring(B, STR_1->c_str());
+        }
+        else {
+            /*false*/ scrypt_def(STR_2, "\x9a\x9f\x94\x8d\x9b");
+            luaL_addstring(B, STR_2->c_str());
+        }
         break;
     case LUA_TNUMBER:
     {
@@ -529,22 +575,32 @@ void luaL_pushresultsize(luaL_Strbuf* B, size_t size)
 
 const char* luaL_tolstring(lua_State* L, int idx, size_t* len)
 {
-    if (luaL_callmeta(L, idx, "__tostring")) // is there a metafield?
+    /*__tostring*/ scrypt_def(STR_0, "\xa1\xa1\x8c\x91\x8d\x8c\x8e\x97\x92\x99");
+
+    if (luaL_callmeta(L, idx, STR_0->c_str())) // is there a metafield?
     {
         const char* s = lua_tolstring(L, -1, len);
-        if (!s)
-            luaL_error(L, "'__tostring' must return a string");
+        if (!s) {
+            #define STR_1 /*'__tostring' must return a string*/ scrypt("\xd9\xa1\xa1\x8c\x91\x8d\x8c\x8e\x97\x92\x99\xd9\xe0\x93\x8b\x8d\x8c\xe0\x8e\x9b\x8c\x8b\x8e\x92\xe0\x9f\xe0\x8d\x8c\x8e\x97\x92\x99").c_str()
+            luaL_error(L, STR_1);
+            #undef STR_1
+        }
         return s;
     }
 
     switch (lua_type(L, idx))
     {
-    case LUA_TNIL:
-        lua_pushliteral(L, "nil");
+    case LUA_TNIL: {
+        /*nil*/ scrypt_def(STR_2, "\x92\x97\x94");
+        lua_pushlstring(L, STR_2->c_str(), 3);
         break;
-    case LUA_TBOOLEAN:
-        lua_pushstring(L, (lua_toboolean(L, idx) ? "true" : "false"));
+    }
+    case LUA_TBOOLEAN: {
+        /*true*/ scrypt_def(STR_3, "\x8c\x8e\x8b\x9b");
+        /*false*/ scrypt_def(STR_4, "\x9a\x9f\x94\x8d\x9b");
+        lua_pushstring(L, (lua_toboolean(L, idx) ? STR_3->c_str() : STR_4->c_str()));
         break;
+    }
     case LUA_TNUMBER:
     {
         double n = lua_tonumber(L, idx);
@@ -576,9 +632,10 @@ const char* luaL_tolstring(lua_State* L, int idx, size_t* len)
         break;
     default:
     {
+        /*%s: 0x%016llx*/ scrypt_def(STR_5, "\xdb\x8d\xc6\xe0\xd0\x88\xdb\xd0\xcf\xca\x94\x94\x88");
         const void* ptr = lua_topointer(L, idx);
         unsigned long long enc = lua_encodepointer(L, uintptr_t(ptr));
-        lua_pushfstring(L, "%s: 0x%016llx", luaL_typename(L, idx), enc);
+        lua_pushfstring(L, STR_5->c_str(), luaL_typename(L, idx), enc);
         break;
     }
     }

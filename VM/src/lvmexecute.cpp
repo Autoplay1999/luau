@@ -194,6 +194,8 @@ inline bool luau_skipstep(uint8_t op)
 template<bool SingleStep>
 static void luau_execute(lua_State* L)
 {
+    #define STR_0 /*iterate over*/ scrypt("\x97\x8c\x9b\x8e\x9f\x8c\x9b\xe0\x91\x8a\x9b\x8e").c_str()
+
 #if VM_USE_CGOTO
     static const void* kDispatchTable[256] = {VM_DISPATCH_TABLE()};
 #endif
@@ -2292,7 +2294,9 @@ reentry:
                         if (ttisnil(ra))
                         {
                             VM_PROTECT_PC(); // next call always errors
-                            luaG_typeerror(L, ra, "call");
+                            #define STR_1 /*call*/ scrypt("\x9d\x9f\x94\x94").c_str()
+                            luaG_typeerror(L, ra, STR_1);
+                            #undef STR_1
                         }
                     }
                     else if (fasttm(L, mt, TM_CALL))
@@ -2310,7 +2314,7 @@ reentry:
                     else
                     {
                         VM_PROTECT_PC(); // next call always errors
-                        luaG_typeerror(L, ra, "iterate over");
+                        luaG_typeerror(L, ra, STR_0);
                     }
                 }
 
@@ -2434,7 +2438,7 @@ reentry:
                 else if (!ttisfunction(ra))
                 {
                     VM_PROTECT_PC(); // next call always errors
-                    luaG_typeerror(L, ra, "iterate over");
+                    luaG_typeerror(L, ra, STR_0);
                 }
 
                 pc += LUAU_INSN_D(insn);
@@ -2457,7 +2461,7 @@ reentry:
                 else if (!ttisfunction(ra))
                 {
                     VM_PROTECT_PC(); // next call always errors
-                    luaG_typeerror(L, ra, "iterate over");
+                    luaG_typeerror(L, ra, STR_0);
                 }
 
                 pc += LUAU_INSN_D(insn);
