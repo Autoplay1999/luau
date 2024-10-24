@@ -31,7 +31,7 @@
     "buffer",
 };*/
 
-static const char* const luaT_typenames(int i) {
+const char* const luaT_typenames(int i) {
 #define STR_0 /*nil*/ scrypt("\x92\x97\x94")
 #define STR_1 /*boolean*/ scrypt("\x9e\x91\x91\x94\x9b\x9f\x92")
 #define STR_2 /*userdata*/ scrypt("\x8b\x8d\x9b\x8e\x9c\x9f\x8c\x9f")
@@ -107,7 +107,7 @@ static const char* const luaT_typenames(int i) {
     "__metatable",
 };*/
 
-static const char* const luaT_eventname(int i) {
+const char* const luaT_eventname(int i) {
 #define STR_0 /*__index*/ scrypt("\xa1\xa1\x97\x92\x9c\x9b\x88")
 #define STR_1 /*__newindex*/ scrypt("\xa1\xa1\x92\x9b\x89\x97\x92\x9c\x9b\x88")
 #define STR_2 /*__mode*/ scrypt("\xa1\xa1\x93\x91\x9c\x9b")
