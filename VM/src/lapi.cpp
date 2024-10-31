@@ -584,16 +584,8 @@ const void* lua_topointer(lua_State* L, int idx)
 
 void* lua_topointer2(lua_State* L, int idx)
 {
-    TValue n;
-    const TValue* o = index2addr(L, idx);
-    if (tonumber(o, &n))
-    {
-        return (void*)&o->value.n;
-    }
-    else
-    {
-        return 0;
-    }
+    StkId o = index2addr(L, idx);
+    return o->value.p;
 }
 
 /*
