@@ -159,13 +159,17 @@ static int vector_sign(lua_State* L)
 
 static int vector_clamp(lua_State* L)
 {
+    /*max.x must be greater than or equal to min.x*/ scrypt_def(STR_0, "\x93\x9f\x88\xd2\x88\xe0\x93\x8b\x8d\x8c\xe0\x9e\x9b\xe0\x99\x8e\x9b\x9f\x8c\x9b\x8e\xe0\x8c\x98\x9f\x92\xe0\x91\x8e\xe0\x9b\x8f\x8b\x9f\x94\xe0\x8c\x91\xe0\x93\x97\x92\xd2\x88");
+    /*max.y must be greater than or equal to min.y*/ scrypt_def(STR_1, "\x93\x9f\x88\xd2\x87\xe0\x93\x8b\x8d\x8c\xe0\x9e\x9b\xe0\x99\x8e\x9b\x9f\x8c\x9b\x8e\xe0\x8c\x98\x9f\x92\xe0\x91\x8e\xe0\x9b\x8f\x8b\x9f\x94\xe0\x8c\x91\xe0\x93\x97\x92\xd2\x87");
+    /*max.z must be greater than or equal to min.z*/ scrypt_def(STR_2, "\x93\x9f\x88\xd2\x86\xe0\x93\x8b\x8d\x8c\xe0\x9e\x9b\xe0\x99\x8e\x9b\x9f\x8c\x9b\x8e\xe0\x8c\x98\x9f\x92\xe0\x91\x8e\xe0\x9b\x8f\x8b\x9f\x94\xe0\x8c\x91\xe0\x93\x97\x92\xd2\x86");
+
     const float* v = luaL_checkvector(L, 1);
     const float* min = luaL_checkvector(L, 2);
     const float* max = luaL_checkvector(L, 3);
 
-    luaL_argcheck(L, min[0] <= max[0], 3, "max.x must be greater than or equal to min.x");
-    luaL_argcheck(L, min[1] <= max[1], 3, "max.y must be greater than or equal to min.y");
-    luaL_argcheck(L, min[2] <= max[2], 3, "max.z must be greater than or equal to min.z");
+    luaL_argcheck(L, min[0] <= max[0], 3, STR_0->c_str());
+    luaL_argcheck(L, min[1] <= max[1], 3, STR_1->c_str());
+    luaL_argcheck(L, min[2] <= max[2], 3, STR_2->c_str());
 
 #if LUA_VECTOR_SIZE == 4
     lua_pushvector(
@@ -254,37 +258,53 @@ static int vector_max(lua_State* L)
     return 1;
 }
 
-static const luaL_Reg vectorlib[] = {
-    {"create", vector_create},
-    {"magnitude", vector_magnitude},
-    {"normalize", vector_normalize},
-    {"cross", vector_cross},
-    {"dot", vector_dot},
-    {"angle", vector_angle},
-    {"floor", vector_floor},
-    {"ceil", vector_ceil},
-    {"abs", vector_abs},
-    {"sign", vector_sign},
-    {"clamp", vector_clamp},
-    {"max", vector_max},
-    {"min", vector_min},
-    {NULL, NULL},
-};
-
 int luaopen_vector(lua_State* L)
 {
+    std::string STR_0 = /*create*/ scrypt("\x9d\x8e\x9b\x9f\x8c\x9b");
+    std::string STR_1 = /*magnitude*/ scrypt("\x93\x9f\x99\x92\x97\x8c\x8b\x9c\x9b");
+    std::string STR_2 = /*normalize*/ scrypt("\x92\x91\x8e\x93\x9f\x94\x97\x86\x9b");
+    std::string STR_3 = /*cross*/ scrypt("\x9d\x8e\x91\x8d\x8d");
+    std::string STR_4 = /*dot*/ scrypt("\x9c\x91\x8c");
+    std::string STR_5 = /*angle*/ scrypt("\x9f\x92\x99\x94\x9b");
+    std::string STR_6 = /*floor*/ scrypt("\x9a\x94\x91\x91\x8e");
+    std::string STR_7 = /*ceil*/ scrypt("\x9d\x9b\x97\x94");
+    std::string STR_8 = /*abs*/ scrypt("\x9f\x9e\x8d");
+    std::string STR_9 = /*sign*/ scrypt("\x8d\x97\x99\x92");
+    std::string STR_10 = /*clamp*/ scrypt("\x9d\x94\x9f\x93\x90");
+    std::string STR_11 = /*max*/ scrypt("\x93\x9f\x88");
+    std::string STR_12 = /*min*/ scrypt("\x93\x97\x92");
+    std::string STR_13 = /*zero*/ scrypt("\x86\x9b\x8e\x91");
+    std::string STR_14 = /*one*/ scrypt("\x91\x92\x9b");
+
+    luaL_Reg vectorlib[] = {
+        {STR_0.c_str(), vector_create},
+        {STR_1.c_str(), vector_magnitude},
+        {STR_2.c_str(), vector_normalize},
+        {STR_3.c_str(), vector_cross},
+        {STR_4.c_str(), vector_dot},
+        {STR_5.c_str(), vector_angle},
+        {STR_6.c_str(), vector_floor},
+        {STR_7.c_str(), vector_ceil},
+        {STR_8.c_str(), vector_abs},
+        {STR_9.c_str(), vector_sign},
+        {STR_10.c_str(), vector_clamp},
+        {STR_11.c_str(), vector_max},
+        {STR_12.c_str(), vector_min},
+        {NULL, NULL},
+    };
+
     luaL_register(L, LUA_VECLIBNAME, vectorlib);
 
 #if LUA_VECTOR_SIZE == 4
     lua_pushvector(L, 0.0f, 0.0f, 0.0f, 0.0f);
-    lua_setfield(L, -2, "zero");
+    lua_setfield(L, -2, STR_13.c_str());
     lua_pushvector(L, 1.0f, 1.0f, 1.0f, 1.0f);
-    lua_setfield(L, -2, "one");
+    lua_setfield(L, -2, STR_14.c_str());
 #else
     lua_pushvector(L, 0.0f, 0.0f, 0.0f);
-    lua_setfield(L, -2, "zero");
+    lua_setfield(L, -2, STR_13.c_str());
     lua_pushvector(L, 1.0f, 1.0f, 1.0f);
-    lua_setfield(L, -2, "one");
+    lua_setfield(L, -2, STR_14.c_str());
 #endif
 
     return 1;
