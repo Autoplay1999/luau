@@ -127,9 +127,7 @@ static int buffer_readfp(lua_State* L)
     T val;
 
 #if defined(LUAU_BIG_ENDIAN)
-    #define STR_1 /*type size must match to reinterpret data*/ scrypt("\x8c\x87\x90\x9b\xe0\x8d\x97\x86\x9b\xe0\x93\x8b\x8d\x8c\xe0\x93\x9f\x8c\x9d\x98\xe0\x8c\x91\xe0\x8e\x9b\x97\x92\x8c\x9b\x8e\x90\x8e\x9b\x8c\xe0\x9c\x9f\x8c\x9f").c_str()
-    static_assert(sizeof(T) == sizeof(StorageType), STR_1);
-    #undef STR_1
+    static_assert(sizeof(T) == sizeof(StorageType), "type size must match to reinterpret data");
     StorageType tmp;
     memcpy(&tmp, (char*)buf + offset, sizeof(tmp));
     tmp = buffer_swapbe(tmp);
@@ -283,6 +281,95 @@ static int buffer_fill(lua_State* L)
 #undef STR_0
 }
 
+#define STR_0 /*buffer access out of bounds*/ scrypt("\x9e\x8b\x9a\x9a\x9b\x8e\xe0\x9f\x9d\x9d\x9b\x8d\x8d\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x9e\x91\x8b\x92\x9c\x8d").c_str()
+#define STR_1 /*bit count is out of range of [0; 32]*/ scrypt("\x9e\x97\x8c\xe0\x9d\x91\x8b\x92\x8c\xe0\x97\x8d\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x8e\x9f\x92\x99\x9b\xe0\x91\x9a\xe0\xa5\xd0\xc5\xe0\xcd\xce\xa3").c_str() 
+#define STR_2 /*buffer access out of bounds*/ scrypt("\x9e\x8b\x9a\x9a\x9b\x8e\xe0\x9f\x9d\x9d\x9b\x8d\x8d\xe0\x91\x8b\x8c\xe0\x91\x9a\xe0\x9e\x91\x8b\x92\x9c\x8d").c_str() 
+
+static int buffer_readbits(lua_State* L)
+{
+    size_t len = 0;
+    void* buf = luaL_checkbuffer(L, 1, &len);
+    int64_t bitoffset = (int64_t)luaL_checknumber(L, 2);
+    int bitcount = luaL_checkinteger(L, 3);
+
+    if (bitoffset < 0)
+        luaL_error(L, STR_0);
+
+    if (unsigned(bitcount) > 32)
+        luaL_error(L, STR_1);
+
+    if (uint64_t(bitoffset + bitcount) > uint64_t(len) * 8)
+        luaL_error(L, STR_2);
+
+    unsigned startbyte = unsigned(bitoffset / 8);
+    unsigned endbyte = unsigned((bitoffset + bitcount + 7) / 8);
+
+    uint64_t data = 0;
+
+#if defined(LUAU_BIG_ENDIAN)
+    for (int i = int(endbyte) - 1; i >= int(startbyte); i--)
+        data = (data << 8) + uint8_t(((char*)buf)[i]);
+#else
+    memcpy(&data, (char*)buf + startbyte, endbyte - startbyte);
+#endif
+
+    uint64_t subbyteoffset = bitoffset & 0x7;
+    uint64_t mask = (1ull << bitcount) - 1;
+
+    lua_pushunsigned(L, unsigned((data >> subbyteoffset) & mask));
+    return 1;
+}
+
+static int buffer_writebits(lua_State* L)
+{
+    size_t len = 0;
+    void* buf = luaL_checkbuffer(L, 1, &len);
+    int64_t bitoffset = (int64_t)luaL_checknumber(L, 2);
+    int bitcount = luaL_checkinteger(L, 3);
+    unsigned value = luaL_checkunsigned(L, 4);
+
+    if (bitoffset < 0)
+        luaL_error(L, STR_0);
+
+    if (unsigned(bitcount) > 32)
+        luaL_error(L, STR_1);
+
+    if (uint64_t(bitoffset + bitcount) > uint64_t(len) * 8)
+        luaL_error(L, STR_2);
+
+    unsigned startbyte = unsigned(bitoffset / 8);
+    unsigned endbyte = unsigned((bitoffset + bitcount + 7) / 8);
+
+    uint64_t data = 0;
+
+#if defined(LUAU_BIG_ENDIAN)
+    for (int i = int(endbyte) - 1; i >= int(startbyte); i--)
+        data = data * 256 + uint8_t(((char*)buf)[i]);
+#else
+    memcpy(&data, (char*)buf + startbyte, endbyte - startbyte);
+#endif
+
+    uint64_t subbyteoffset = bitoffset & 0x7;
+    uint64_t mask = ((1ull << bitcount) - 1) << subbyteoffset;
+
+    data = (data & ~mask) | ((uint64_t(value) << subbyteoffset) & mask);
+
+#if defined(LUAU_BIG_ENDIAN)
+    for (int i = int(startbyte); i < int(endbyte); i++)
+    {
+        ((char*)buf)[i] = data & 0xff;
+        data >>= 8;
+    }
+#else
+    memcpy((char*)buf + startbyte, &data, endbyte - startbyte);
+#endif
+    return 0;
+}
+
+#undef STR_2
+#undef STR_1
+#undef STR_0
+
 int luaopen_buffer(lua_State* L)
 {
     std::string STR_0  = /*create*/ scrypt("\x9d\x8e\x9b\x9f\x8c\x9b");
@@ -310,6 +397,8 @@ int luaopen_buffer(lua_State* L)
     std::string STR_22 = /*copy*/ scrypt("\x9d\x91\x90\x87");
     std::string STR_23 = /*fill*/ scrypt("\x9a\x97\x94\x94");
     std::string STR_24 = /*buffer*/ scrypt("\x9e\x8b\x9a\x9a\x9b\x8e");
+    std::string STR_25 = /*readbits*/ scrypt("\x8e\x9b\x9f\x9c\x9e\x97\x8c\x8d");
+    std::string STR_26 = /*writebits*/ scrypt("\x89\x8e\x97\x8c\x9b\x9e\x97\x8c\x8d");
 
     const luaL_Reg bufferlib[] = {
         {STR_0.c_str(), buffer_create},
@@ -336,6 +425,8 @@ int luaopen_buffer(lua_State* L)
         {STR_21.c_str(), buffer_len},
         {STR_22.c_str(), buffer_copy},
         {STR_23.c_str(), buffer_fill},
+        {STR_25.c_str(), buffer_readbits},
+        {STR_26.c_str(), buffer_writebits},
         {NULL, NULL},
     };
 

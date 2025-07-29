@@ -11,25 +11,6 @@
 #include <string.h>
 
 // clang-format off
-/*const char* const luaT_typenames[] = {
-    // ORDER TYPE
-    "nil",
-    "boolean",
-
-    
-    "userdata",
-    "number",
-    "vector",
-
-    "string",
-
-    
-    "table",
-    "function",
-    "userdata",
-    "thread",
-    "buffer",
-};*/
 
 const char* const luaT_typenames(int i) {
 #define STR_0 /*nil*/ scrypt("\x92\x97\x94")
@@ -75,37 +56,6 @@ const char* const luaT_typenames(int i) {
 #undef STR_9
 #undef STR_10
 }
-
-/*const char* const luaT_eventname[] = {
-    // ORDER TM
-    
-    "__index",
-    "__newindex",
-    "__mode",
-    "__namecall",
-    "__call",
-    "__iter",
-    "__len",
-
-    "__eq",
-
-    
-    "__add",
-    "__sub",
-    "__mul",
-    "__div",
-    "__idiv",
-    "__mod",
-    "__pow",
-    "__unm",
-
-    
-    "__lt",
-    "__le",
-    "__concat",
-    "__type",
-    "__metatable",
-};*/
 
 const char* const luaT_eventname(int i) {
 #define STR_0 /*__index*/ scrypt("\xa1\xa1\x97\x92\x9c\x9b\x88")
@@ -206,7 +156,7 @@ void luaT_init(lua_State* L)
 ** function to be used with macro "fasttm": optimized for absence of
 ** tag methods.
 */
-const TValue* luaT_gettm(Table* events, TMS event, TString* ename)
+const TValue* luaT_gettm(LuaTable* events, TMS event, TString* ename)
 {
     const TValue* tm = luaH_getstr(events, ename);
     LUAU_ASSERT(event <= TM_EQ);
@@ -225,7 +175,7 @@ const TValue* luaT_gettmbyobj(lua_State* L, const TValue* o, TMS event)
       NB: Tag-methods were replaced by meta-methods in Lua 5.0, but the
       old names are still around (this function, for example).
     */
-    Table* mt;
+    LuaTable* mt;
     switch (ttype(o))
     {
     case LUA_TTABLE:
@@ -267,7 +217,7 @@ const TString* luaT_objtypenamestr(lua_State* L, const TValue* o)
     }
 
     // For all types except userdata and table, a global metatable can be set with a global name override
-    if (Table* mt = L->global->mt[ttype(o)])
+    if (LuaTable* mt = L->global->mt[ttype(o)])
     {
         const TValue* type = luaH_getstr(mt, L->global->tmname[TM_TYPE]);
 

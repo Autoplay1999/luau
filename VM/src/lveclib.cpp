@@ -8,13 +8,15 @@
 
 static int vector_create(lua_State* L)
 {
+    // checking argument count to avoid accepting 'nil' as a valid value
+    int count = lua_gettop(L);
+
     double x = luaL_checknumber(L, 1);
     double y = luaL_checknumber(L, 2);
-    double z = luaL_checknumber(L, 3);
+    double z = count >= 3 ? luaL_checknumber(L, 3) : 0.0;
 
 #if LUA_VECTOR_SIZE == 4
-    // checking argument count to avoid accepting 'nil' as a valid value
-    double w = lua_gettop(L) >= 4 ? luaL_checknumber(L, 4) : 0.0;
+    double w = count >= 4 ? luaL_checknumber(L, 4) : 0.0;
 
     lua_pushvector(L, float(x), float(y), float(z), float(w));
 #else
@@ -258,6 +260,58 @@ static int vector_max(lua_State* L)
     return 1;
 }
 
+static int vector_index(lua_State* L)
+{
+    const float* v = luaL_checkvector(L, 1);
+    size_t namelen = 0;
+    const char* name = luaL_checklstring(L, 2, &namelen);
+
+    // field access implementation mirrors the fast-path we have in the VM
+    if (namelen == 1)
+    {
+        int ic = (name[0] | ' ') - 'x';
+
+#if LUA_VECTOR_SIZE == 4
+        // 'w' is before 'x' in ascii, so ic is -1 when indexing with 'w'
+        if (ic == -1)
+            ic = 3;
+#endif
+
+        if (unsigned(ic) < LUA_VECTOR_SIZE)
+        {
+            lua_pushnumber(L, v[ic]);
+            return 1;
+        }
+    }
+
+    #define STR_0 /*attempt to index vector with '%s'*/ scrypt("\x9f\x8c\x8c\x9b\x93\x90\x8c\xe0\x8c\x91\xe0\x97\x92\x9c\x9b\x88\xe0\x8a\x9b\x9d\x8c\x91\x8e\xe0\x89\x97\x8c\x98\xe0\xd9\xdb\x8d\xd9").c_str() 
+    luaL_error(L, STR_0, name);
+    #undef STR_0
+}
+
+static void createmetatable(lua_State* L)
+{
+    /*__index*/ scrypt_def(STR_0, "\xa1\xa1\x97\x92\x9c\x9b\x88");
+    lua_createtable(L, 0, 1); // create metatable for vectors
+
+    // push dummy vector
+#if LUA_VECTOR_SIZE == 4
+    lua_pushvector(L, 0.0f, 0.0f, 0.0f, 0.0f);
+#else
+    lua_pushvector(L, 0.0f, 0.0f, 0.0f);
+#endif
+
+    lua_pushvalue(L, -2);
+    lua_setmetatable(L, -2); // set vector metatable
+    lua_pop(L, 1);           // pop dummy vector
+
+    lua_pushcfunction(L, vector_index, nullptr);
+    lua_setfield(L, -2, STR_0->c_str());
+
+    lua_setreadonly(L, -1, true);
+    lua_pop(L, 1); // pop the metatable
+}
+
 int luaopen_vector(lua_State* L)
 {
     std::string STR_0 = /*create*/ scrypt("\x9d\x8e\x9b\x9f\x8c\x9b");
@@ -306,6 +360,8 @@ int luaopen_vector(lua_State* L)
     lua_pushvector(L, 1.0f, 1.0f, 1.0f);
     lua_setfield(L, -2, STR_14.c_str());
 #endif
+
+    createmetatable(L);
 
     return 1;
 }

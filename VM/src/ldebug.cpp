@@ -112,10 +112,13 @@ static Closure* auxgetinfo(lua_State* L, const char* what, lua_Debug* ar, Closur
         {
             if (f->isC)
             {
-                ar->source = "=[C]";
-                ar->what = "C";
+                /*=[C]*/ scrypt_def(STR_0, "\xc3\xa5\xbd\xa3");
+                /*C*/ scrypt_def(STR_1, "\xbd");
+                /*[C]*/ scrypt_def(STR_2, "\xa5\xbd\xa3");
+                ar->source = STR_0->c_str();
+                ar->what = STR_1->c_str();
                 ar->linedefined = -1;
-                ar->short_src = "[C]";
+                ar->short_src = STR_2->c_str();
             }
             else
             {
@@ -289,10 +292,13 @@ l_noret luaG_aritherror(lua_State* L, const TValue* p1, const TValue* p2, TMS op
 l_noret luaG_ordererror(lua_State* L, const TValue* p1, const TValue* p2, TMS op)
 {
     /*attempt to compare %s %s %s*/ scrypt_def(STR_0, "\x9f\x8c\x8c\x9b\x93\x90\x8c\xe0\x8c\x91\xe0\x9d\x91\x93\x90\x9f\x8e\x9b\xe0\xdb\x8d\xe0\xdb\x8d\xe0\xdb\x8d");
+    /*<*/ scrypt_def(STR_1, "\xc4");
+    /*<=*/ scrypt_def(STR_2, "\xc4\xc3");
+    /*==*/ scrypt_def(STR_3, "\xc3\xc3"); 
 
     const char* t1 = luaT_objtypename(L, p1);
     const char* t2 = luaT_objtypename(L, p2);
-    const char* opname = (op == TM_LT) ? "<" : (op == TM_LE) ? "<=" : "==";
+    const char* opname = (op == TM_LT) ? STR_1->c_str() : (op == TM_LE) ? STR_2->c_str() : STR_3->c_str();
 
     luaG_runerror(L, STR_0->c_str(), t1, opname, t2);
 }
@@ -449,6 +455,20 @@ int luaG_isnative(lua_State* L, int level)
     return (ci->flags & LUA_CALLINFO_NATIVE) != 0 ? 1 : 0;
 }
 
+int luaG_hasnative(lua_State* L, int level)
+{
+    if (unsigned(level) >= unsigned(L->ci - L->base_ci))
+        return 0;
+
+    CallInfo* ci = L->ci - level;
+
+    Proto* proto = getluaproto(ci);
+    if (proto == nullptr)
+        return 0;
+
+    return (proto->execdata != nullptr);
+}
+
 void lua_singlestep(lua_State* L, int enabled)
 {
     L->singlestep = bool(enabled);
@@ -589,7 +609,8 @@ const char* lua_debugtrace(lua_State* L)
     size_t offset = 0;
 
     lua_Debug ar;
-    for (int level = 0; lua_getinfo(L, level, "sln", &ar); ++level)
+    /*sln*/ scrypt_def(STR_3, "\x8d\x94\x92");
+    for (int level = 0; lua_getinfo(L, level, STR_3->c_str(), &ar); ++level)
     {
         if (ar.source)
             offset = append(buf, sizeof(buf), offset, ar.short_src);

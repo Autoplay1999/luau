@@ -201,12 +201,14 @@ static char* printspecial(char* buf, int sign, uint64_t fraction)
 {
     if (fraction == 0)
     {
-        memcpy(buf, ("-inf") + (1 - sign), 4);
+        /*-inf*/ scrypt_def(STR_0, "\xd3\x97\x92\x9a"); 
+        memcpy(buf, STR_0->c_str() + (1 - sign), 4);
         return buf + 3 + sign;
     }
     else
     {
-        memcpy(buf, "nan", 4);
+        /*nan*/ scrypt_def(STR_1, "\x92\x9f\x92"); 
+        memcpy(buf, STR_1->c_str(), 4);
         return buf + 3;
     }
 }

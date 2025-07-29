@@ -3,7 +3,7 @@
 
 #include "CodeGenLower.h"
 
-#include "Luau/Common.h"
+#include "Luau/CodeGenCommon.h"
 #include "Luau/CodeAllocator.h"
 #include "Luau/CodeBlockUnwind.h"
 #include "Luau/IrBuilder.h"
@@ -166,7 +166,7 @@ bool isSupported()
     if (sizeof(LuaNode) != 32)
         return false;
 
-        // Windows CRT uses stack unwinding in longjmp so we have to use unwind data; on other platforms, it's only necessary for C++ EH.
+    // Windows CRT uses stack unwinding in longjmp so we have to use unwind data; on other platforms, it's only necessary for C++ EH.
 #if defined(_WIN32)
     if (!isUnwindSupported())
         return false;

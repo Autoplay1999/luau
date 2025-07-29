@@ -24,6 +24,11 @@ struct InstanceCollector2 : TypeOnceVisitor
     DenseHashSet<TypeId> cyclicInstance{nullptr};
     DenseHashSet<TypeId> instanceArguments{nullptr};
 
+    InstanceCollector2()
+        : TypeOnceVisitor("InstanceCollector2")
+    {
+    }
+
     bool visit(TypeId ty, const TypeFunctionInstanceType& it) override
     {
         // TypeOnceVisitor performs a depth-first traversal in the absence of
@@ -46,7 +51,7 @@ struct InstanceCollector2 : TypeOnceVisitor
             cyclicInstance.insert(t);
     }
 
-    bool visit(TypeId ty, const ClassType&) override
+    bool visit(TypeId ty, const ExternType&) override
     {
         return false;
     }
@@ -125,7 +130,7 @@ std::optional<TypePackId> TypeFunctionReductionGuesser::guess(TypePackId tp)
         guessedHead.push_back(*guessedType);
     }
 
-    return arena->addTypePack(TypePack{guessedHead, tail});
+    return arena->addTypePack(TypePack{std::move(guessedHead), tail});
 }
 
 TypeFunctionReductionGuessResult TypeFunctionReductionGuesser::guessTypeFunctionReductionForFunctionExpr(
@@ -182,7 +187,7 @@ TypeFunctionReductionGuessResult TypeFunctionReductionGuesser::guessTypeFunction
     functionReducesTo.clear();
     substitutable.clear();
 
-    return TypeFunctionReductionGuessResult{results, recommendedAnnotation};
+    return TypeFunctionReductionGuessResult{std::move(results), recommendedAnnotation};
 }
 
 std::optional<TypeId> TypeFunctionReductionGuesser::guessType(TypeId arg)

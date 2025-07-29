@@ -14,6 +14,8 @@
 #include <string.h>
 #include <stdio.h>
 
+LUAU_FASTFLAGVARIABLE(LuauHeapDumpStringSizeOverhead)
+
 static void validateobjref(global_State* g, GCObject* f, GCObject* t)
 {
     LUAU_ASSERT(!isdead(g, t));
@@ -34,7 +36,7 @@ static void validateref(global_State* g, GCObject* f, TValue* v)
     }
 }
 
-static void validatetable(global_State* g, Table* h)
+static void validatetable(global_State* g, LuaTable* h)
 {
     int sizenode = 1 << h->lsizenode;
 
@@ -296,9 +298,9 @@ static void dumpstring(FILE* f, TString* ts)
     #undef STR_1
 }
 
-static void dumptable(FILE* f, Table* h)
-{   
-    size_t size = sizeof(Table) + (h->node == &luaH_dummynode ? 0 : sizenode(h) * sizeof(LuaNode)) + h->sizearray * sizeof(TValue);
+static void dumptable(FILE* f, LuaTable* h)
+{
+    size_t size = sizeof(LuaTable) + (h->node == &luaH_dummynode ? 0 : sizenode(h) * sizeof(LuaNode)) + h->sizearray * sizeof(TValue);
 
     #define STR_0 /*{"type":"table","cat":%d,"size":%d*/ scrypt("\x85\xde\x8c\x87\x90\x9b\xde\xc6\xde\x8c\x9f\x9e\x94\x9b\xde\xd4\xde\x9d\x9f\x8c\xde\xc6\xdb\x9c\xd4\xde\x8d\x97\x86\x9b\xde\xc6\xdb\x9c").c_str()
     fprintf(f, STR_0, h->memcat, int(size));
@@ -340,7 +342,7 @@ static void dumptable(FILE* f, Table* h)
             }
         }
 
-        fprintf(f, "]");
+        fprintf(f, /*]*/ scrypt("\xa3").c_str());
     }
     if (h->sizearray)
     {
@@ -348,7 +350,7 @@ static void dumptable(FILE* f, Table* h)
         fprintf(f, STR_3);
         #undef STR_3
         dumprefs(f, h->array, h->sizearray);
-        fprintf(f, "]");
+        fprintf(f, /*]*/ scrypt("\xa3").c_str());
     }
     if (h->metatable)
     {
@@ -357,7 +359,7 @@ static void dumptable(FILE* f, Table* h)
         #undef STR_4
         dumpref(f, obj2gco(h->metatable));
     }
-    fprintf(f, "}");
+    fprintf(f, /*}*/ scrypt("\x83").c_str());
 }
 
 static void dumpclosure(FILE* f, Closure* cl)
@@ -388,7 +390,7 @@ static void dumpclosure(FILE* f, Closure* cl)
             fprintf(f, STR_3);
             #undef STR_3
             dumprefs(f, cl->c.upvals, cl->nupvalues);
-            fprintf(f, "]");
+            fprintf(f, /*]*/ scrypt("\xa3").c_str() );
         }
     }
     else
@@ -409,10 +411,10 @@ static void dumpclosure(FILE* f, Closure* cl)
             fprintf(f, STR_6);
             #undef STR_6
             dumprefs(f, cl->l.uprefs, cl->nupvalues);
-            fprintf(f, "]");
+            fprintf(f, /*]*/ scrypt("\xa3").c_str());
         }
     }
-    fprintf(f, "}");
+    fprintf(f, /*}*/ scrypt("\x83").c_str());
 }
 
 
@@ -429,7 +431,7 @@ static void dumpudata(FILE* f, Udata* u)
         #undef STR_1
         dumpref(f, obj2gco(u->metatable));
     }
-    fprintf(f, "}");
+    fprintf(f, /*}*/ scrypt("\x83").c_str());
 }
 
 static void dumpthread(FILE* f, lua_State* th)
@@ -474,7 +476,7 @@ static void dumpthread(FILE* f, lua_State* th)
         fprintf(f, STR_4);
         #undef STR_4
         dumprefs(f, th->stack, th->top - th->stack);
-        fprintf(f, "]");
+        fprintf(f, /*]*/ scrypt("\xa3").c_str());
 
         CallInfo* ci = th->base_ci;
         bool first = true;
@@ -502,7 +504,9 @@ static void dumpthread(FILE* f, lua_State* th)
                 if (cl->isC)
                 {
                     #define STR_6 /*"frame:%s"*/ scrypt("\xde\x9a\x8e\x9f\x93\x9b\xc6\xdb\x8d\xde").c_str()
-                    fprintf(f, STR_6, cl->c.debugname ? cl->c.debugname : "[C]");
+                    #define STR_7 /*[C]*/ scrypt("\xa5\xbd\xa3").c_str() 
+                    fprintf(f, STR_6, cl->c.debugname ? cl->c.debugname : STR_7);
+                    #undef STR_7
                     #undef STR_6
                 }
                 else
@@ -536,9 +540,9 @@ static void dumpthread(FILE* f, lua_State* th)
                 fprintf(f, STR_10);
         }
         #undef STR_10
-        fprintf(f, "]");
+        fprintf(f, /*]*/ scrypt("\xa3").c_str());
     }
-    fprintf(f, "}");
+    fprintf(f, /*}*/ scrypt("\x83").c_str());
 }
 
 static void dumpbuffer(FILE* f, Buffer* b)
@@ -574,7 +578,7 @@ static void dumpproto(FILE* f, Proto* p)
         fprintf(f, STR_3);
         #undef STR_3
         dumprefs(f, p->k, p->sizek);
-        fprintf(f, "]");
+        fprintf(f, /*]*/ scrypt("\xa3").c_str());
     }
 
     if (p->sizep)
@@ -588,10 +592,10 @@ static void dumpproto(FILE* f, Proto* p)
                 fputc(',', f);
             dumpref(f, obj2gco(p->p[i]));
         }
-        fprintf(f, "]");
+        fprintf(f, /*]*/ scrypt("\xa3").c_str());
     }
 
-    fprintf(f, "}");
+    fprintf(f, /*}*/ scrypt("\x83").c_str());
 }
 
 static void dumpupval(FILE* f, UpVal* uv)
@@ -612,7 +616,7 @@ static void dumpupval(FILE* f, UpVal* uv)
         dumpref(f, gcvalue(uv->v));
     }
 
-    fprintf(f, "}");
+    fprintf(f, /*}*/ scrypt("\x83").c_str());
 }
 
 static void dumpobj(FILE* f, GCObject* o)
@@ -674,6 +678,8 @@ void luaC_dump(lua_State* L, void* file, const char* (*categoryName)(lua_State* 
 #define STR_8 /*"%d":{"name":"%s", "size":%d},\n*/ scrypt("\xde\xdb\x9c\xde\xc6\x85\xde\x92\x9f\x93\x9b\xde\xc6\xde\xdb\x8d\xde\xd4\xe0\xde\x8d\x97\x86\x9b\xde\xc6\xdb\x9c\x83\xd4\xf6").c_str()
 #define STR_9 /*"%d":{"size":%d},\n*/ scrypt("\xde\xdb\x9c\xde\xc6\x85\xde\x8d\x97\x86\x9b\xde\xc6\xdb\x9c\x83\xd4\xf6").c_str()
 #define STR_10 /*"none":{}\n*/ scrypt("\xde\x92\x91\x92\x9b\xde\xc6\x85\x83\xf6").c_str()
+#define STR_11 /*}\n*/ scrypt("\x83\xf6").c_str()
+#define STR_12 /*}}\n*/ scrypt("\x83\x83\xf6").c_str()
 
     global_State* g = L->global;
     FILE* f = static_cast<FILE*>(file);
@@ -707,8 +713,8 @@ void luaC_dump(lua_State* L, void* file, const char* (*categoryName)(lua_State* 
         }
     }
     fprintf(f, STR_10); // to avoid issues with trailing ,
-    fprintf(f, "}\n");
-    fprintf(f, "}}\n");
+    fprintf(f, STR_11);
+    fprintf(f, STR_12);
 
 #undef STR_0
 #undef STR_1
@@ -721,6 +727,8 @@ void luaC_dump(lua_State* L, void* file, const char* (*categoryName)(lua_State* 
 #undef STR_8
 #undef STR_9
 #undef STR_10
+#undef STR_11
+#undef STR_12
 }
 
 struct EnumContext
@@ -758,14 +766,16 @@ static void enumedges(EnumContext* ctx, GCObject* from, TValue* data, size_t siz
 
 static void enumstring(EnumContext* ctx, TString* ts)
 {
-    enumnode(ctx, obj2gco(ts), ts->len, NULL);
+    if (FFlag::LuauHeapDumpStringSizeOverhead)
+        enumnode(ctx, obj2gco(ts), sizestring(ts->len), NULL);
+    else
+        enumnode(ctx, obj2gco(ts), ts->len, NULL);
 }
 
-static void enumtable(EnumContext* ctx, Table* h)
+static void enumtable(EnumContext* ctx, LuaTable* h)
 {
     /*registry*/ scrypt_def(STR_0, "\x8e\x9b\x99\x97\x8d\x8c\x8e\x87");
-
-    size_t size = sizeof(Table) + (h->node == &luaH_dummynode ? 0 : sizenode(h) * sizeof(LuaNode)) + h->sizearray * sizeof(TValue);
+    size_t size = sizeof(LuaTable) + (h->node == &luaH_dummynode ? 0 : sizenode(h) * sizeof(LuaNode)) + h->sizearray * sizeof(TValue);
 
     // Provide a name for a special registry table
     enumnode(ctx, obj2gco(h), size, h == hvalue(registry(ctx->L)) ? STR_0->c_str() : NULL);
@@ -843,13 +853,14 @@ static void enumclosure(EnumContext* ctx, Closure* cl)
 
         char buf[LUA_IDSIZE];
 
+        /*unnamed*/ scrypt_def(STR_2, "\x8b\x92\x92\x9f\x93\x9b\x9c"); 
         if (p->source) {
             /*%s:%d %s*/ scrypt_def(STR_0, "\xdb\x8d\xc6\xdb\x9c\xe0\xdb\x8d");
-            snprintf(buf, sizeof(buf), STR_0->c_str(), p->debugname ? getstr(p->debugname) : "", p->linedefined, getstr(p->source));
+            snprintf(buf, sizeof(buf), STR_0->c_str(), p->debugname ? getstr(p->debugname) : STR_2->c_str(), p->linedefined, getstr(p->source));
         }
         else {
             /*%s:%d*/ scrypt_def(STR_1, "\xdb\x8d\xc6\xdb\x9c");
-            snprintf(buf, sizeof(buf), STR_1->c_str(), p->debugname ? getstr(p->debugname) : "", p->linedefined);
+            snprintf(buf, sizeof(buf), STR_1->c_str(), p->debugname ? getstr(p->debugname) : STR_2->c_str(), p->linedefined);
         }
 
         enumnode(ctx, obj2gco(cl), sizeLclosure(cl->nupvalues), buf);
@@ -881,7 +892,7 @@ static void enumudata(EnumContext* ctx, Udata* u)
 {
     const char* name = NULL;
 
-    if (Table* h = u->metatable)
+    if (LuaTable* h = u->metatable)
     {
         if (h->node != &luaH_dummynode)
         {
@@ -927,13 +938,14 @@ static void enumthread(EnumContext* ctx, lua_State* th)
 
         char buf[LUA_IDSIZE];
 
+        /*unnamed*/ scrypt_def(STR_2, "\x8b\x92\x92\x9f\x93\x9b\x9c"); 
         if (p->source) {
-            /*%s:%d %s*/ scrypt_def(STR_0, "\xdb\x8d\xc6\xdb\x9c\xe0\xdb\x8d");
-            snprintf(buf, sizeof(buf), STR_0->c_str(), p->debugname ? getstr(p->debugname) : "", p->linedefined, getstr(p->source));
+            /*thread at %s:%d %s*/ scrypt_def(STR_0, "\x8c\x98\x8e\x9b\x9f\x9c\xe0\x9f\x8c\xe0\xdb\x8d\xc6\xdb\x9c\xe0\xdb\x8d"); 
+            snprintf(buf, sizeof(buf), STR_0->c_str(), p->debugname ? getstr(p->debugname) : STR_2->c_str(), p->linedefined, getstr(p->source));
         }
         else {
-            /*%s:%d*/ scrypt_def(STR_1, "\xdb\x8d\xc6\xdb\x9c");
-            snprintf(buf, sizeof(buf), STR_1->c_str(), p->debugname ? getstr(p->debugname) : "", p->linedefined);
+            /*thread at %s:%d*/ scrypt_def(STR_1, "\x8c\x98\x8e\x9b\x9f\x9c\xe0\x9f\x8c\xe0\xdb\x8d\xc6\xdb\x9c"); 
+            snprintf(buf, sizeof(buf), STR_1->c_str(), p->debugname ? getstr(p->debugname) : STR_2->c_str(), p->linedefined);
         }
 
         enumnode(ctx, obj2gco(th), size, buf);
@@ -971,7 +983,18 @@ static void enumproto(EnumContext* ctx, Proto* p)
         ctx->edge(ctx->context, enumtopointer(obj2gco(p)), p->execdata, STR_0->c_str());
     }
 
-    enumnode(ctx, obj2gco(p), size, p->source ? getstr(p->source) : NULL);
+    char buf[LUA_IDSIZE];
+    /*unnamed*/ scrypt_def(STR_3, "\x8b\x92\x92\x9f\x93\x9b\x9c"); 
+    if (p->source) {
+        /*proto %s:%d %s*/ scrypt_def(STR_0, "\x90\x8e\x91\x8c\x91\xe0\xdb\x8d\xc6\xdb\x9c\xe0\xdb\x8d"); 
+        snprintf(buf, sizeof(buf), STR_0->c_str(), p->debugname ? getstr(p->debugname) : STR_3->c_str(), p->linedefined, getstr(p->source));
+    }
+    else {
+        /*proto %s:%d*/ scrypt_def(STR_1, "\x90\x8e\x91\x8c\x91\xe0\xdb\x8d\xc6\xdb\x9c");
+        snprintf(buf, sizeof(buf), STR_1->c_str(), p->debugname ? getstr(p->debugname) : STR_3->c_str(), p->linedefined);
+    }
+
+    enumnode(ctx, obj2gco(p), size, buf);
 
     if (p->sizek) {
         /*constants*/ scrypt_def(STR_1, "\x9d\x91\x92\x8d\x8c\x9f\x92\x8c\x8d");

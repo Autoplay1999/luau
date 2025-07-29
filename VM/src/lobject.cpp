@@ -116,8 +116,16 @@ const char* luaO_pushfstring(lua_State* L, const char* fmt, ...)
     return msg;
 }
 
+// Possible chunkname prefixes:
+//
+// '=' prefix: meant to represent custom chunknames. When truncation is needed,
+// the beginning of the chunkname is kept.
+//
+// '@' prefix: meant to represent filepaths. When truncation is needed, the end
+// of the filepath is kept, as this is more useful for identifying the file.
 const char* luaO_chunkid(char* buf, size_t buflen, const char* source, size_t srclen)
 {
+    /*...*/ scrypt_def(STR_2, "\xd2\xd2\xd2"); 
     if (*source == '=')
     {
         if (srclen <= buflen)
@@ -131,7 +139,7 @@ const char* luaO_chunkid(char* buf, size_t buflen, const char* source, size_t sr
         if (srclen <= buflen)
             return source + 1;
         // truncate the part after @
-        memcpy(buf, "...", 3);
+        memcpy(buf, STR_2->c_str(), 3);
         memcpy(buf + 3, source + srclen - (buflen - 4), buflen - 4);
         buf[buflen - 1] = '\0';
     }
@@ -146,11 +154,13 @@ const char* luaO_chunkid(char* buf, size_t buflen, const char* source, size_t sr
         if (source[len] != '\0')
         { // must truncate?
             strncat(buf, source, len);
-            strcat(buf, "...");
+            strcat(buf, STR_2->c_str());
         }
         else
             strcat(buf, source);
-        strcat(buf, "\"]");
+        
+        /*"]*/ scrypt_def(STR_1, "\xde\xa3"); 
+        strcat(buf, STR_1->c_str());
     }
     return buf;
 }

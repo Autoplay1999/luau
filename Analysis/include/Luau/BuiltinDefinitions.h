@@ -9,7 +9,7 @@
 namespace Luau
 {
 
-static constexpr char kRequireTagName[] = "require";
+inline constexpr char kRequireTagName[] = "require";
 
 struct Frontend;
 struct GlobalTypes;
@@ -65,14 +65,12 @@ TypeId makeFunction( // Polymorphic
     bool checked = false
 );
 
-void attachMagicFunction(TypeId ty, MagicFunction fn);
-void attachDcrMagicFunction(TypeId ty, DcrMagicFunction fn);
-void attachDcrMagicRefinement(TypeId ty, DcrMagicRefinement fn);
-void attachDcrMagicFunctionTypeCheck(TypeId ty, DcrMagicFunctionTypeCheck fn);
+void attachMagicFunction(TypeId ty, std::shared_ptr<MagicFunction> fn);
 Property makeProperty(TypeId ty, std::optional<std::string> documentationSymbol = std::nullopt);
 void assignPropDocumentationSymbols(TableType::Props& props, const std::string& baseName);
 
 std::string getBuiltinDefinitionSource();
+std::string getTypeFunctionDefinitionSource();
 
 void addGlobalBinding(GlobalTypes& globals, const std::string& name, TypeId ty, const std::string& packageName);
 void addGlobalBinding(GlobalTypes& globals, const std::string& name, Binding binding);

@@ -53,7 +53,7 @@ static int maxn(lua_State* L)
     double max = 0;
     luaL_checktype(L, 1, LUA_TTABLE);
 
-    Table* t = hvalue(L->base);
+    LuaTable* t = hvalue(L->base);
 
     for (int i = 0; i < t->sizearray; i++)
     {
@@ -87,18 +87,16 @@ static int getn(lua_State* L)
 
 static void moveelements(lua_State* L, int srct, int dstt, int f, int e, int t)
 {
-    Table* src = hvalue(L->base + (srct - 1));
-    Table* dst = hvalue(L->base + (dstt - 1));
+    LuaTable* src = hvalue(L->base + (srct - 1));
+    LuaTable* dst = hvalue(L->base + (dstt - 1));
 
     if (dst->readonly)
         luaG_readonlyerror(L);
 
     int n = e - f + 1; // number of elements to move
 
-    if (cast_to(unsigned int, f - 1) < cast_to(unsigned int, src->sizearray) &&
-        cast_to(unsigned int, t - 1) < cast_to(unsigned int, dst->sizearray) &&
-        cast_to(unsigned int, f - 1 + n) <= cast_to(unsigned int, src->sizearray) &&
-        cast_to(unsigned int, t - 1 + n) <= cast_to(unsigned int, dst->sizearray))
+    if (unsigned(f) - 1 < unsigned(src->sizearray) && unsigned(t) - 1 < unsigned(dst->sizearray) &&
+        unsigned(f) - 1 + unsigned(n) <= unsigned(src->sizearray) && unsigned(t) - 1 + unsigned(n) <= unsigned(dst->sizearray))
     {
         TValue* srcarray = src->array;
         TValue* dstarray = dst->array;
@@ -218,7 +216,7 @@ static int tmove(lua_State* L)
         int n = e - f + 1; // number of elements to move
         luaL_argcheck(L, t <= INT_MAX - n + 1, 4, STR_1->c_str());
 
-        Table* dst = hvalue(L->base + (tt - 1));
+        LuaTable* dst = hvalue(L->base + (tt - 1));
 
         if (dst->readonly) // also checked in moveelements, but this blocks resizes of r/o tables
             luaG_readonlyerror(L);
@@ -234,7 +232,7 @@ static int tmove(lua_State* L)
     return 1;
 }
 
-static void addfield(lua_State* L, luaL_Strbuf* b, int i, Table* t)
+static void addfield(lua_State* L, luaL_Strbuf* b, int i, LuaTable* t)
 {
     if (t && unsigned(i - 1) < unsigned(t->sizearray) && ttisstring(&t->array[i - 1]))
     {
@@ -261,7 +259,7 @@ static int tconcat(lua_State* L)
     int i = luaL_optinteger(L, 3, 1);
     int last = luaL_opt(L, luaL_checkinteger, 4, lua_objlen(L, 1));
 
-    Table* t = hvalue(L->base);
+    LuaTable* t = hvalue(L->base);
 
     luaL_Strbuf b;
     luaL_buffinit(L, &b);
@@ -282,7 +280,7 @@ static int tpack(lua_State* L)
     int n = lua_gettop(L);    // number of elements to pack
     lua_createtable(L, n, 1); // create result table
 
-    Table* t = hvalue(L->top - 1);
+    LuaTable* t = hvalue(L->top - 1);
 
     for (int i = 0; i < n; ++i)
     {
@@ -300,7 +298,7 @@ static int tpack(lua_State* L)
 static int tunpack(lua_State* L)
 {
     luaL_checktype(L, 1, LUA_TTABLE);
-    Table* t = hvalue(L->base);
+    LuaTable* t = hvalue(L->base);
 
     int i = luaL_optinteger(L, 2, 1);
     int e = luaL_opt(L, luaL_checkinteger, 3, lua_objlen(L, 1));
@@ -346,7 +344,7 @@ static int sort_func(lua_State* L, const TValue* l, const TValue* r)
     return !l_isfalse(L->top);
 }
 
-inline void sort_swap(lua_State* L, Table* t, int i, int j)
+inline void sort_swap(lua_State* L, LuaTable* t, int i, int j)
 {
     TValue* arr = t->array;
     int n = t->sizearray;
@@ -359,7 +357,7 @@ inline void sort_swap(lua_State* L, Table* t, int i, int j)
     setobj2t(L, &arr[j], &temp);
 }
 
-inline int sort_less(lua_State* L, Table* t, int i, int j, SortPredicate pred)
+inline int sort_less(lua_State* L, LuaTable* t, int i, int j, SortPredicate pred)
 {
     TValue* arr = t->array;
     int n = t->sizearray;
@@ -377,7 +375,7 @@ inline int sort_less(lua_State* L, Table* t, int i, int j, SortPredicate pred)
     return res;
 }
 
-static void sort_siftheap(lua_State* L, Table* t, int l, int u, SortPredicate pred, int root)
+static void sort_siftheap(lua_State* L, LuaTable* t, int l, int u, SortPredicate pred, int root)
 {
     LUAU_ASSERT(l <= u);
     int count = u - l + 1;
@@ -403,7 +401,7 @@ static void sort_siftheap(lua_State* L, Table* t, int l, int u, SortPredicate pr
         sort_swap(L, t, l + root, l + lastleft);
 }
 
-static void sort_heap(lua_State* L, Table* t, int l, int u, SortPredicate pred)
+static void sort_heap(lua_State* L, LuaTable* t, int l, int u, SortPredicate pred)
 {
     LUAU_ASSERT(l <= u);
     int count = u - l + 1;
@@ -418,7 +416,7 @@ static void sort_heap(lua_State* L, Table* t, int l, int u, SortPredicate pred)
     }
 }
 
-static void sort_rec(lua_State* L, Table* t, int l, int u, int limit, SortPredicate pred)
+static void sort_rec(lua_State* L, LuaTable* t, int l, int u, int limit, SortPredicate pred)
 {
     // sort range [l..u] (inclusive, 0-based)
     while (l < u)
@@ -494,7 +492,7 @@ static void sort_rec(lua_State* L, Table* t, int l, int u, int limit, SortPredic
 static int tsort(lua_State* L)
 {
     luaL_checktype(L, 1, LUA_TTABLE);
-    Table* t = hvalue(L->base);
+    LuaTable* t = hvalue(L->base);
     int n = luaH_getn(t);
     if (t->readonly)
         luaG_readonlyerror(L);
@@ -524,7 +522,7 @@ static int tcreate(lua_State* L)
     if (!lua_isnoneornil(L, 2))
     {
         lua_createtable(L, size, 0);
-        Table* t = hvalue(L->top - 1);
+        LuaTable* t = hvalue(L->top - 1);
 
         StkId v = L->base + 1;
 
@@ -553,7 +551,7 @@ static int tfind(lua_State* L)
         #undef STR_0
     }
 
-    Table* t = hvalue(L->base);
+    LuaTable* t = hvalue(L->base);
     StkId v = L->base + 1;
 
     for (int i = init;; ++i)
@@ -577,7 +575,7 @@ static int tclear(lua_State* L)
 {
     luaL_checktype(L, 1, LUA_TTABLE);
 
-    Table* tt = hvalue(L->base);
+    LuaTable* tt = hvalue(L->base);
     if (tt->readonly)
         luaG_readonlyerror(L);
 
@@ -617,7 +615,7 @@ static int tclone(lua_State* L)
     luaL_checktype(L, 1, LUA_TTABLE);
     luaL_argcheck(L, !luaL_getmetafield(L, 1, STR_0->c_str()), 1, STR_1->c_str());
 
-    Table* tt = luaH_clone(L, hvalue(L->base));
+    LuaTable* tt = luaH_clone(L, hvalue(L->base));
 
     TValue v;
     sethvalue(L, &v, tt);

@@ -303,13 +303,45 @@ static char unescape(char ch)
     }
 }
 
-Lexer::Lexer(const char* buffer, size_t bufferSize, AstNameTable& names)
+unsigned int Lexeme::getBlockDepth() const
+{
+    LUAU_ASSERT(type == Lexeme::RawString || type == Lexeme::BlockComment);
+
+    // If we have a well-formed string, we are guaranteed to see 2 `]` characters after the end of the string contents
+    LUAU_ASSERT(*(data + length) == ']');
+    unsigned int depth = 0;
+    do
+    {
+        depth++;
+    } while (*(data + length + depth) != ']');
+
+    return depth - 1;
+}
+
+Lexeme::QuoteStyle Lexeme::getQuoteStyle() const
+{
+    LUAU_ASSERT(type == Lexeme::QuotedString);
+
+    // If we have a well-formed string, we are guaranteed to see a closing delimiter after the string
+    LUAU_ASSERT(data);
+
+    char quote = *(data + length);
+    if (quote == '\'')
+        return Lexeme::QuoteStyle::Single;
+    else if (quote == '"')
+        return Lexeme::QuoteStyle::Double;
+
+    LUAU_ASSERT(!"Unknown quote style");
+    return Lexeme::QuoteStyle::Double; // unreachable, but required due to compiler warning
+}
+
+Lexer::Lexer(const char* buffer, size_t bufferSize, AstNameTable& names, Position startPosition)
     : buffer(buffer)
     , bufferSize(bufferSize)
     , offset(0)
-    , line(0)
-    , lineOffset(0)
-    , lexeme(Location(Position(0, 0), 0), Lexeme::Eof)
+    , line(startPosition.line)
+    , lineOffset(0u - startPosition.column)
+    , lexeme((Location(Position(startPosition.line, startPosition.column), 0)), Lexeme::Eof)
     , names(names)
     , skipComments(false)
     , readNames(true)
@@ -405,6 +437,7 @@ char Lexer::peekch(unsigned int lookahead) const
     return (offset + lookahead < bufferSize) ? buffer[offset + lookahead] : 0;
 }
 
+LUAU_FORCEINLINE
 Position Lexer::position() const
 {
     return Position(line, offset - lineOffset);
@@ -754,7 +787,7 @@ Lexeme Lexer::readNext()
             return Lexeme(Location(start, 1), '}');
         }
 
-        return readInterpolatedStringSection(position(), Lexeme::InterpStringMid, Lexeme::InterpStringEnd);
+        return readInterpolatedStringSection(start, Lexeme::InterpStringMid, Lexeme::InterpStringEnd);
     }
 
     case '=':

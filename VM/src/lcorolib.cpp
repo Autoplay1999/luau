@@ -63,15 +63,15 @@ static int auxresume(lua_State* L, lua_State* co, int narg)
         if (!lua_checkstack(co, narg)) {
             #define STR_1 /*too many arguments to resume*/ scrypt("\x8c\x91\x91\xe0\x93\x9f\x92\x87\xe0\x9f\x8e\x99\x8b\x93\x9b\x92\x8c\x8d\xe0\x8c\x91\xe0\x8e\x9b\x8d\x8b\x93\x9b").c_str()
             luaL_error(L, STR_1);
-            #undef STR_1
         }
         lua_xmove(L, co, narg);
     }
-    else if (DFFlag::LuauCoroCheckStack)
+    else
     {
         // coroutine might be completely full already
         if ((co->top - co->base) > LUAI_MAXCSTACK)
-            luaL_error(L, "too many arguments to resume");
+            luaL_error(L, STR_1);
+            #undef STR_1
     }
 
     co->singlestep = L->singlestep;
@@ -279,20 +279,12 @@ static int coclose(lua_State* L)
     {
         lua_pushboolean(L, false);
 
-        if (DFFlag::LuauStackLimit)
-        {
-            if (co->status == LUA_ERRMEM)
-                lua_pushstring(L, LUA_MEMERRMSG);
-            else if (co->status == LUA_ERRERR)
-                lua_pushstring(L, LUA_ERRERRMSG);
-            else if (lua_gettop(co))
-                lua_xmove(co, L, 1); // move error message
-        }
-        else
-        {
-            if (lua_gettop(co))
-                lua_xmove(co, L, 1); // move error message
-        }
+        if (co->status == LUA_ERRMEM)
+            lua_pushstring(L, LUA_MEMERRMSG);
+        else if (co->status == LUA_ERRERR)
+            lua_pushstring(L, LUA_ERRERRMSG);
+        else if (lua_gettop(co))
+            lua_xmove(co, L, 1); // move error message
 
         lua_resetthread(co);
         return 2;

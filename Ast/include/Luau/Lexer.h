@@ -87,6 +87,12 @@ struct Lexeme
         Reserved_END
     };
 
+    enum struct QuoteStyle
+    {
+        Single,
+        Double,
+    };
+
     Type type;
     Location location;
 
@@ -111,6 +117,8 @@ public:
     Lexeme(const Location& location, Type type, const char* name);
 
     unsigned int getLength() const;
+    unsigned int getBlockDepth() const;
+    QuoteStyle getQuoteStyle() const;
 
     std::string toString() const;
 };
@@ -153,7 +161,7 @@ private:
 class Lexer
 {
 public:
-    Lexer(const char* buffer, std::size_t bufferSize, AstNameTable& names);
+    Lexer(const char* buffer, std::size_t bufferSize, AstNameTable& names, Position startPosition = {0, 0});
 
     void setSkipComments(bool skip);
     void setReadNames(bool read);
@@ -178,6 +186,11 @@ public:
 
     static bool fixupQuotedString(std::string& data);
     static void fixupMultilineString(std::string& data);
+
+    unsigned int getOffset() const
+    {
+        return offset;
+    }
 
 private:
     char peekch() const;

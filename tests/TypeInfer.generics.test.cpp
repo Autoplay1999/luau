@@ -1,17 +1,24 @@
 // This file is part of the Luau programming language and is licensed under MIT License; see LICENSE.txt for details
 #include "Luau/TypeInfer.h"
 #include "Luau/Type.h"
-#include "Luau/Scope.h"
-
-#include <algorithm>
 
 #include "Fixture.h"
 
 #include "ScopedFlags.h"
 #include "doctest.h"
 
-LUAU_FASTFLAG(LuauInstantiateInSubtyping);
-LUAU_FASTFLAG(LuauSolverV2);
+LUAU_FASTFLAG(LuauInstantiateInSubtyping)
+LUAU_FASTFLAG(LuauSolverV2)
+LUAU_FASTFLAG(LuauReturnMappedGenericPacksFromSubtyping2)
+LUAU_FASTFLAG(LuauTableLiteralSubtypeSpecificCheck2)
+LUAU_FASTFLAG(LuauIntersectNotNil)
+LUAU_FASTFLAG(LuauSubtypingCheckFunctionGenericCounts)
+LUAU_FASTFLAG(LuauEagerGeneralization4)
+LUAU_FASTFLAG(LuauStuckTypeFunctionsStillDispatch)
+LUAU_FASTFLAG(LuauRemoveTypeCallsForReadWriteProps)
+LUAU_FASTFLAG(DebugLuauAssertOnForcedConstraint)
+LUAU_FASTFLAG(LuauPushFunctionTypesInFunctionStatement)
+LUAU_FASTFLAG(LuauContainsAnyGenericFollowBeforeChecking)
 
 using namespace Luau;
 
@@ -27,8 +34,8 @@ TEST_CASE_FIXTURE(Fixture, "check_generic_function")
         local y: number = id(37)
     )");
     LUAU_REQUIRE_NO_ERRORS(result);
-    CHECK_EQ(builtinTypes->stringType, requireType("x"));
-    CHECK_EQ(builtinTypes->numberType, requireType("y"));
+    CHECK_EQ(getBuiltins()->stringType, requireType("x"));
+    CHECK_EQ(getBuiltins()->numberType, requireType("y"));
 }
 
 TEST_CASE_FIXTURE(Fixture, "check_generic_local_function")
@@ -41,8 +48,8 @@ TEST_CASE_FIXTURE(Fixture, "check_generic_local_function")
         local y: number = id(37)
     )");
     LUAU_REQUIRE_NO_ERRORS(result);
-    CHECK_EQ(builtinTypes->stringType, requireType("x"));
-    CHECK_EQ(builtinTypes->numberType, requireType("y"));
+    CHECK_EQ(getBuiltins()->stringType, requireType("x"));
+    CHECK_EQ(getBuiltins()->numberType, requireType("y"));
 }
 
 TEST_CASE_FIXTURE(Fixture, "check_generic_local_function2")
@@ -55,8 +62,8 @@ TEST_CASE_FIXTURE(Fixture, "check_generic_local_function2")
         local y = id(37)
     )");
     LUAU_REQUIRE_NO_ERRORS(result);
-    CHECK_EQ(builtinTypes->stringType, requireType("x"));
-    CHECK_EQ(builtinTypes->numberType, requireType("y"));
+    CHECK_EQ(getBuiltins()->stringType, requireType("x"));
+    CHECK_EQ(getBuiltins()->numberType, requireType("y"));
 }
 
 TEST_CASE_FIXTURE(BuiltinsFixture, "unions_and_generics")
@@ -143,8 +150,6 @@ TEST_CASE_FIXTURE(Fixture, "properties_can_be_polytypes")
 
 TEST_CASE_FIXTURE(Fixture, "properties_can_be_instantiated_polytypes")
 {
-    DOES_NOT_PASS_NEW_SOLVER_GUARD();
-
     CheckResult result = check(R"(
         local t: { m: (number)->number } = { m = function(x:number) return x+1 end }
         local function id<a>(x:a):a return x end
@@ -259,25 +264,10 @@ TEST_CASE_FIXTURE(Fixture, "check_mutual_generic_functions_errors")
     }
 }
 
-TEST_CASE_FIXTURE(Fixture, "generic_functions_in_types_old_solver")
+TEST_CASE_FIXTURE(Fixture, "generic_functions_in_types")
 {
-    DOES_NOT_PASS_NEW_SOLVER_GUARD();
-
     CheckResult result = check(R"(
         type T = { id: <a>(a) -> a }
-        local x: T = { id = function<a>(x:a):a return x end }
-        local y: string = x.id("hi")
-        local z: number = x.id(37)
-    )");
-    LUAU_REQUIRE_NO_ERRORS(result);
-}
-
-TEST_CASE_FIXTURE(Fixture, "generic_functions_in_types_new_solver")
-{
-    ScopedFastFlag sff{FFlag::LuauSolverV2, true};
-
-    CheckResult result = check(R"(
-        type T = { read id: <a>(a) -> a }
         local x: T = { id = function<a>(x:a):a return x end }
         local y: string = x.id("hi")
         local z: number = x.id(37)
@@ -310,8 +300,6 @@ TEST_CASE_FIXTURE(Fixture, "generic_factories")
 
 TEST_CASE_FIXTURE(Fixture, "factories_of_generics")
 {
-    DOES_NOT_PASS_NEW_SOLVER_GUARD();
-
     CheckResult result = check(R"(
         type T = { id: <a>(a) -> a }
         type Factory = { build: () -> T }
@@ -329,6 +317,7 @@ TEST_CASE_FIXTURE(Fixture, "factories_of_generics")
         local y: string = x.id("hi")
         local z: number = x.id(37)
     )");
+
     LUAU_REQUIRE_NO_ERRORS(result);
 }
 
@@ -508,6 +497,7 @@ TEST_CASE_FIXTURE(Fixture, "dont_substitute_bound_types")
             local x: T = t.m(37)
         end
     )");
+
     LUAU_REQUIRE_NO_ERRORS(result);
 }
 
@@ -794,7 +784,7 @@ TEST_CASE_FIXTURE(Fixture, "instantiated_function_argument_names_old_solver")
 
 TEST_CASE_FIXTURE(Fixture, "error_detailed_function_mismatch_generic_types")
 {
-    DOES_NOT_PASS_NEW_SOLVER_GUARD();
+    ScopedFastFlag _{FFlag::LuauSubtypingCheckFunctionGenericCounts, true};
 
     CheckResult result = check(R"(
 type C = () -> ()
@@ -804,14 +794,64 @@ local c: C
 local d: D = c
     )");
 
-    LUAU_REQUIRE_ERROR_COUNT(1, result);
+    if (FFlag::LuauSolverV2)
+    {
+        LUAU_REQUIRE_ERROR_COUNT(2, result);
+        const auto genericMismatch = get<GenericTypeCountMismatch>(result.errors[0]);
+        CHECK(genericMismatch);
+        CHECK_EQ(genericMismatch->subTyGenericCount, 1);
+        CHECK_EQ(genericMismatch->superTyGenericCount, 0);
 
-    CHECK_EQ(toString(result.errors[0]), R"(Type '() -> ()' could not be converted into '<T>() -> ()'; different number of generic type parameters)");
+        auto mismatch = get<TypeMismatch>(result.errors[1]);
+        CHECK(mismatch);
+        CHECK_EQ(toString(mismatch->givenType), "() -> ()");
+        CHECK_EQ(toString(mismatch->wantedType), "<T>() -> ()");
+    }
+    else
+    {
+        LUAU_REQUIRE_ERROR_COUNT(1, result);
+        auto mismatch = get<TypeMismatch>(result.errors[0]);
+        CHECK(mismatch);
+        CHECK_EQ(mismatch->reason, "different number of generic type parameters");
+    }
+}
+TEST_CASE_FIXTURE(Fixture, "generic_function_mismatch_with_argument")
+{
+    ScopedFastFlag _{FFlag::LuauSubtypingCheckFunctionGenericCounts, true};
+
+    CheckResult result = check(R"(
+type C = (number) -> ()
+type D = <T>(number) -> ()
+
+local c: C
+local d: D = c
+    )");
+
+    if (FFlag::LuauSolverV2)
+    {
+        LUAU_REQUIRE_ERROR_COUNT(2, result);
+        const auto genericMismatch = get<GenericTypeCountMismatch>(result.errors[0]);
+        CHECK(genericMismatch);
+        CHECK_EQ(genericMismatch->subTyGenericCount, 1);
+        CHECK_EQ(genericMismatch->superTyGenericCount, 0);
+
+        auto mismatch = get<TypeMismatch>(result.errors[1]);
+        CHECK(mismatch);
+        CHECK_EQ(toString(mismatch->givenType), "(number) -> ()");
+        CHECK_EQ(toString(mismatch->wantedType), "<T>(number) -> ()");
+    }
+    else
+    {
+        LUAU_REQUIRE_ERROR_COUNT(1, result);
+        auto mismatch = get<TypeMismatch>(result.errors[0]);
+        CHECK(mismatch);
+        CHECK_EQ(mismatch->reason, "different number of generic type parameters");
+    }
 }
 
 TEST_CASE_FIXTURE(Fixture, "error_detailed_function_mismatch_generic_pack")
 {
-    DOES_NOT_PASS_NEW_SOLVER_GUARD();
+    ScopedFastFlag _{FFlag::LuauSubtypingCheckFunctionGenericCounts, true};
 
     CheckResult result = check(R"(
 type C = () -> ()
@@ -821,12 +861,26 @@ local c: C
 local d: D = c
     )");
 
-    LUAU_REQUIRE_ERROR_COUNT(1, result);
+    if (FFlag::LuauSolverV2)
+    {
+        LUAU_REQUIRE_ERROR_COUNT(2, result);
+        const auto genericMismatch = get<GenericTypePackCountMismatch>(result.errors[0]);
+        CHECK(genericMismatch);
+        CHECK_EQ(genericMismatch->subTyGenericPackCount, 1);
+        CHECK_EQ(genericMismatch->superTyGenericPackCount, 0);
 
-    CHECK_EQ(
-        toString(result.errors[0]),
-        R"(Type '() -> ()' could not be converted into '<T...>() -> ()'; different number of generic type pack parameters)"
-    );
+        auto mismatch = get<TypeMismatch>(result.errors[1]);
+        CHECK(mismatch);
+        CHECK_EQ(toString(mismatch->givenType), "() -> ()");
+        CHECK_EQ(toString(mismatch->wantedType), "<T...>() -> ()");
+    }
+    else
+    {
+        LUAU_REQUIRE_ERROR_COUNT(1, result);
+        auto mismatch = get<TypeMismatch>(result.errors[0]);
+        CHECK(mismatch);
+        CHECK_EQ(mismatch->reason, "different number of generic type pack parameters");
+    }
 }
 
 TEST_CASE_FIXTURE(BuiltinsFixture, "generic_functions_dont_cache_type_parameters")
@@ -854,6 +908,8 @@ end
 
 TEST_CASE_FIXTURE(Fixture, "generic_functions_should_be_memory_safe")
 {
+    ScopedFastFlag _{FFlag::LuauTableLiteralSubtypeSpecificCheck2, true};
+
     CheckResult result = check(R"(
 --!strict
 -- At one point this produced a UAF
@@ -865,15 +921,23 @@ local y: T<string> = { a = { c = nil, d = 5 }, b = 37 }
 y.a.c = y
     )");
 
-    LUAU_REQUIRE_ERRORS(result);
-
     if (FFlag::LuauSolverV2)
-        CHECK(
-            toString(result.errors.at(0)) ==
-            R"(Type '{ a: { c: nil, d: number }, b: number }' could not be converted into 'T<number>'; type { a: { c: nil, d: number }, b: number }[read "a"][read "c"] (nil) is not exactly T<number>[read "a"][read "c"][0] (T<number>))"
-        );
+    {
+        LUAU_REQUIRE_ERROR_COUNT(2, result);
+        auto mismatch1 = get<TypeMismatch>(result.errors[0]);
+        auto mismatch2 = get<TypeMismatch>(result.errors[1]);
+        REQUIRE(mismatch1);
+        REQUIRE(mismatch2);
+        CHECK_EQ(result.errors[0].location, Location{{7, 42}, {7, 43}});
+        CHECK_EQ(toString(mismatch1->givenType), "number");
+        CHECK_EQ(toString(mismatch1->wantedType), "string");
+        CHECK_EQ(result.errors[1].location, Location{{7, 51}, {7, 53}});
+        CHECK_EQ(toString(mismatch2->givenType), "number");
+        CHECK_EQ(toString(mismatch2->wantedType), "string");
+    }
     else
     {
+        LUAU_REQUIRE_ERROR_COUNT(2, result);
         const std::string expected = R"(Type 'y' could not be converted into 'T<string>'
 caused by:
   Property 'a' is not compatible.
@@ -887,8 +951,6 @@ Type 'number' could not be converted into 'string' in an invariant context)";
 
 TEST_CASE_FIXTURE(Fixture, "generic_type_pack_unification1")
 {
-    DOES_NOT_PASS_NEW_SOLVER_GUARD();
-
     CheckResult result = check(R"(
 --!strict
 type Dispatcher = {
@@ -907,8 +969,6 @@ local TheDispatcher: Dispatcher = {
 
 TEST_CASE_FIXTURE(Fixture, "generic_type_pack_unification2")
 {
-    DOES_NOT_PASS_NEW_SOLVER_GUARD();
-
     CheckResult result = check(R"(
 --!strict
 type Dispatcher = {
@@ -927,8 +987,6 @@ local TheDispatcher: Dispatcher = {
 
 TEST_CASE_FIXTURE(Fixture, "generic_type_pack_unification3")
 {
-    DOES_NOT_PASS_NEW_SOLVER_GUARD();
-
     CheckResult result = check(R"(
 --!strict
 type Dispatcher = {
@@ -947,7 +1005,7 @@ local TheDispatcher: Dispatcher = {
 
 TEST_CASE_FIXTURE(Fixture, "generic_argument_count_too_few")
 {
-    DOES_NOT_PASS_NEW_SOLVER_GUARD();
+    ScopedFastFlag _{FFlag::LuauReturnMappedGenericPacksFromSubtyping2, true};
 
     CheckResult result = check(R"(
 function test(a: number)
@@ -961,12 +1019,21 @@ wrapper(test)
     )");
 
     LUAU_REQUIRE_ERROR_COUNT(1, result);
-    CHECK_EQ(toString(result.errors[0]), R"(Argument count mismatch. Function 'wrapper' expects 2 arguments, but only 1 is specified)");
+    if (FFlag::LuauSolverV2)
+    {
+        const CountMismatch* cm = get<CountMismatch>(result.errors[0]);
+        REQUIRE_MESSAGE(cm, "Expected CountMismatch but got " << result.errors[0]);
+        CHECK_EQ(cm->expected, 2);
+        CHECK_EQ(cm->actual, 1);
+        CHECK_EQ(cm->context, CountMismatch::Arg);
+    }
+    else
+        CHECK_EQ(toString(result.errors[0]), R"(Argument count mismatch. Function 'wrapper' expects 2 arguments, but only 1 is specified)");
 }
 
 TEST_CASE_FIXTURE(Fixture, "generic_argument_count_too_many")
 {
-    DOES_NOT_PASS_NEW_SOLVER_GUARD();
+    ScopedFastFlag _{FFlag::LuauReturnMappedGenericPacksFromSubtyping2, true};
 
     CheckResult result = check(R"(
 function test2(a: number, b: string)
@@ -980,7 +1047,138 @@ wrapper(test2, 1, "", 3)
     )");
 
     LUAU_REQUIRE_ERROR_COUNT(1, result);
-    CHECK_EQ(toString(result.errors[0]), R"(Argument count mismatch. Function 'wrapper' expects 3 arguments, but 4 are specified)");
+    if (FFlag::LuauSolverV2)
+    {
+        const CountMismatch* cm = get<CountMismatch>(result.errors[0]);
+        REQUIRE_MESSAGE(cm, "Expected CountMismatch but got " << result.errors[0]);
+        CHECK_EQ(cm->expected, 3);
+        CHECK_EQ(cm->actual, 4);
+        CHECK_EQ(cm->context, CountMismatch::Arg);
+    }
+    else
+        CHECK_EQ(toString(result.errors[0]), R"(Argument count mismatch. Function 'wrapper' expects 3 arguments, but 4 are specified)");
+}
+
+TEST_CASE_FIXTURE(Fixture, "generic_argument_count_just_right")
+{
+    CheckResult result = check(R"(
+function test2(a: number, b: string)
+    return 1
+end
+
+function wrapper<A...>(f: (A...) -> number, ...: A...)
+end
+
+wrapper(test2, 1, "")
+    )");
+
+    LUAU_REQUIRE_NO_ERRORS(result);
+}
+
+TEST_CASE_FIXTURE(Fixture, "generic_argument_pack_type_inferred_from_return")
+{
+    ScopedFastFlag _{FFlag::LuauReturnMappedGenericPacksFromSubtyping2, true};
+
+    CheckResult result = check(R"(
+function test2(a: number)
+    return "hello"
+end
+
+function wrapper<A...>(f: (number) -> A..., ...: A...)
+end
+
+wrapper(test2, 1)
+    )");
+
+    LUAU_REQUIRE_ERROR_COUNT(1, result);
+
+    if (FFlag::LuauSolverV2)
+    {
+        const TypeMismatch* tm = get<TypeMismatch>(result.errors[0]);
+        REQUIRE_MESSAGE(tm, "Expected TypeMismatch but got " << result.errors[0]);
+        CHECK_EQ(toString(tm->wantedType), "string");
+        CHECK_EQ(toString(tm->givenType), "number");
+    }
+    else
+    {
+        CHECK_EQ(toString(result.errors[0]), R"(Type 'number' could not be converted into 'string')");
+    }
+}
+
+TEST_CASE_FIXTURE(Fixture, "generic_argument_pack_type_inferred_from_return_no_error")
+{
+    ScopedFastFlag _{FFlag::LuauReturnMappedGenericPacksFromSubtyping2, true};
+
+    CheckResult result = check(R"(
+function test2(a: number)
+    return "hello"
+end
+
+function wrapper<A...>(f: (number) -> A..., ...: A...)
+end
+
+wrapper(test2, "hello")
+    )");
+
+    LUAU_REQUIRE_NO_ERRORS(result);
+}
+
+TEST_CASE_FIXTURE(Fixture, "nested_generic_argument_type_packs")
+{
+    ScopedFastFlag _{FFlag::LuauReturnMappedGenericPacksFromSubtyping2, true};
+
+    CheckResult result = check(R"(
+function test2(a: number)
+    return 3
+end
+
+function foo<B...>(f: (B...) -> number, ...: B...)
+    return f(...)
+end
+
+-- want A... to contain a generic type pack too
+
+function wrapper<A...>(f: (A...) -> number, ...: A...)
+end
+
+-- A... = ((B...) -> number, B...))
+-- B... = (number)
+-- A... = ((number) -> number, number)
+wrapper(foo, test2, 3)
+wrapper(foo, test2, 3, 3)
+wrapper(foo, test2)
+wrapper(foo, test2, "3")
+    )");
+
+    LUAU_REQUIRE_ERROR_COUNT(3, result);
+    if (FFlag::LuauSolverV2)
+    {
+        CHECK_EQ(result.errors[0].location, Location{{18, 0}, {18, 7}});
+        CountMismatch* cm = get<CountMismatch>(result.errors[0]);
+        REQUIRE_MESSAGE(cm, "Expected CountMismatch but got " << result.errors[0]);
+        CHECK_EQ(cm->expected, 3);
+        CHECK_EQ(cm->actual, 4);
+        CHECK_EQ(cm->context, CountMismatch::Arg);
+
+        CHECK_EQ(result.errors[1].location, Location{{19, 0}, {19, 7}});
+        cm = get<CountMismatch>(result.errors[1]);
+        REQUIRE_MESSAGE(cm, "Expected CountMismatch but got " << result.errors[1]);
+        CHECK_EQ(cm->expected, 3);
+        CHECK_EQ(cm->actual, 2);
+        CHECK_EQ(cm->context, CountMismatch::Arg);
+
+        CHECK_EQ(result.errors[2].location, Location{{20, 20}, {20, 23}});
+        TypeMismatch* tm = get<TypeMismatch>(result.errors[2]);
+        REQUIRE_MESSAGE(tm, "Expected TypeMismatch but got " << result.errors[2]);
+        CHECK_EQ(toString(tm->wantedType), "number");
+        CHECK_EQ(toString(tm->givenType), "string");
+    }
+    else
+    {
+        CHECK_EQ(toString(result.errors[0]), R"(Argument count mismatch. Function 'wrapper' expects 3 arguments, but 4 are specified)");
+        CHECK_EQ(toString(result.errors[1]), R"(Argument count mismatch. Function 'wrapper' expects 3 arguments, but only 2 are specified)");
+        CHECK_EQ(toString(result.errors[2]), R"(Type 'string' could not be converted into 'number')");
+    }
 }
 
 TEST_CASE_FIXTURE(Fixture, "generic_function")
@@ -994,8 +1192,8 @@ TEST_CASE_FIXTURE(Fixture, "generic_function")
     LUAU_REQUIRE_NO_ERRORS(result);
 
     CHECK_EQ("<a>(a) -> a", toString(requireType("id")));
-    CHECK_EQ(*builtinTypes->numberType, *requireType("a"));
-    CHECK_EQ(*builtinTypes->nilType, *requireType("b"));
+    CHECK_EQ(*getBuiltins()->numberType, *requireType("a"));
+    CHECK_EQ(*getBuiltins()->nilType, *requireType("b"));
 }
 
 TEST_CASE_FIXTURE(Fixture, "generic_table_method")
@@ -1015,7 +1213,15 @@ TEST_CASE_FIXTURE(Fixture, "generic_table_method")
     REQUIRE(tTable != nullptr);
 
     REQUIRE(tTable->props.count("bar"));
-    TypeId barType = tTable->props["bar"].type();
+    TypeId barType;
+    if (FFlag::LuauRemoveTypeCallsForReadWriteProps)
+    {
+        Property& bar = tTable->props["bar"];
+        REQUIRE(bar.readTy);
+        barType = *bar.readTy;
+    }
+    else
+        barType = tTable->props["bar"].type_DEPRECATED();
     REQUIRE(barType != nullptr);
 
     const FunctionType* ftv = get<FunctionType>(follow(barType));
@@ -1029,6 +1235,13 @@ TEST_CASE_FIXTURE(Fixture, "generic_table_method")
 
 TEST_CASE_FIXTURE(Fixture, "correctly_instantiate_polymorphic_member_functions")
 {
+    // Prior to `LuauPushFunctionTypesInFunctionStatement`, we _always_ forced
+    // a constraint when solving this block.
+    ScopedFastFlag sffs[] = {
+        {FFlag::DebugLuauAssertOnForcedConstraint, true},
+        {FFlag::LuauPushFunctionTypesInFunctionStatement, true},
+    };
+
     CheckResult result = check(R"(
         local T = {}
 
@@ -1050,7 +1263,15 @@ TEST_CASE_FIXTURE(Fixture, "correctly_instantiate_polymorphic_member_functions")
     std::optional<Property> fooProp = get(t->props, "foo");
     REQUIRE(bool(fooProp));
 
-    const FunctionType* foo = get<FunctionType>(follow(fooProp->type()));
+
+    const FunctionType* foo;
+    if (FFlag::LuauRemoveTypeCallsForReadWriteProps)
+    {
+        REQUIRE(fooProp->readTy);
+        foo = get<FunctionType>(follow(*fooProp->readTy));
+    }
+    else
+        foo = get<FunctionType>(follow(fooProp->type_DEPRECATED()));
     REQUIRE(bool(foo));
 
     std::optional<TypeId> ret_ = first(foo->retTypes);
@@ -1097,7 +1318,14 @@ TEST_CASE_FIXTURE(Fixture, "instantiate_cyclic_generic_function")
     std::optional<Property> methodProp = get(argTable->props, "method");
     REQUIRE(bool(methodProp));
 
-    const FunctionType* methodFunction = get<FunctionType>(follow(methodProp->type()));
+    const FunctionType* methodFunction;
+    if (FFlag::LuauRemoveTypeCallsForReadWriteProps)
+    {
+        REQUIRE(methodProp->readTy);
+        methodFunction = get<FunctionType>(follow(*methodProp->readTy));
+    }
+    else
+        methodFunction = get<FunctionType>(follow(methodProp->type_DEPRECATED()));
     REQUIRE(methodFunction != nullptr);
 
     std::optional<TypeId> methodArg = first(methodFunction->argTypes);
@@ -1295,19 +1523,15 @@ TEST_CASE_FIXTURE(Fixture, "infer_generic_function_function_argument_overloaded"
     LUAU_REQUIRE_NO_ERRORS(result);
 }
 
-TEST_CASE_FIXTURE(BuiltinsFixture, "infer_generic_lib_function_function_argument")
-{
-    CheckResult result = check(R"(
-local a = {{x=4}, {x=7}, {x=1}}
-table.sort(a, function(x, y) return x.x < y.x end)
-    )");
-
-    LUAU_REQUIRE_NO_ERRORS(result);
-}
-
+// Important FIXME CLI-158432: This test exposes some problems with overload
+// selection and generic type substitution when
+// FFlag::LuauStuckTypeFunctionsStillDispatch is set.
 TEST_CASE_FIXTURE(BuiltinsFixture, "do_not_infer_generic_functions")
 {
-
+    ScopedFastFlag _[] = {
+        {FFlag::LuauSubtypingCheckFunctionGenericCounts, true},
+        {FFlag::LuauEagerGeneralization4, true},
+    };
     CheckResult result;
 
     if (FFlag::LuauSolverV2)
@@ -1316,14 +1540,20 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "do_not_infer_generic_functions")
             local function sum<a>(x: a, y: a, f: (a, a) -> a) return f(x, y) end
 
             local function sumrec(f: typeof(sum))
-                return sum(2, 3, function<T>(a: T, b: T): add<T> return a + b end)
+                return sum(2, 3, function<X>(a: X, b: X): add<X, X> return a + b end)
             end
 
             local b = sumrec(sum) -- ok
             local c = sumrec(function(x, y, f) return f(x, y) end) -- type binders are not inferred
         )");
 
-        LUAU_REQUIRE_NO_ERRORS(result);
+        if (FFlag::LuauStuckTypeFunctionsStillDispatch) // FIXME CLI-158432
+            CHECK("add<X, X> | number" == toString(requireType("b")));
+        else
+            CHECK("number" == toString(requireType("b")));
+
+        CHECK("<a>(a, a, (a, a) -> a) -> a" == toString(requireType("sum")));
+        CHECK("<a>(a, a, (a, a) -> a) -> a" == toString(requireTypeAtPosition({7, 29})));
     }
     else
     {
@@ -1337,9 +1567,10 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "do_not_infer_generic_functions")
             local b = sumrec(sum) -- ok
             local c = sumrec(function(x, y, f) return f(x, y) end) -- type binders are not inferred
         )");
-
-        LUAU_REQUIRE_NO_ERRORS(result);
     }
+
+    if (!FFlag::LuauStuckTypeFunctionsStillDispatch) // FIXME CLI-158432
+        LUAU_REQUIRE_NO_ERRORS(result);
 }
 
 
@@ -1359,29 +1590,27 @@ TEST_CASE_FIXTURE(Fixture, "substitution_with_bound_table")
 
 TEST_CASE_FIXTURE(Fixture, "apply_type_function_nested_generics1")
 {
-    // CLI-114507: temporarily changed to have a cast for `object` to silence false positive error
-
     // https://github.com/luau-lang/luau/issues/484
     CheckResult result = check(R"(
---!strict
-type MyObject = {
-	getReturnValue: <V>(cb: () -> V) -> V
-}
-local object: MyObject = {
-	getReturnValue = function<U>(cb: () -> U): U
-		return cb()
-	end,
-} :: MyObject
+        --!strict
+        type MyObject = {
+            getReturnValue: <V>(cb: () -> V) -> V
+        }
+        local object: MyObject = {
+            getReturnValue = function<U>(cb: () -> U): U
+                return cb()
+            end,
+        }
 
-type ComplexObject<T> = {
-	id: T,
-	nested: MyObject
-}
+        type ComplexObject<T> = {
+            id: T,
+            nested: MyObject
+        }
 
-local complex: ComplexObject<string> = {
-	id = "Foo",
-	nested = object,
-}
+        local complex: ComplexObject<string> = {
+            id = "Foo",
+            nested = object,
+        }
     )");
 
     LUAU_REQUIRE_NO_ERRORS(result);
@@ -1608,7 +1837,7 @@ type Dispatch<A> = (A) -> ()
 type BasicStateAction<S> = ((S) -> S) | S
 
 function updateReducer<S, I, A>(reducer: (S, A) -> S, initialArg: I, init: ((I) -> S)?): (S, Dispatch<A>)
-    return 1 :: any
+    return 1 :: any, 2 :: any
 end
 
 function basicStateReducer<S>(state: S, action: BasicStateAction<S>): S
@@ -1621,6 +1850,65 @@ end
     )");
 
     LUAU_REQUIRE_NO_ERRORS(result);
+}
+
+TEST_CASE_FIXTURE(Fixture, "generic_type_packs_shouldnt_be_bound_to_themselves")
+{
+    ScopedFastFlag flags[] = {
+        {FFlag::LuauSolverV2, true},
+        {FFlag::LuauSubtypingCheckFunctionGenericCounts, true},
+        {FFlag::LuauEagerGeneralization4, true}
+    };
+
+    CheckResult result = check(R"(
+export type t1<T...> = {
+    foo: (self: t1<T...>, bar: (T...) -> ()) -> ()
+}
+
+export type t2<T...> = {
+    baz: (self: t2<T...>) -> t1<T...>,
+}
+
+export type t3<T...> = {
+    f: (self: t3<T...>, T...)->  (),
+    g: t1<T...>,
+    h: t1<(Player, T...)>
+}
+
+local t2 = {}
+
+function t2.new<T...>(): t2<T...>
+end
+
+local function create_t3<T...>(): t3<T...>
+    local t2_1 = t2.new()
+    local t2_2 = t2.new()
+    local my_t3 = {
+        f = function(_self: t3<T...>, ...: T...) end,
+        g = t2_1:baz(),
+        h = t2_2:baz()
+    }
+    return my_t3
+end
+    )");
+
+    // Note: we just need this test not to crash
+    LUAU_REQUIRE_ERROR_COUNT(5, result);
+}
+
+TEST_CASE_FIXTURE(BuiltinsFixture, "follow_bound_type_packs_in_generic_type_visitor")
+{
+    ScopedFastFlag _{FFlag::LuauContainsAnyGenericFollowBeforeChecking, true};
+    // Note: we just need this test not to crash
+    check(R"(
+function (_(_,_,nil))
+(if l0 then typeof else `{_:_()}`,typeof).n0<A...,A...>(l0)
+function _:_():typeof<A...>()
+end
+function _:_().typeof<A...>()
+end
+end
+    )");
 }
 
 TEST_SUITE_END();

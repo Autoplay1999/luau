@@ -54,28 +54,22 @@ static Constant ctype(const Constant& c)
 {
     LUAU_ASSERT(c.type != Constant::Type_Unknown);
 
-    /*nil*/ scrypt_def(STR_0, "\x92\x97\x94");
-    /*boolean*/ scrypt_def(STR_1, "\x9e\x91\x91\x94\x9b\x9f\x92");
-    /*number*/ scrypt_def(STR_2, "\x92\x8b\x93\x9e\x9b\x8e");
-    /*vector*/ scrypt_def(STR_3, "\x8a\x9b\x9d\x8c\x91\x8e");
-    /*string*/ scrypt_def(STR_4, "\x8d\x8c\x8e\x97\x92\x99");
-
     switch (c.type)
     {
     case Constant::Type_Nil:
-        return cstring(STR_0->c_str());
+        return cstring("nil");
 
     case Constant::Type_Boolean:
-        return cstring(STR_1->c_str());
+        return cstring("boolean");
 
     case Constant::Type_Number:
-        return cstring(STR_2->c_str());
+        return cstring("number");
 
     case Constant::Type_Vector:
-        return cstring(STR_3->c_str());
+        return cstring("vector");
 
     case Constant::Type_String:
-        return cstring(STR_4->c_str());
+        return cstring("string");
 
     default:
         LUAU_ASSERT(!"Unsupported constant type");
@@ -477,12 +471,26 @@ Constant foldBuiltin(int bfid, const Constant* args, size_t count)
         break;
 
     case LBF_VECTOR:
-        if (count >= 3 && args[0].type == Constant::Type_Number && args[1].type == Constant::Type_Number && args[2].type == Constant::Type_Number)
+        if (count >= 2 && args[0].type == Constant::Type_Number && args[1].type == Constant::Type_Number)
         {
-            if (count == 3)
+            if (count == 2)
+                return cvector(args[0].valueNumber, args[1].valueNumber, 0.0, 0.0);
+            else if (count == 3 && args[2].type == Constant::Type_Number)
                 return cvector(args[0].valueNumber, args[1].valueNumber, args[2].valueNumber, 0.0);
-            else if (count == 4 && args[3].type == Constant::Type_Number)
+            else if (count == 4 && args[2].type == Constant::Type_Number && args[3].type == Constant::Type_Number)
                 return cvector(args[0].valueNumber, args[1].valueNumber, args[2].valueNumber, args[3].valueNumber);
+        }
+        break;
+
+    case LBF_MATH_LERP:
+        if (count == 3 && args[0].type == Constant::Type_Number && args[1].type == Constant::Type_Number && args[2].type == Constant::Type_Number)
+        {
+            double a = args[0].valueNumber;
+            double b = args[1].valueNumber;
+            double t = args[2].valueNumber;
+
+            double v = (t == 1.0) ? b : a + (b - a) * t;
+            return cnum(v);
         }
         break;
     }

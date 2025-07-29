@@ -30,7 +30,7 @@ void luaL_openlibs(lua_State* L)
         {STR_6.c_str(), luaopen_utf8},
         {STR_7.c_str(), luaopen_bit32},
         {STR_8.c_str(), luaopen_buffer},
-	{STR_9.c_str(), luaopen_vector},
+	    {STR_9.c_str(), luaopen_vector},
         {NULL, NULL},
     };
 

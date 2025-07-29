@@ -7,8 +7,6 @@
 #include <math.h>
 #include <time.h>
 
-LUAU_FASTFLAGVARIABLE(LuauMathMap)
-
 #undef PI
 #define PI (3.14159265358979323846)
 #define RADIANS_PER_DEGREE (PI / 180.0)
@@ -425,6 +423,17 @@ static int math_map(lua_State* L)
     return 1;
 }
 
+static int math_lerp(lua_State* L)
+{
+    double a = luaL_checknumber(L, 1);
+    double b = luaL_checknumber(L, 2);
+    double t = luaL_checknumber(L, 3);
+
+    double r = (t == 1.0) ? b : a + (b - a) * t;
+    lua_pushnumber(L, r);
+    return 1;
+}
+
 /*
 ** Open math library
 */
@@ -466,6 +475,7 @@ int luaopen_math(lua_State* L)
     std::string STR_33 = /*huge*/ scrypt("\x98\x8b\x99\x9b");
     std::string STR_34 = /*map*/ scrypt("\x93\x9f\x90");
     std::string STR_35 = /*math*/ scrypt("\x93\x9f\x8c\x98");
+    std::string STR_36 = /*lerp*/ scrypt("\x94\x9b\x8e\x90");
 
     const luaL_Reg mathlib[] = {
         {STR_0.c_str(), math_abs},
@@ -500,6 +510,8 @@ int luaopen_math(lua_State* L)
         {STR_29.c_str(), math_clamp},
         {STR_30.c_str(), math_sign},
         {STR_31.c_str(), math_round},
+        {STR_34.c_str(), math_map},
+        {STR_36.c_str(), math_lerp},
         {NULL, NULL},
     };
 
@@ -514,12 +526,6 @@ int luaopen_math(lua_State* L)
     lua_setfield(L, -2, STR_32.c_str());
     lua_pushnumber(L, HUGE_VAL);
     lua_setfield(L, -2, STR_33.c_str());
-
-    if (FFlag::LuauMathMap)
-    {
-        lua_pushcfunction(L, math_map, STR_34.c_str());
-        lua_setfield(L, -2, STR_34.c_str());
-    }
 
     return 1;
 }
