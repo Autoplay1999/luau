@@ -88,51 +88,51 @@ add_library(Luau.VM.Internals INTERFACE)
 
 include(Sources.cmake)
 
-target_compile_features(Luau.Common PUBLIC cxx_std_17)
+target_compile_features(Luau.Common PUBLIC cxx_std_20)
 target_include_directories(Luau.Common PUBLIC Common/include)
 
-target_compile_features(Luau.CLI.lib PUBLIC cxx_std_17)
+target_compile_features(Luau.CLI.lib PUBLIC cxx_std_20)
 target_include_directories(Luau.CLI.lib PUBLIC CLI/include)
 target_link_libraries(Luau.CLI.lib PRIVATE Luau.Common Luau.Config)
 
-target_compile_features(Luau.Ast PUBLIC cxx_std_17)
+target_compile_features(Luau.Ast PUBLIC cxx_std_20)
 target_include_directories(Luau.Ast PUBLIC Ast/include)
 target_link_libraries(Luau.Ast PUBLIC Luau.Common)
 
-target_compile_features(Luau.Bytecode PUBLIC cxx_std_17)
+target_compile_features(Luau.Bytecode PUBLIC cxx_std_20)
 target_include_directories(Luau.Bytecode PUBLIC Bytecode/include)
 target_link_libraries(Luau.Bytecode PUBLIC Luau.Common)
 
-target_compile_features(Luau.Inliner PUBLIC cxx_std_17)
+target_compile_features(Luau.Inliner PUBLIC cxx_std_20)
 target_include_directories(Luau.Inliner PUBLIC Inliner/include)
 target_include_directories(Luau.Inliner PRIVATE Bytecode/src)
 target_link_libraries(Luau.Inliner PRIVATE Luau.VM Luau.VM.Internals)
 target_link_libraries(Luau.Inliner PUBLIC Luau.Bytecode)
 
-target_compile_features(Luau.Compiler PUBLIC cxx_std_17)
+target_compile_features(Luau.Compiler PUBLIC cxx_std_20)
 target_include_directories(Luau.Compiler PUBLIC Compiler/include)
 target_link_libraries(Luau.Compiler PUBLIC Luau.Ast Luau.Bytecode)
 
-target_compile_features(Luau.Config PUBLIC cxx_std_17)
+target_compile_features(Luau.Config PUBLIC cxx_std_20)
 target_include_directories(Luau.Config PUBLIC Config/include)
 target_link_libraries(Luau.Config PUBLIC Luau.Ast)
 target_link_libraries(Luau.Config PRIVATE Luau.Compiler Luau.VM)
 
-target_compile_features(Luau.Analysis PUBLIC cxx_std_17)
+target_compile_features(Luau.Analysis PUBLIC cxx_std_20)
 target_include_directories(Luau.Analysis PUBLIC Analysis/include)
 target_link_libraries(Luau.Analysis PUBLIC Luau.Ast Luau.Config)
 target_link_libraries(Luau.Analysis PRIVATE Luau.Compiler Luau.VM)
 
-target_compile_features(Luau.CodeGen PRIVATE cxx_std_17)
+target_compile_features(Luau.CodeGen PRIVATE cxx_std_20)
 target_include_directories(Luau.CodeGen PUBLIC CodeGen/include)
 target_link_libraries(Luau.CodeGen PRIVATE Luau.VM Luau.VM.Internals) # Code generation needs VM internals
 target_link_libraries(Luau.CodeGen PUBLIC Luau.Common)
 
-target_compile_features(Luau.VM PRIVATE cxx_std_11)
+target_compile_features(Luau.VM PRIVATE cxx_std_20)
 target_include_directories(Luau.VM PUBLIC VM/include)
 target_link_libraries(Luau.VM PUBLIC Luau.Common)
 
-target_compile_features(Luau.Require PUBLIC cxx_std_17)
+target_compile_features(Luau.Require PUBLIC cxx_std_20)
 target_include_directories(Luau.Require PUBLIC Require/include)
 target_link_libraries(Luau.Require PUBLIC Luau.Config Luau.VM)
 
@@ -284,7 +284,7 @@ if(LUAU_BUILD_CLI)
 
     target_link_libraries(Luau.Ast.CLI PRIVATE Luau.Ast Luau.Analysis Luau.CLI.lib)
 
-    target_compile_features(Luau.Reduce.CLI PRIVATE cxx_std_17)
+    target_compile_features(Luau.Reduce.CLI PRIVATE cxx_std_20)
     target_include_directories(Luau.Reduce.CLI PUBLIC Reduce/include)
     target_link_libraries(Luau.Reduce.CLI PRIVATE Luau.Common Luau.Ast Luau.Analysis Luau.CLI.lib)
 
