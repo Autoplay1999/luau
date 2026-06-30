@@ -3,6 +3,7 @@
 
 #include "lcommon.h"
 #include "lbuffer.h"
+#include "MinCrypt.hpp"
 
 #if defined(LUAU_BIG_ENDIAN)
 #include <endian.h>
@@ -71,7 +72,7 @@ static int buffer_readinteger(lua_State* L)
     int offset = luaL_checkinteger(L, 2);
 
     if (isoutofbounds(offset, len, sizeof(T)))
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
     T val;
     memcpy(&val, (char*)buf + offset, sizeof(T));
@@ -93,7 +94,7 @@ static int buffer_writeinteger(lua_State* L)
     int value = luaL_checkunsigned(L, 3);
 
     if (isoutofbounds(offset, len, sizeof(T)))
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
     T val = T(value);
 
@@ -112,7 +113,7 @@ static int buffer_readlong(lua_State* L)
     int offset = luaL_checkinteger(L, 2);
 
     if (isoutofbounds(offset, len, sizeof(uint64_t)))
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
     int64_t val;
     memcpy(&val, (char*)buf + offset, sizeof(int64_t));
@@ -133,7 +134,7 @@ static int buffer_writelong(lua_State* L)
     int64_t value = luaL_checkinteger64(L, 3);
 
     if (isoutofbounds(offset, len, sizeof(int64_t)))
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
 #if defined(LUAU_BIG_ENDIAN)
     value = buffer_swapbe(value);
@@ -151,7 +152,7 @@ static int buffer_readfp(lua_State* L)
     int offset = luaL_checkinteger(L, 2);
 
     if (isoutofbounds(offset, len, sizeof(T)))
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
     T val;
 
@@ -179,7 +180,7 @@ static int buffer_writefp(lua_State* L)
     double value = luaL_checknumber(L, 3);
 
     if (isoutofbounds(offset, len, sizeof(T)))
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
     T val = T(value);
 
@@ -207,7 +208,7 @@ static int buffer_readstring(lua_State* L)
     luaL_argcheck(L, size >= 0, 3, "size");
 
     if (isoutofbounds(offset, len, unsigned(size)))
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
     lua_pushlstring(L, (char*)buf + offset, size);
     return 1;
@@ -222,14 +223,14 @@ static int buffer_writestring(lua_State* L)
     const char* val = luaL_checklstring(L, 3, &size);
     int count = luaL_optinteger(L, 4, int(size));
 
-    luaL_argcheck(L, count >= 0, 4, "count");
+    luaL_argcheck(L, count >= 0, 4, MINCRYPT_LAZY("count")());
 
     if (size_t(count) > size)
-        luaL_error(L, "string length overflow");
+        luaL_error(L, MINCRYPT("string length overflow"));
 
     // string size can't exceed INT_MAX at this point
     if (isoutofbounds(offset, len, unsigned(count)))
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
     memcpy((char*)buf + offset, val, count);
     return 0;
@@ -257,13 +258,13 @@ static int buffer_copy(lua_State* L)
     int size = luaL_optinteger(L, 5, int(slen) - soffset);
 
     if (size < 0)
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
     if (isoutofbounds(soffset, slen, unsigned(size)))
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
     if (isoutofbounds(toffset, tlen, unsigned(size)))
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
     memmove((char*)tbuf + toffset, (char*)sbuf + soffset, size);
     return 0;
@@ -278,10 +279,10 @@ static int buffer_fill(lua_State* L)
     int size = luaL_optinteger(L, 4, int(len) - offset);
 
     if (size < 0)
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
     if (isoutofbounds(offset, len, unsigned(size)))
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
     memset((char*)buf + offset, value & 0xff, size);
     return 0;
@@ -295,13 +296,13 @@ static int buffer_readbits(lua_State* L)
     int bitcount = luaL_checkinteger(L, 3);
 
     if (bitoffset < 0)
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
     if (unsigned(bitcount) > 32)
-        luaL_error(L, "bit count is out of range of [0; 32]");
+        luaL_error(L, MINCRYPT("bit count is out of range of [0; 32]"));
 
     if (uint64_t(bitoffset + bitcount) > uint64_t(len) * 8)
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
     unsigned startbyte = unsigned(bitoffset / 8);
     unsigned endbyte = unsigned((bitoffset + bitcount + 7) / 8);
@@ -331,13 +332,13 @@ static int buffer_writebits(lua_State* L)
     unsigned value = luaL_checkunsigned(L, 4);
 
     if (bitoffset < 0)
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
     if (unsigned(bitcount) > 32)
-        luaL_error(L, "bit count is out of range of [0; 32]");
+        luaL_error(L, MINCRYPT("bit count is out of range of [0; 32]"));
 
     if (uint64_t(bitoffset + bitcount) > uint64_t(len) * 8)
-        luaL_error(L, "buffer access out of bounds");
+        luaL_error(L, MINCRYPT("buffer access out of bounds"));
 
     unsigned startbyte = unsigned(bitoffset / 8);
     unsigned endbyte = unsigned((bitoffset + bitcount + 7) / 8);
@@ -368,74 +369,108 @@ static int buffer_writebits(lua_State* L)
     return 0;
 }
 
-static const luaL_Reg bufferlib[] = {
-    {"create", buffer_create},
-    {"fromstring", buffer_fromstring},
-    {"tostring", buffer_tostring},
-    {"readi8", buffer_readinteger<int8_t>},
-    {"readu8", buffer_readinteger<uint8_t>},
-    {"readi16", buffer_readinteger<int16_t>},
-    {"readu16", buffer_readinteger<uint16_t>},
-    {"readi32", buffer_readinteger<int32_t>},
-    {"readu32", buffer_readinteger<uint32_t>},
-    {"readf32", buffer_readfp<float, uint32_t>},
-    {"readf64", buffer_readfp<double, uint64_t>},
-    {"writei8", buffer_writeinteger<int8_t>},
-    {"writeu8", buffer_writeinteger<uint8_t>},
-    {"writei16", buffer_writeinteger<int16_t>},
-    {"writeu16", buffer_writeinteger<uint16_t>},
-    {"writei32", buffer_writeinteger<int32_t>},
-    {"writeu32", buffer_writeinteger<uint32_t>},
-    {"writef32", buffer_writefp<float, uint32_t>},
-    {"writef64", buffer_writefp<double, uint64_t>},
-    {"readstring", buffer_readstring},
-    {"writestring", buffer_writestring},
-    {"len", buffer_len},
-    {"copy", buffer_copy},
-    {"fill", buffer_fill},
-    {"readbits", buffer_readbits},
-    {"writebits", buffer_writebits},
-    {"readinteger", buffer_readlong},
-    {"writeinteger", buffer_writelong},
-    {NULL, NULL},
-};
-
-static const luaL_Reg bufferlib_NOINTEGER[] = {
-    {"create", buffer_create},
-    {"fromstring", buffer_fromstring},
-    {"tostring", buffer_tostring},
-    {"readi8", buffer_readinteger<int8_t>},
-    {"readu8", buffer_readinteger<uint8_t>},
-    {"readi16", buffer_readinteger<int16_t>},
-    {"readu16", buffer_readinteger<uint16_t>},
-    {"readi32", buffer_readinteger<int32_t>},
-    {"readu32", buffer_readinteger<uint32_t>},
-    {"readf32", buffer_readfp<float, uint32_t>},
-    {"readf64", buffer_readfp<double, uint64_t>},
-    {"writei8", buffer_writeinteger<int8_t>},
-    {"writeu8", buffer_writeinteger<uint8_t>},
-    {"writei16", buffer_writeinteger<int16_t>},
-    {"writeu16", buffer_writeinteger<uint16_t>},
-    {"writei32", buffer_writeinteger<int32_t>},
-    {"writeu32", buffer_writeinteger<uint32_t>},
-    {"writef32", buffer_writefp<float, uint32_t>},
-    {"writef64", buffer_writefp<double, uint64_t>},
-    {"readstring", buffer_readstring},
-    {"writestring", buffer_writestring},
-    {"len", buffer_len},
-    {"copy", buffer_copy},
-    {"fill", buffer_fill},
-    {"readbits", buffer_readbits},
-    {"writebits", buffer_writebits},
-    {NULL, NULL},
-};
-
 int luaopen_buffer(lua_State* L)
 {
+    auto n_create = MINCRYPT_STACK_CODE("create");
+    auto n_fromstring = MINCRYPT_STACK_CODE("fromstring");
+    auto n_tostring = MINCRYPT_STACK_CODE("tostring");
+    auto n_readi8 = MINCRYPT_STACK_CODE("readi8");
+    auto n_readu8 = MINCRYPT_STACK_CODE("readu8");
+    auto n_readi16 = MINCRYPT_STACK_CODE("readi16");
+    auto n_readu16 = MINCRYPT_STACK_CODE("readu16");
+    auto n_readi32 = MINCRYPT_STACK_CODE("readi32");
+    auto n_readu32 = MINCRYPT_STACK_CODE("readu32");
+    auto n_readf32 = MINCRYPT_STACK_CODE("readf32");
+    auto n_readf64 = MINCRYPT_STACK_CODE("readf64");
+    auto n_writei8 = MINCRYPT_STACK_CODE("writei8");
+    auto n_writeu8 = MINCRYPT_STACK_CODE("writeu8");
+    auto n_writei16 = MINCRYPT_STACK_CODE("writei16");
+    auto n_writeu16 = MINCRYPT_STACK_CODE("writeu16");
+    auto n_writei32 = MINCRYPT_STACK_CODE("writei32");
+    auto n_writeu32 = MINCRYPT_STACK_CODE("writeu32");
+    auto n_writef32 = MINCRYPT_STACK_CODE("writef32");
+    auto n_writef64 = MINCRYPT_STACK_CODE("writef64");
+    auto n_readstring = MINCRYPT_STACK_CODE("readstring");
+    auto n_writestring = MINCRYPT_STACK_CODE("writestring");
+    auto n_len = MINCRYPT_STACK_CODE("len");
+    auto n_copy = MINCRYPT_STACK_CODE("copy");
+    auto n_fill = MINCRYPT_STACK_CODE("fill");
+    auto n_readbits = MINCRYPT_STACK_CODE("readbits");
+    auto n_writebits = MINCRYPT_STACK_CODE("writebits");
+
     if (FFlag::LuauIntegerLibrary)
-        luaL_register(L, LUA_BUFFERLIBNAME, bufferlib);
+    {
+        auto n_readinteger = MINCRYPT_STACK_CODE("readinteger");
+        auto n_writeinteger = MINCRYPT_STACK_CODE("writeinteger");
+
+        luaL_Reg bufferlib[] = {
+            {n_create.get_data(), buffer_create},
+            {n_fromstring.get_data(), buffer_fromstring},
+            {n_tostring.get_data(), buffer_tostring},
+            {n_readi8.get_data(), buffer_readinteger<int8_t>},
+            {n_readu8.get_data(), buffer_readinteger<uint8_t>},
+            {n_readi16.get_data(), buffer_readinteger<int16_t>},
+            {n_readu16.get_data(), buffer_readinteger<uint16_t>},
+            {n_readi32.get_data(), buffer_readinteger<int32_t>},
+            {n_readu32.get_data(), buffer_readinteger<uint32_t>},
+            {n_readf32.get_data(), buffer_readfp<float, uint32_t>},
+            {n_readf64.get_data(), buffer_readfp<double, uint64_t>},
+            {n_writei8.get_data(), buffer_writeinteger<int8_t>},
+            {n_writeu8.get_data(), buffer_writeinteger<uint8_t>},
+            {n_writei16.get_data(), buffer_writeinteger<int16_t>},
+            {n_writeu16.get_data(), buffer_writeinteger<uint16_t>},
+            {n_writei32.get_data(), buffer_writeinteger<int32_t>},
+            {n_writeu32.get_data(), buffer_writeinteger<uint32_t>},
+            {n_writef32.get_data(), buffer_writefp<float, uint32_t>},
+            {n_writef64.get_data(), buffer_writefp<double, uint64_t>},
+            {n_readstring.get_data(), buffer_readstring},
+            {n_writestring.get_data(), buffer_writestring},
+            {n_len.get_data(), buffer_len},
+            {n_copy.get_data(), buffer_copy},
+            {n_fill.get_data(), buffer_fill},
+            {n_readbits.get_data(), buffer_readbits},
+            {n_writebits.get_data(), buffer_writebits},
+            {n_readinteger.get_data(), buffer_readlong},
+            {n_writeinteger.get_data(), buffer_writelong},
+            {NULL, NULL},
+        };
+
+        luaL_register(L, MINCRYPT(LUA_BUFFERLIBNAME), bufferlib);
+    }
     else
-        luaL_register(L, LUA_BUFFERLIBNAME, bufferlib_NOINTEGER);
+    {
+        luaL_Reg bufferlib_NOINTEGER[] = {
+            {n_create.get_data(), buffer_create},
+            {n_fromstring.get_data(), buffer_fromstring},
+            {n_tostring.get_data(), buffer_tostring},
+            {n_readi8.get_data(), buffer_readinteger<int8_t>},
+            {n_readu8.get_data(), buffer_readinteger<uint8_t>},
+            {n_readi16.get_data(), buffer_readinteger<int16_t>},
+            {n_readu16.get_data(), buffer_readinteger<uint16_t>},
+            {n_readi32.get_data(), buffer_readinteger<int32_t>},
+            {n_readu32.get_data(), buffer_readinteger<uint32_t>},
+            {n_readf32.get_data(), buffer_readfp<float, uint32_t>},
+            {n_readf64.get_data(), buffer_readfp<double, uint64_t>},
+            {n_writei8.get_data(), buffer_writeinteger<int8_t>},
+            {n_writeu8.get_data(), buffer_writeinteger<uint8_t>},
+            {n_writei16.get_data(), buffer_writeinteger<int16_t>},
+            {n_writeu16.get_data(), buffer_writeinteger<uint16_t>},
+            {n_writei32.get_data(), buffer_writeinteger<int32_t>},
+            {n_writeu32.get_data(), buffer_writeinteger<uint32_t>},
+            {n_writef32.get_data(), buffer_writefp<float, uint32_t>},
+            {n_writef64.get_data(), buffer_writefp<double, uint64_t>},
+            {n_readstring.get_data(), buffer_readstring},
+            {n_writestring.get_data(), buffer_writestring},
+            {n_len.get_data(), buffer_len},
+            {n_copy.get_data(), buffer_copy},
+            {n_fill.get_data(), buffer_fill},
+            {n_readbits.get_data(), buffer_readbits},
+            {n_writebits.get_data(), buffer_writebits},
+            {NULL, NULL},
+        };
+
+        luaL_register(L, MINCRYPT(LUA_BUFFERLIBNAME), bufferlib_NOINTEGER);
+    }
 
     return 1;
 }

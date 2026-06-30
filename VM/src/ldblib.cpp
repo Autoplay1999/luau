@@ -3,6 +3,7 @@
 #include "lualib.h"
 
 #include "lvm.h"
+#include "MinCrypt.hpp"
 
 #include <string.h>
 #include <stdio.h>
@@ -41,7 +42,7 @@ static int db_info(lua_State* L)
     if (lua_isnumber(L, arg + 1))
     {
         level = (int)lua_tointeger(L, arg + 1);
-        luaL_argcheck(L, level >= 0, arg + 1, "level can't be negative");
+        luaL_argcheck(L, level >= 0, arg + 1, MINCRYPT_LAZY("level can't be negative")());
     }
     else if (arg == 0 && lua_isfunction(L, 1))
     {
@@ -49,7 +50,7 @@ static int db_info(lua_State* L)
         level = -lua_gettop(L);
     }
     else
-        luaL_argerror(L, arg + 1, "function or level expected");
+        luaL_argerror(L, arg + 1, MINCRYPT("function or level expected"));
 
     const char* options = luaL_checkstring(L, arg + 2);
 
@@ -70,7 +71,7 @@ static int db_info(lua_State* L)
                 if (L != L1)
                     lua_settop(L1, l1top);
 
-                luaL_argerror(L, arg + 2, "duplicate option");
+                luaL_argerror(L, arg + 2, MINCRYPT("duplicate option"));
             }
             occurs[*it - 'a'] = true;
         }
@@ -111,7 +112,7 @@ static int db_info(lua_State* L)
             if (L != L1)
                 lua_settop(L1, l1top);
 
-            luaL_argerror(L, arg + 2, "invalid option");
+            luaL_argerror(L, arg + 2, MINCRYPT("invalid option"));
         }
     }
 
@@ -124,21 +125,24 @@ static int db_traceback(lua_State* L)
     lua_State* L1 = getthread(L, &arg);
     const char* msg = luaL_optstring(L, arg + 1, NULL);
     int level = luaL_optinteger(L, arg + 2, (L == L1) ? 1 : 0);
-    luaL_argcheck(L, level >= 0, arg + 2, "level can't be negative");
+    luaL_argcheck(L, level >= 0, arg + 2, MINCRYPT_LAZY("level can't be negative")());
 
     luaL_traceback(L, L1, msg, level);
 
     return 1;
 }
 
-static const luaL_Reg dblib[] = {
-    {"info", db_info},
-    {"traceback", db_traceback},
-    {NULL, NULL},
-};
-
 int luaopen_debug(lua_State* L)
 {
-    luaL_register(L, LUA_DBLIBNAME, dblib);
+    auto n_info = MINCRYPT_STACK_CODE("info");
+    auto n_traceback = MINCRYPT_STACK_CODE("traceback");
+
+    luaL_Reg dblib[] = {
+        {n_info.get_data(), db_info},
+        {n_traceback.get_data(), db_traceback},
+        {NULL, NULL},
+    };
+
+    luaL_register(L, MINCRYPT(LUA_DBLIBNAME), dblib);
     return 1;
 }

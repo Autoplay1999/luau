@@ -2,45 +2,58 @@
 // This code is based on Lua 5.x implementation licensed under MIT License; see lua_LICENSE.txt for details
 #include "lualib.h"
 #include "lstate.h"
+#include "MinCrypt.hpp"
 
 #include <stdlib.h>
 
 LUAU_FASTFLAG(LuauIntegerLibrary)
 LUAU_FASTFLAG(DebugLuauUserDefinedClassesRuntime)
 
-static const luaL_Reg lualibs[] = {
-    {"", luaopen_base},
-    {LUA_COLIBNAME, luaopen_coroutine},
-    {LUA_TABLIBNAME, luaopen_table},
-    {LUA_OSLIBNAME, luaopen_os},
-    {LUA_STRLIBNAME, luaopen_string},
-    {LUA_MATHLIBNAME, luaopen_math},
-    {LUA_DBLIBNAME, luaopen_debug},
-    {LUA_UTF8LIBNAME, luaopen_utf8},
-    {LUA_BITLIBNAME, luaopen_bit32},
-    {LUA_BUFFERLIBNAME, luaopen_buffer},
-    {LUA_VECLIBNAME, luaopen_vector},
-    {LUA_INTLIBNAME, luaopen_integer},
-    {NULL, NULL},
-};
-
-static const luaL_Reg lualibs_NOINTEGER[] = {
-    {"", luaopen_base},
-    {LUA_COLIBNAME, luaopen_coroutine},
-    {LUA_TABLIBNAME, luaopen_table},
-    {LUA_OSLIBNAME, luaopen_os},
-    {LUA_STRLIBNAME, luaopen_string},
-    {LUA_MATHLIBNAME, luaopen_math},
-    {LUA_DBLIBNAME, luaopen_debug},
-    {LUA_UTF8LIBNAME, luaopen_utf8},
-    {LUA_BITLIBNAME, luaopen_bit32},
-    {LUA_BUFFERLIBNAME, luaopen_buffer},
-    {LUA_VECLIBNAME, luaopen_vector},
-    {NULL, NULL},
-};
-
 void luaL_openlibs(lua_State* L)
 {
+    auto n_co       = MINCRYPT_STACK_CODE(LUA_COLIBNAME);
+    auto n_tab      = MINCRYPT_STACK_CODE(LUA_TABLIBNAME);
+    auto n_os       = MINCRYPT_STACK_CODE(LUA_OSLIBNAME);
+    auto n_str      = MINCRYPT_STACK_CODE(LUA_STRLIBNAME);
+    auto n_math     = MINCRYPT_STACK_CODE(LUA_MATHLIBNAME);
+    auto n_db       = MINCRYPT_STACK_CODE(LUA_DBLIBNAME);
+    auto n_utf8     = MINCRYPT_STACK_CODE(LUA_UTF8LIBNAME);
+    auto n_bit      = MINCRYPT_STACK_CODE(LUA_BITLIBNAME);
+    auto n_buf      = MINCRYPT_STACK_CODE(LUA_BUFFERLIBNAME);
+    auto n_vec      = MINCRYPT_STACK_CODE(LUA_VECLIBNAME);
+    auto n_int      = MINCRYPT_STACK_CODE(LUA_INTLIBNAME);
+
+    luaL_Reg lualibs[] = {
+        {"", luaopen_base},
+        {n_co.get_data(), luaopen_coroutine},
+        {n_tab.get_data(), luaopen_table},
+        {n_os.get_data(), luaopen_os},
+        {n_str.get_data(), luaopen_string},
+        {n_math.get_data(), luaopen_math},
+        {n_db.get_data(), luaopen_debug},
+        {n_utf8.get_data(), luaopen_utf8},
+        {n_bit.get_data(), luaopen_bit32},
+        {n_buf.get_data(), luaopen_buffer},
+        {n_vec.get_data(), luaopen_vector},
+        {n_int.get_data(), luaopen_integer},
+        {NULL, NULL},
+    };
+
+    luaL_Reg lualibs_NOINTEGER[] = {
+        {"", luaopen_base},
+        {n_co.get_data(), luaopen_coroutine},
+        {n_tab.get_data(), luaopen_table},
+        {n_os.get_data(), luaopen_os},
+        {n_str.get_data(), luaopen_string},
+        {n_math.get_data(), luaopen_math},
+        {n_db.get_data(), luaopen_debug},
+        {n_utf8.get_data(), luaopen_utf8},
+        {n_bit.get_data(), luaopen_bit32},
+        {n_buf.get_data(), luaopen_buffer},
+        {n_vec.get_data(), luaopen_vector},
+        {NULL, NULL},
+    };
+
     const luaL_Reg* lib;
     if (FFlag::LuauIntegerLibrary)
         lib = lualibs;
@@ -57,7 +70,7 @@ void luaL_openlibs(lua_State* L)
     if (FFlag::DebugLuauUserDefinedClassesRuntime)
     {
         lua_pushcfunction(L, luaopen_class, NULL);
-        lua_pushstring(L, LUA_CLASSLIBNAME);
+        lua_pushstring(L, MINCRYPT(LUA_CLASSLIBNAME));
         lua_call(L, 1, 0);
     }
 }
@@ -98,7 +111,7 @@ void luaL_sandboxthread(lua_State* L)
 
     lua_newtable(L);
     lua_pushvalue(L, LUA_GLOBALSINDEX);
-    lua_setfield(L, -2, "__index");
+    lua_setfield(L, -2, MINCRYPT_LAZY("__index")());
     lua_setreadonly(L, -1, true);
 
     lua_setmetatable(L, -2);

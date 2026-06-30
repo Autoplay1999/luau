@@ -5,17 +5,24 @@
 #include "ldebug.h"
 #include "lstate.h"
 #include "lvm.h"
+#include "MinCrypt.hpp"
 
 #define CO_STATUS_ERROR -1
 #define CO_STATUS_BREAK -2
 
-static const char* const statnames[] = {"running", "suspended", "normal", "dead", "dead"}; // dead appears twice for LUA_COERR and LUA_COFIN
+static const GetStrFunc statnames[] = {
+    MINCRYPT_LAZY("running"),
+    MINCRYPT_LAZY("suspended"),
+    MINCRYPT_LAZY("normal"),
+    MINCRYPT_LAZY("dead"),
+    MINCRYPT_LAZY("dead"),
+}; // dead appears twice for LUA_COERR and LUA_COFIN
 
 static int costatus(lua_State* L)
 {
     lua_State* co = lua_tothread(L, 1);
-    luaL_argexpected(L, co, 1, "thread");
-    lua_pushstring(L, statnames[lua_costatus(L, co)]);
+    luaL_argexpected(L, co, 1, MINCRYPT_LAZY("thread")());
+    lua_pushstring(L, statnames[lua_costatus(L, co)]());
     return 1;
 }
 
@@ -27,7 +34,7 @@ static int auxresume(lua_State* L, lua_State* co, int narg)
         int status = lua_costatus(L, co);
         if (status != LUA_COSUS)
         {
-            lua_pushfstring(L, "cannot resume %s coroutine", statnames[status]);
+            lua_pushfstring(L, MINCRYPT("cannot resume %s coroutine"), statnames[status]());
             return CO_STATUS_ERROR;
         }
     }
@@ -35,14 +42,14 @@ static int auxresume(lua_State* L, lua_State* co, int narg)
     if (narg)
     {
         if (!lua_checkstack(co, narg))
-            luaL_error(L, "too many arguments to resume");
+            luaL_error(L, MINCRYPT("too many arguments to resume"));
         lua_xmove(L, co, narg);
     }
     else
     {
         // coroutine might be completely full already
         if ((co->top - co->base) > LUAI_MAXCSTACK)
-            luaL_error(L, "too many arguments to resume");
+            luaL_error(L, MINCRYPT("too many arguments to resume"));
     }
 
     co->singlestep = L->singlestep;
@@ -55,7 +62,7 @@ static int auxresume(lua_State* L, lua_State* co, int narg)
         {
             // +1 accounts for true/false status in resumefinish
             if (nres + 1 > LUA_MINSTACK && !lua_checkstack(L, nres + 1))
-                luaL_error(L, "too many results to resume");
+                luaL_error(L, MINCRYPT("too many results to resume"));
             lua_xmove(co, L, nres); // move yielded values
         }
         return nres;
@@ -86,7 +93,7 @@ static int auxresumecont(lua_State* L, lua_State* co)
     {
         int nres = cast_int(co->top - co->base);
         if (!lua_checkstack(L, nres + 1))
-            luaL_error(L, "too many results to resume");
+            luaL_error(L, MINCRYPT("too many results to resume"));
         lua_xmove(co, L, nres); // move yielded values
         return nres;
     }
@@ -117,7 +124,7 @@ static int coresumefinish(lua_State* L, int r)
 static int coresumey(lua_State* L)
 {
     lua_State* co = lua_tothread(L, 1);
-    luaL_argexpected(L, co, 1, "thread");
+    luaL_argexpected(L, co, 1, MINCRYPT_LAZY("thread")());
     int narg = cast_int(L->top - L->base) - 1;
     int r = auxresume(L, co, narg);
 
@@ -130,7 +137,7 @@ static int coresumey(lua_State* L)
 static int coresumecont(lua_State* L, int status)
 {
     lua_State* co = lua_tothread(L, 1);
-    luaL_argexpected(L, co, 1, "thread");
+    luaL_argexpected(L, co, 1, MINCRYPT_LAZY("thread")());
 
     // if coroutine still hasn't yielded after the break, break current thread again
     if (co->status == LUA_BREAK)
@@ -219,11 +226,11 @@ static int coyieldable(lua_State* L)
 static int coclose(lua_State* L)
 {
     lua_State* co = lua_tothread(L, 1);
-    luaL_argexpected(L, co, 1, "thread");
+    luaL_argexpected(L, co, 1, MINCRYPT_LAZY("thread")());
 
     int status = lua_costatus(L, co);
     if (status != LUA_COFIN && status != LUA_COERR && status != LUA_COSUS)
-        luaL_error(L, "cannot close %s coroutine", statnames[status]);
+        luaL_error(L, MINCRYPT("cannot close %s coroutine"), statnames[status]());
 
     if (co->status == LUA_OK || co->status == LUA_YIELD)
     {
@@ -236,9 +243,9 @@ static int coclose(lua_State* L)
         lua_pushboolean(L, false);
 
         if (co->status == LUA_ERRMEM)
-            lua_pushstring(L, LUA_MEMERRMSG);
+            lua_pushstring(L, MINCRYPT_LAZY("LUA_MEMERRMSG")());
         else if (co->status == LUA_ERRERR)
-            lua_pushstring(L, LUA_ERRERRMSG);
+            lua_pushstring(L, MINCRYPT_LAZY("LUA_ERRERRMSG")());
         else if (lua_gettop(co))
             lua_xmove(co, L, 1); // move error message
 
@@ -247,23 +254,32 @@ static int coclose(lua_State* L)
     }
 }
 
-static const luaL_Reg co_funcs[] = {
-    {"create", cocreate},
-    {"running", corunning},
-    {"status", costatus},
-    {"wrap", cowrap},
-    {"yield", coyield},
-    {"isyieldable", coyieldable},
-    {"close", coclose},
-    {NULL, NULL},
-};
-
 int luaopen_coroutine(lua_State* L)
 {
-    luaL_register(L, LUA_COLIBNAME, co_funcs);
+    auto n_create = MINCRYPT_STACK_CODE("create");
+    auto n_running = MINCRYPT_STACK_CODE("running");
+    auto n_status = MINCRYPT_STACK_CODE("status");
+    auto n_wrap = MINCRYPT_STACK_CODE("wrap");
+    auto n_yield = MINCRYPT_STACK_CODE("yield");
+    auto n_isyieldable = MINCRYPT_STACK_CODE("isyieldable");
+    auto n_close = MINCRYPT_STACK_CODE("close");
+    auto n_resume = MINCRYPT_STACK_CODE("resume");
 
-    lua_pushcclosurek(L, coresumey, "resume", 0, coresumecont);
-    lua_setfield(L, -2, "resume");
+    luaL_Reg co_funcs[] = {
+        {n_create.get_data(), cocreate},
+        {n_running.get_data(), corunning},
+        {n_status.get_data(), costatus},
+        {n_wrap.get_data(), cowrap},
+        {n_yield.get_data(), coyield},
+        {n_isyieldable.get_data(), coyieldable},
+        {n_close.get_data(), coclose},
+        {NULL, NULL},
+    };
+
+    luaL_register(L, MINCRYPT(LUA_COLIBNAME), co_funcs);
+
+    lua_pushcclosurek(L, coresumey, n_resume.get_data(), 0, coresumecont);
+    lua_setfield(L, -2, n_resume.get_data());
 
     return 1;
 }

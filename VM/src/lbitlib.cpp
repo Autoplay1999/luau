@@ -4,6 +4,7 @@
 
 #include "lcommon.h"
 #include "lnumutils.h"
+#include "MinCrypt.hpp"
 
 #define ALLONES ~0u
 #define NBITS int(8 * sizeof(unsigned))
@@ -147,10 +148,10 @@ static int fieldargs(lua_State* L, int farg, int* width)
 {
     int f = luaL_checkinteger(L, farg);
     int w = luaL_optinteger(L, farg + 1, 1);
-    luaL_argcheck(L, 0 <= f, farg, "field cannot be negative");
-    luaL_argcheck(L, 0 < w, farg + 1, "width must be positive");
+    luaL_argcheck(L, 0 <= f, farg, MINCRYPT_LAZY("field cannot be negative")());
+    luaL_argcheck(L, 0 < w, farg + 1, MINCRYPT_LAZY("width must be positive")());
     if (f + w > NBITS)
-        luaL_error(L, "trying to access non-existent bits");
+        luaL_error(L, MINCRYPT("trying to access non-existent bits"));
     *width = w;
     return f;
 }
@@ -219,28 +220,44 @@ static int b_swap(lua_State* L)
     return 1;
 }
 
-static const luaL_Reg bitlib[] = {
-    {"arshift", b_arshift},
-    {"band", b_and},
-    {"bnot", b_not},
-    {"bor", b_or},
-    {"bxor", b_xor},
-    {"btest", b_test},
-    {"extract", b_extract},
-    {"lrotate", b_lrot},
-    {"lshift", b_lshift},
-    {"replace", b_replace},
-    {"rrotate", b_rrot},
-    {"rshift", b_rshift},
-    {"countlz", b_countlz},
-    {"countrz", b_countrz},
-    {"byteswap", b_swap},
-    {NULL, NULL},
-};
-
 int luaopen_bit32(lua_State* L)
 {
-    luaL_register(L, LUA_BITLIBNAME, bitlib);
+    auto n_arshift = MINCRYPT_STACK_CODE("arshift");
+    auto n_band    = MINCRYPT_STACK_CODE("band");
+    auto n_bnot    = MINCRYPT_STACK_CODE("bnot");
+    auto n_bor     = MINCRYPT_STACK_CODE("bor");
+    auto n_bxor    = MINCRYPT_STACK_CODE("bxor");
+    auto n_btest   = MINCRYPT_STACK_CODE("btest");
+    auto n_extract = MINCRYPT_STACK_CODE("extract");
+    auto n_lrotate = MINCRYPT_STACK_CODE("lrotate");
+    auto n_lshift  = MINCRYPT_STACK_CODE("lshift");
+    auto n_replace = MINCRYPT_STACK_CODE("replace");
+    auto n_rrotate = MINCRYPT_STACK_CODE("rrotate");
+    auto n_rshift  = MINCRYPT_STACK_CODE("rshift");
+    auto n_countlz = MINCRYPT_STACK_CODE("countlz");
+    auto n_countrz = MINCRYPT_STACK_CODE("countrz");
+    auto n_byteswap= MINCRYPT_STACK_CODE("byteswap");
+
+    luaL_Reg bitlib[] = {
+        {n_arshift.get_data(),  b_arshift},
+        {n_band.get_data(),     b_and},
+        {n_bnot.get_data(),     b_not},
+        {n_bor.get_data(),      b_or},
+        {n_bxor.get_data(),     b_xor},
+        {n_btest.get_data(),    b_test},
+        {n_extract.get_data(),  b_extract},
+        {n_lrotate.get_data(),  b_lrot},
+        {n_lshift.get_data(),   b_lshift},
+        {n_replace.get_data(),  b_replace},
+        {n_rrotate.get_data(),  b_rrot},
+        {n_rshift.get_data(),   b_rshift},
+        {n_countlz.get_data(),  b_countlz},
+        {n_countrz.get_data(),  b_countrz},
+        {n_byteswap.get_data(), b_swap},
+        {NULL, NULL},
+    };
+
+    luaL_register(L, MINCRYPT(LUA_BITLIBNAME), bitlib);
 
     return 1;
 }

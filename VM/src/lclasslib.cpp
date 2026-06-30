@@ -3,6 +3,7 @@
 #include "lua.h"
 #include "lualib.h"
 #include "lstate.h"
+#include "MinCrypt.hpp"
 
 
 static int class_isinstance(lua_State* L)
@@ -31,17 +32,17 @@ static int class_classof(lua_State* L)
     return 1;
 }
 
-static const luaL_Reg classlib[] = {
-    {"isinstance", class_isinstance},
-    {"classof", class_classof},
-    {nullptr, nullptr},
-};
-
-/*
-** Open class library
-*/
 int luaopen_class(lua_State* L)
 {
-    luaL_register(L, LUA_CLASSLIBNAME, classlib);
+    auto n_isinstance = MINCRYPT_STACK_CODE("isinstance");
+    auto n_classof = MINCRYPT_STACK_CODE("classof");
+
+    luaL_Reg classlib[] = {
+        {n_isinstance.get_data(), class_isinstance},
+        {n_classof.get_data(), class_classof},
+        {nullptr, nullptr},
+    };
+
+    luaL_register(L, MINCRYPT(LUA_CLASSLIBNAME), classlib);
     return 1;
 }
