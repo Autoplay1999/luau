@@ -13,6 +13,7 @@
 #include "ltm.h"
 #include "lualib.h"
 #include "lvm.h"
+#include "MinCrypt.hpp"
 
 LuauClass* luaR_newclass(
     lua_State* L,
@@ -43,7 +44,7 @@ LuauClass* luaR_newclass(
     // environment.
     Closure* constructor = luaF_newCclosure(L, 0, L->gt);
     constructor->c.f = luaR_createobject;
-    constructor->c.debugname = "luaR_createobject";
+    constructor->c.debugname = MINCRYPT_LAZY("luaR_createobject")();
     constructor->c.cont = NULL;
     TValue* dest = luaH_setstr(L, classobject->metatable, L->global->tmname[TM_CALL]);
     LUAU_ASSERT(ttisnil(dest));
@@ -69,7 +70,7 @@ void luaR_addclassmember(lua_State* L, LuauClass* classobject, TString* name, TV
     luaC_barrier(L, classobject, value);
 
     // Only metamethods in the parser's allowlist are supported (see ALLOWED_METAMETHODS in Parser.cpp)
-    bool isMetamethod = (name == luaS_newlstr(L, "__tostring", 10));
+    bool isMetamethod = (name == luaS_newlstr(L, MINCRYPT_LAZY("__tostring")(), 10));
     for (int i = 0; i < TM_N && !isMetamethod; i++)
         isMetamethod = (name == L->global->tmname[i]);
 
@@ -127,7 +128,7 @@ int luaR_createobject(lua_State* L)
         }
         break;
     default:
-        luaL_error(L, "wrong number of arguments for constructing a '%s'", getstr(classobject->name));
+        luaL_error(L, MINCRYPT("wrong number of arguments for constructing a '%s'"), getstr(classobject->name));
     }
 
     L->top--;

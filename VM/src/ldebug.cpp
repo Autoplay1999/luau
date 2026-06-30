@@ -10,6 +10,7 @@
 #include "lbytecode.h"
 
 #include <string.h>
+#include "MinCrypt.hpp"
 #include <stdio.h>
 
 LUAU_FASTFLAG(LuauCIProto)
@@ -125,16 +126,16 @@ static Closure* auxgetinfo(lua_State* L, const char* what, lua_Debug* ar, Closur
         {
             if (f->isC)
             {
-                ar->source = "=[C]";
+                ar->source = MINCRYPT_LAZY("=[C]")();
                 ar->what = "C";
                 ar->linedefined = -1;
-                ar->short_src = "[C]";
+                ar->short_src = MINCRYPT_LAZY("[C]")();
             }
             else
             {
                 TString* source = (FFlag::LuauCIProto && ci != nullptr ? ci->p : f->l.p)->source;
                 ar->source = getstr(source);
-                ar->what = "Lua";
+                ar->what = MINCRYPT_LAZY("Lua")();
                 ar->linedefined = (FFlag::LuauCIProto && ci != nullptr ? ci->p : f->l.p)->linedefined;
                 ar->short_src = luaO_chunkid(ar->ssbuf, sizeof(ar->ssbuf), getstr(source), source->len);
             }
@@ -255,14 +256,14 @@ l_noret luaG_typeerrorL(lua_State* L, const TValue* o, const char* op)
 {
     const char* t = luaT_objtypename(L, o);
 
-    luaG_runerror(L, "attempt to %s a %s value", op, t);
+    luaG_runerror(L, MINCRYPT("attempt to %s a %s value"), op, t);
 }
 
 l_noret luaG_forerrorL(lua_State* L, const TValue* o, const char* what)
 {
     const char* t = luaT_objtypename(L, o);
 
-    luaG_runerror(L, "invalid 'for' %s (number expected, got %s)", what, t);
+    luaG_runerror(L, MINCRYPT("invalid 'for' %s (number expected, got %s)"), what, t);
 }
 
 l_noret luaG_concaterror(lua_State* L, StkId p1, StkId p2)
@@ -270,19 +271,19 @@ l_noret luaG_concaterror(lua_State* L, StkId p1, StkId p2)
     const char* t1 = luaT_objtypename(L, p1);
     const char* t2 = luaT_objtypename(L, p2);
 
-    luaG_runerror(L, "attempt to concatenate %s with %s", t1, t2);
+    luaG_runerror(L, MINCRYPT("attempt to concatenate %s with %s"), t1, t2);
 }
 
 l_noret luaG_aritherror(lua_State* L, const TValue* p1, const TValue* p2, TMS op)
 {
     const char* t1 = luaT_objtypename(L, p1);
     const char* t2 = luaT_objtypename(L, p2);
-    const char* opname = luaT_eventname[op] + 2; // skip __ from metamethod name
+    const char* opname = luaT_eventname[op]() + 2; // skip __ from metamethod name
 
     if (t1 == t2)
-        luaG_runerror(L, "attempt to perform arithmetic (%s) on %s", opname, t1);
+        luaG_runerror(L, MINCRYPT("attempt to perform arithmetic (%s) on %s"), opname, t1);
     else
-        luaG_runerror(L, "attempt to perform arithmetic (%s) on %s and %s", opname, t1, t2);
+        luaG_runerror(L, MINCRYPT("attempt to perform arithmetic (%s) on %s and %s"), opname, t1, t2);
 }
 
 l_noret luaG_ordererror(lua_State* L, const TValue* p1, const TValue* p2, TMS op)
@@ -291,7 +292,7 @@ l_noret luaG_ordererror(lua_State* L, const TValue* p1, const TValue* p2, TMS op
     const char* t2 = luaT_objtypename(L, p2);
     const char* opname = (op == TM_LT) ? "<" : (op == TM_LE) ? "<=" : "==";
 
-    luaG_runerror(L, "attempt to compare %s %s %s", t1, opname, t2);
+    luaG_runerror(L, MINCRYPT("attempt to compare %s %s %s"), t1, opname, t2);
 }
 
 l_noret luaG_indexerror(lua_State* L, const TValue* p1, const TValue* p2)
@@ -301,29 +302,29 @@ l_noret luaG_indexerror(lua_State* L, const TValue* p1, const TValue* p2)
     const TString* key = ttisstring(p2) ? tsvalue(p2) : 0;
 
     if (key && key->len <= 64) // limit length to make sure we don't generate very long error messages for very long keys
-        luaG_runerror(L, "attempt to index %s with '%s'", t1, getstr(key));
+        luaG_runerror(L, MINCRYPT("attempt to index %s with '%s'"), t1, getstr(key));
     else
-        luaG_runerror(L, "attempt to index %s with %s", t1, t2);
+        luaG_runerror(L, MINCRYPT("attempt to index %s with %s"), t1, t2);
 }
 
 l_noret luaG_missingmembererror(lua_State* L, const TValue* p1, const TValue* p2)
 {
     if (!ttisstring(p2))
-        luaG_runerrorL(L, "cannot index %s with a %s", luaT_objtypename(L, p1), luaT_objtypename(L, p2));
+        luaG_runerrorL(L, MINCRYPT("cannot index %s with a %s"), luaT_objtypename(L, p1), luaT_objtypename(L, p2));
     else
-        luaG_runerrorL(L, "this %s does not have a key named '%s'", luaT_objtypename(L, p1), getstr(tsvalue(p2)));
+        luaG_runerrorL(L, MINCRYPT("this %s does not have a key named '%s'"), luaT_objtypename(L, p1), getstr(tsvalue(p2)));
 }
 
 l_noret luaG_methoderror(lua_State* L, const TValue* p1, const TString* p2)
 {
     const char* t1 = luaT_objtypename(L, p1);
 
-    luaG_runerror(L, "attempt to call missing method '%s' of %s", getstr(p2), t1);
+    luaG_runerror(L, MINCRYPT("attempt to call missing method '%s' of %s"), getstr(p2), t1);
 }
 
 l_noret luaG_readonlyerror(lua_State* L)
 {
-    luaG_runerror(L, "attempt to modify a readonly table");
+    luaG_runerror(L, MINCRYPT("attempt to modify a readonly table"));
 }
 
 static void pusherror(lua_State* L, const char* msg)
@@ -335,7 +336,7 @@ static void pusherror(lua_State* L, const char* msg)
         char chunkbuf[LUA_IDSIZE]; // add file:line information
         const char* chunkid = luaO_chunkid(chunkbuf, sizeof(chunkbuf), getstr(source), source->len);
         int line = currentline(L, ci);
-        luaO_pushfstring(L, "%s:%d: %s", chunkid, line, msg);
+        luaO_pushfstring(L, MINCRYPT("%s:%d: %s"), chunkid, line, msg);
     }
     else
     {
@@ -649,7 +650,7 @@ const char* lua_debugtrace(lua_State* L)
     size_t offset = 0;
 
     lua_Debug ar;
-    for (int level = 0; lua_getinfo(L, level, "sln", &ar); ++level)
+    for (int level = 0; lua_getinfo(L, level, MINCRYPT("sln"), &ar); ++level)
     {
         if (ar.source)
             offset = append(buf, sizeof(buf), offset, ar.short_src);
@@ -657,14 +658,14 @@ const char* lua_debugtrace(lua_State* L)
         if (ar.currentline > 0)
         {
             char line[32];
-            snprintf(line, sizeof(line), ":%d", ar.currentline);
+            snprintf(line, sizeof(line), MINCRYPT(":%d"), ar.currentline);
 
             offset = append(buf, sizeof(buf), offset, line);
         }
 
         if (ar.name)
         {
-            offset = append(buf, sizeof(buf), offset, " function ");
+            offset = append(buf, sizeof(buf), offset, MINCRYPT(" function "));
             offset = append(buf, sizeof(buf), offset, ar.name);
         }
 
@@ -673,7 +674,7 @@ const char* lua_debugtrace(lua_State* L)
         if (depth > limit1 + limit2 && level == limit1 - 1)
         {
             char skip[32];
-            snprintf(skip, sizeof(skip), "... (+%d frames)\n", int(depth - limit1 - limit2));
+            snprintf(skip, sizeof(skip), MINCRYPT("... (+%d frames)\n"), int(depth - limit1 - limit2));
 
             offset = append(buf, sizeof(buf), offset, skip);
 

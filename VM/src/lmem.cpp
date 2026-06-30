@@ -5,6 +5,7 @@
 #include "lstate.h"
 #include "ldo.h"
 #include "ldebug.h"
+#include "MinCrypt.hpp"
 
 #include <string.h>
 
@@ -234,7 +235,7 @@ static_assert(offsetof(lua_Page, data) % 16 == 0, "data must be 16 byte aligned 
 
 l_noret luaM_toobig(lua_State* L)
 {
-    luaG_runerror(L, "memory allocation error: block too big");
+    luaG_runerror(L, MINCRYPT("memory allocation error: block too big"));
 }
 
 static lua_Page* newpage(lua_State* L, lua_Page** pageset, int pageSize, int blockSize, int blockCount)

@@ -14,53 +14,53 @@
 #include <string.h>
 
 // clang-format off
-const char* const luaT_typenames[] = {
+const GetStrFunc luaT_typenames[] = {
     // ORDER TYPE
-    "nil",
-    "boolean",
+    MINCRYPT_LAZY("nil"),
+    MINCRYPT_LAZY("boolean"),
 
-    "userdata",
-    "number",
-    "integer",
-    "vector",
+    MINCRYPT_LAZY("userdata"),
+    MINCRYPT_LAZY("number"),
+    MINCRYPT_LAZY("integer"),
+    MINCRYPT_LAZY("vector"),
 
-    "string",
+    MINCRYPT_LAZY("string"),
 
-    "table",
-    "function",
-    "userdata",
-    "thread",
-    "buffer",
-    "class",
-    "object",
+    MINCRYPT_LAZY("table"),
+    MINCRYPT_LAZY("function"),
+    MINCRYPT_LAZY("userdata"),
+    MINCRYPT_LAZY("thread"),
+    MINCRYPT_LAZY("buffer"),
+    MINCRYPT_LAZY("class"),
+    MINCRYPT_LAZY("object"),
 };
 
-const char* const luaT_eventname[] = {
+const GetStrFunc luaT_eventname[] = {
     // ORDER TM
-    "__index",
-    "__newindex",
-    "__mode",
-    "__namecall",
-    "__call",
-    "__iter",
-    "__len",
+    MINCRYPT_LAZY("__index"),
+    MINCRYPT_LAZY("__newindex"),
+    MINCRYPT_LAZY("__mode"),
+    MINCRYPT_LAZY("__namecall"),
+    MINCRYPT_LAZY("__call"),
+    MINCRYPT_LAZY("__iter"),
+    MINCRYPT_LAZY("__len"),
 
-    "__eq",
+    MINCRYPT_LAZY("__eq"),
 
-    "__add",
-    "__sub",
-    "__mul",
-    "__div",
-    "__idiv",
-    "__mod",
-    "__pow",
-    "__unm",
+    MINCRYPT_LAZY("__add"),
+    MINCRYPT_LAZY("__sub"),
+    MINCRYPT_LAZY("__mul"),
+    MINCRYPT_LAZY("__div"),
+    MINCRYPT_LAZY("__idiv"),
+    MINCRYPT_LAZY("__mod"),
+    MINCRYPT_LAZY("__pow"),
+    MINCRYPT_LAZY("__unm"),
 
-    "__lt",
-    "__le",
-    "__concat",
-    "__type",
-    "__metatable",
+    MINCRYPT_LAZY("__lt"),
+    MINCRYPT_LAZY("__le"),
+    MINCRYPT_LAZY("__concat"),
+    MINCRYPT_LAZY("__type"),
+    MINCRYPT_LAZY("__metatable"),
 };
 // clang-format on
 
@@ -73,12 +73,12 @@ void luaT_init(lua_State* L)
     int i;
     for (i = 0; i < LUA_T_COUNT; i++)
     {
-        L->global->ttname[i] = luaS_new(L, luaT_typenames[i]);
+        L->global->ttname[i] = luaS_new(L, luaT_typenames[i]());
         luaS_fix(L->global->ttname[i]); // never collect these names
     }
     for (i = 0; i < TM_N; i++)
     {
-        L->global->tmname[i] = luaS_new(L, luaT_eventname[i]);
+        L->global->tmname[i] = luaS_new(L, luaT_eventname[i]());
         luaS_fix(L->global->tmname[i]); // never collect these names
     }
 }

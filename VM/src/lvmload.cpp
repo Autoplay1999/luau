@@ -15,8 +15,9 @@
 #include "lapi.h"
 
 #include <string.h>
+#include "MinCrypt.hpp"
 
-LUAU_FASTFLAGVARIABLE(LuauUdataDirectAccess6)
+LUAU_FASTFLAGVARIABLE_CRYPT(LuauUdataDirectAccess6)
 LUAU_FASTFLAG(LuauCallFeedback)
 
 template<typename T>
@@ -293,7 +294,7 @@ static int loadsafe(
     {
         char chunkbuf[LUA_IDSIZE];
         const char* chunkid = luaO_chunkid(chunkbuf, sizeof(chunkbuf), chunkname, strlen(chunkname));
-        lua_pushfstring(L, "%s%.*s", chunkid, int(size - offset), data + offset);
+        lua_pushfstring(L, MINCRYPT("%s%.*s"), chunkid, int(size - offset), data + offset);
         return 1;
     }
 
@@ -301,7 +302,7 @@ static int loadsafe(
     {
         char chunkbuf[LUA_IDSIZE];
         const char* chunkid = luaO_chunkid(chunkbuf, sizeof(chunkbuf), chunkname, strlen(chunkname));
-        lua_pushfstring(L, "%s: bytecode version mismatch (expected [%d..%d], got %d)", chunkid, LBC_VERSION_MIN, LBC_VERSION_MAX, version);
+        lua_pushfstring(L, MINCRYPT("%s: bytecode version mismatch (expected [%d..%d], got %d)"), chunkid, LBC_VERSION_MIN, LBC_VERSION_MAX, version);
         return 1;
     }
 
@@ -316,7 +317,7 @@ static int loadsafe(
             char chunkbuf[LUA_IDSIZE];
             const char* chunkid = luaO_chunkid(chunkbuf, sizeof(chunkbuf), chunkname, strlen(chunkname));
             lua_pushfstring(
-                L, "%s: bytecode type version mismatch (expected [%d..%d], got %d)", chunkid, LBC_TYPE_VERSION_MIN, LBC_TYPE_VERSION_MAX, typesversion
+                L, MINCRYPT("%s: bytecode type version mismatch (expected [%d..%d], got %d)"), chunkid, LBC_TYPE_VERSION_MIN, LBC_TYPE_VERSION_MAX, typesversion
             );
             return 1;
         }
@@ -809,7 +810,7 @@ int luau_load(lua_State* L, const char* chunkname, const char* data, size_t size
 
     if (status == LUA_ERRMEM)
     {
-        lua_pushstring(L, LUA_MEMERRMSG); // out-of-memory error message doesn't require an allocation
+        lua_pushstring(L, MINCRYPT_LAZY("LUA_MEMERRMSG")()); // out-of-memory error message doesn't require an allocation
         return 1;
     }
 

@@ -30,6 +30,7 @@
 #include "lgc.h"
 #include "lmem.h"
 #include "lnumutils.h"
+#include "MinCrypt.hpp"
 
 #include <string.h>
 
@@ -217,7 +218,7 @@ static int findindex(lua_State* L, LuaTable* t, StkId key)
                 break;
             n += gnext(n);
         }
-        luaG_runerror(L, "invalid key to 'next'"); // key not found
+        luaG_runerror(L, MINCRYPT("invalid key to 'next'")); // key not found
     }
 }
 
@@ -347,7 +348,7 @@ static int numusehash(const LuaTable* t, int* nums, int* pnasize)
 static void setarrayvector(lua_State* L, LuaTable* t, int size)
 {
     if (size > MAXSIZE)
-        luaG_runerror(L, "table overflow");
+        luaG_runerror(L, MINCRYPT("table overflow"));
     luaM_reallocarray(L, t->array, t->sizearray, size, TValue, t->memcat);
     TValue* array = t->array;
     for (int i = t->sizearray; i < size; i++)
@@ -368,7 +369,7 @@ static void setnodevector(lua_State* L, LuaTable* t, int size)
         int i;
         lsize = ceillog2(size);
         if (lsize > MAXBITS)
-            luaG_runerror(L, "table overflow");
+            luaG_runerror(L, MINCRYPT("table overflow"));
         size = twoto(lsize);
         t->node = luaM_newarray(L, size, LuaNode, t->memcat);
         for (i = 0; i < size; i++)
@@ -403,7 +404,7 @@ static TValue* arrayornewkey(lua_State* L, LuaTable* t, const TValue* key)
 static void resize(lua_State* L, LuaTable* t, int nasize, int nhsize)
 {
     if (nasize > MAXSIZE || nhsize > MAXSIZE)
-        luaG_runerror(L, "table overflow");
+        luaG_runerror(L, MINCRYPT("table overflow"));
     int oldasize = t->sizearray;
     int oldhsize = t->lsizenode;
     LuaNode* nold = t->node; // save old hash ...
@@ -735,11 +736,11 @@ TValue* luaH_set(lua_State* L, LuaTable* t, const TValue* key)
 TValue* luaH_newkey(lua_State* L, LuaTable* t, const TValue* key)
 {
     if (ttisnil(key))
-        luaG_runerror(L, "table index is nil");
+        luaG_runerror(L, MINCRYPT("table index is nil"));
     else if (ttisnumber(key) && luai_numisnan(nvalue(key)))
-        luaG_runerror(L, "table index is NaN");
+        luaG_runerror(L, MINCRYPT("table index is NaN"));
     else if (ttisvector(key) && luai_vecisnan(vvalue(key)))
-        luaG_runerror(L, "table index contains NaN");
+        luaG_runerror(L, MINCRYPT("table index contains NaN"));
     return newkey(L, t, key);
 }
 

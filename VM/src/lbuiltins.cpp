@@ -1,5 +1,6 @@
 // This file is part of the Luau programming language and is licensed under MIT License; see LICENSE.txt for details
 // This code is based on Lua 5.x implementation licensed under MIT License; see lua_LICENSE.txt for details
+#include "MinCrypt.hpp"
 #include "lbuiltins.h"
 
 #include "lstate.h"
@@ -1303,7 +1304,7 @@ static int luauF_tostring(lua_State* L, StkId res, TValue* arg0, int nresults, S
         }
         case LUA_TBOOLEAN:
         {
-            TString* s = bvalue(arg0) ? luaS_newliteral(L, "true") : luaS_newliteral(L, "false");
+            TString* s = bvalue(arg0) ? luaS_new(L, MINCRYPT_LAZY("true")()) : luaS_new(L, MINCRYPT_LAZY("false")());
             setsvalue(L, res, s);
             return 1;
         }

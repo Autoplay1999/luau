@@ -14,12 +14,13 @@
 #include "lvm.h"
 #include "lnumutils.h"
 #include "lbuffer.h"
+#include "MinCrypt.hpp"
 
 #include <string.h>
 
 LUAU_FASTFLAG(LuauDirectFieldGet)
-LUAU_FASTFLAGVARIABLE(LuauAutoStack)
-LUAU_FASTFLAGVARIABLE(LuauCloneTableFix)
+LUAU_FASTFLAGVARIABLE_CRYPT(LuauAutoStack)
+LUAU_FASTFLAGVARIABLE_CRYPT(LuauCloneTableFix)
 
 /*
  * This file contains most implementations of core Lua APIs from lua.h.
@@ -41,12 +42,14 @@ LUAU_FASTFLAGVARIABLE(LuauCloneTableFix)
  * therefore call luaC_checkGC before luaC_threadbarrier to guarantee the object is pushed to a gray thread.
  */
 
+#if 0
 const char* lua_ident = "$Lua: Lua 5.1.4 Copyright (C) 1994-2008 Lua.org, PUC-Rio $\n"
                         "$Authors: R. Ierusalimschy, L. H. de Figueiredo & W. Celes $\n"
                         "$URL: www.lua.org $\n";
 
 const char* luau_ident = "$Luau: Copyright (C) 2019-2024 Roblox Corporation $\n"
                          "$URL: luau.org $\n";
+#endif
 
 #define api_checknelems(L, n) api_check(L, (n) <= (L->top - L->base))
 
@@ -56,7 +59,7 @@ const char* luau_ident = "$Luau: Copyright (C) 2019-2024 Roblox Corporation $\n"
     { \
         if (FFlag::LuauAutoStack && L->top + (size) > L->ci->top && !lua_checkstack(L, (size))) \
         { \
-            luaO_pushfstring(errorL, "stack overflow"); \
+            luaO_pushfstring(errorL, MINCRYPT("stack overflow")); \
             lua_error(errorL); \
         } \
     }
@@ -347,7 +350,7 @@ const char* lua_typename(lua_State* L, int t)
 {
     api_check(L, t >= LUA_TNONE && t < LUA_T_COUNT);
 
-    return (t == LUA_TNONE) ? "no value" : luaT_typenames[t];
+    return (t == LUA_TNONE) ? MINCRYPT_LAZY("no value")() : luaT_typenames[t]();
 }
 
 int lua_iscfunction(lua_State* L, int idx)
@@ -1189,7 +1192,7 @@ static void f_Ccall(lua_State* L, void* ud)
     struct CCallS* c = cast_to(struct CCallS*, ud);
 
     if (!lua_checkstack(L, 2))
-        luaG_runerror(L, "stack limit");
+        luaG_runerror(L, MINCRYPT("stack limit"));
 
     lua_pushcclosurek(L, c->func, nullptr, 0, nullptr);
     lua_pushlightuserdata(L, c->ud);

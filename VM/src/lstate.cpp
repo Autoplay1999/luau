@@ -10,6 +10,7 @@
 #include "ldo.h"
 #include "ldebug.h"
 #include "ludata.h"
+#include "MinCrypt.hpp"
 
 #include <string.h>
 
@@ -64,8 +65,8 @@ static void f_luaopen(lua_State* L, void* ud)
     sethvalue(L, registry(L), luaH_new(L, 0, 2)); // registry
     luaS_resize(L, LUA_MINSTRTABSIZE);            // initial size of string table
     luaT_init(L);
-    luaS_fix(luaS_newliteral(L, LUA_MEMERRMSG)); // pin to make sure we can always throw this error
-    luaS_fix(luaS_newliteral(L, LUA_ERRERRMSG)); // pin to make sure we can always throw this error
+    luaS_fix(luaS_new(L, MINCRYPT_LAZY(LUA_MEMERRMSG)())); // pin to make sure we can always throw this error
+    luaS_fix(luaS_new(L, MINCRYPT_LAZY(LUA_ERRERRMSG)())); // pin to make sure we can always throw this error
     g->GCthreshold = 4 * g->totalbytes;
 }
 

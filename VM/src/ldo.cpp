@@ -16,9 +16,10 @@
 #endif
 
 #include <string.h>
+#include "MinCrypt.hpp"
 
 LUAU_FASTFLAG(LuauYieldIter2)
-LUAU_FASTFLAGVARIABLE(LuauResumeRestoreCcalls)
+LUAU_FASTFLAGVARIABLE_CRYPT(LuauResumeRestoreCcalls)
 LUAU_FASTFLAG(LuauCustomYieldablePcalls)
 
 // keep max stack allocation request under 1GB
@@ -94,15 +95,15 @@ public:
         switch (status)
         {
         case LUA_ERRRUN:
-            return "lua_exception: runtime error";
+            return MINCRYPT_LAZY("lua_exception: runtime error")();
         case LUA_ERRSYNTAX:
-            return "lua_exception: syntax error";
+            return MINCRYPT_LAZY("lua_exception: syntax error")();
         case LUA_ERRMEM:
-            return "lua_exception: " LUA_MEMERRMSG;
+            return MINCRYPT_LAZY("lua_exception: " LUA_MEMERRMSG)();
         case LUA_ERRERR:
-            return "lua_exception: " LUA_ERRERRMSG;
+            return MINCRYPT_LAZY("lua_exception: " LUA_ERRERRMSG)();
         default:
-            return "lua_exception: unexpected exception status";
+            return MINCRYPT_LAZY("lua_exception: unexpected exception status")();
         }
     }
 
@@ -237,7 +238,7 @@ CallInfo* luaD_growCI(lua_State* L)
     luaD_reallocCI(L, L->size_ci >= LUAI_MAXCALLS ? hardlimit : request < LUAI_MAXCALLS ? request : LUAI_MAXCALLS);
 
     if (L->size_ci > LUAI_MAXCALLS)
-        luaG_runerror(L, "stack overflow");
+        luaG_runerror(L, MINCRYPT("stack overflow"));
 
     return ++L->ci;
 }
@@ -248,7 +249,7 @@ void luaD_checkCstack(lua_State* L)
     const int hardlimit = LUAI_MAXCCALLS + (LUAI_MAXCCALLS >> 3);
 
     if (L->nCcalls == LUAI_MAXCCALLS)
-        luaG_runerror(L, "C stack overflow");
+        luaG_runerror(L, MINCRYPT("C stack overflow"));
     else if (L->nCcalls >= hardlimit)
         luaD_throw(L, LUA_ERRERR); // error while handling stack error
 }
@@ -384,12 +385,12 @@ void luaD_seterrorobj(lua_State* L, int errcode, StkId oldtop)
     {
     case LUA_ERRMEM:
     {
-        setsvalue(L, oldtop, luaS_newliteral(L, LUA_MEMERRMSG)); // can not fail because string is pinned in luaopen
+        setsvalue(L, oldtop, luaS_new(L, MINCRYPT_LAZY(LUA_MEMERRMSG)())); // can not fail because string is pinned in luaopen
         break;
     }
     case LUA_ERRERR:
     {
-        setsvalue(L, oldtop, luaS_newliteral(L, LUA_ERRERRMSG)); // can not fail because string is pinned in luaopen
+        setsvalue(L, oldtop, luaS_new(L, MINCRYPT_LAZY(LUA_ERRERRMSG)())); // can not fail because string is pinned in luaopen
         break;
     }
     case LUA_ERRSYNTAX:
@@ -453,7 +454,7 @@ static void resume(lua_State* L, void* ud)
         // start coroutine
         LUAU_ASSERT(L->ci == L->base_ci && firstArg >= L->base);
         if (firstArg == L->base)
-            luaG_runerror(L, "cannot resume dead coroutine");
+            luaG_runerror(L, MINCRYPT("cannot resume dead coroutine"));
 
         int precallresult = luau_precall(L, firstArg - 1, LUA_MULTRET);
 
@@ -667,11 +668,11 @@ static int resume_start(lua_State* L, lua_State* from, int nargs)
     api_check(L, L->top - L->base >= nargs);
 
     if (L->status != LUA_YIELD && L->status != LUA_BREAK && (L->status != 0 || L->ci != L->base_ci))
-        return resume_error(L, "cannot resume non-suspended coroutine", nargs);
+        return resume_error(L, MINCRYPT("cannot resume non-suspended coroutine"), nargs);
 
     L->nCcalls = from ? from->nCcalls : 0;
     if (L->nCcalls >= LUAI_MAXCCALLS)
-        return resume_error(L, "C stack overflow", nargs);
+        return resume_error(L, MINCRYPT("C stack overflow"), nargs);
 
     L->baseCcalls = ++L->nCcalls;
     L->isactive = true;
@@ -770,7 +771,7 @@ int lua_yield(lua_State* L, int nresults)
     api_check(L, nresults <= L->top - L->base);
 
     if (L->nCcalls > L->baseCcalls)
-        luaG_runerror(L, "attempt to yield across metamethod/C-call boundary");
+        luaG_runerror(L, MINCRYPT("attempt to yield across metamethod/C-call boundary"));
     L->base = L->top - nresults; // protect stack slots below
     L->status = LUA_YIELD;
     return -1;
@@ -779,7 +780,7 @@ int lua_yield(lua_State* L, int nresults)
 int lua_break(lua_State* L)
 {
     if (L->nCcalls > L->baseCcalls)
-        luaG_runerror(L, "attempt to break across metamethod/C-call boundary");
+        luaG_runerror(L, MINCRYPT("attempt to break across metamethod/C-call boundary"));
     L->status = LUA_BREAK;
     return -1;
 }
