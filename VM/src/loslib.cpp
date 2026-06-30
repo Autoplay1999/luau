@@ -3,6 +3,7 @@
 #include "lualib.h"
 
 #include "lcommon.h"
+#include "MinCrypt.hpp"
 
 #include <string.h>
 #include <time.h>
@@ -102,7 +103,7 @@ static int getfield(lua_State* L, const char* key, int d)
     else
     {
         if (d < 0)
-            luaL_error(L, "field '%s' missing in date table", key);
+            luaL_error(L, MINCRYPT("field '%s' missing in date table"), key);
         res = d;
     }
     lua_pop(L, 1);
@@ -134,15 +135,15 @@ static int os_date(lua_State* L)
     else if (strcmp(s, "*t") == 0)
     {
         lua_createtable(L, 0, 9); // 9 = number of fields
-        setfield(L, "sec", stm->tm_sec);
-        setfield(L, "min", stm->tm_min);
-        setfield(L, "hour", stm->tm_hour);
-        setfield(L, "day", stm->tm_mday);
-        setfield(L, "month", stm->tm_mon + 1);
-        setfield(L, "year", stm->tm_year + 1900);
-        setfield(L, "wday", stm->tm_wday + 1);
-        setfield(L, "yday", stm->tm_yday + 1);
-        setboolfield(L, "isdst", stm->tm_isdst);
+        setfield(L, MINCRYPT_LAZY("sec")(), stm->tm_sec);
+        setfield(L, MINCRYPT_LAZY("min")(), stm->tm_min);
+        setfield(L, MINCRYPT_LAZY("hour")(), stm->tm_hour);
+        setfield(L, MINCRYPT_LAZY("day")(), stm->tm_mday);
+        setfield(L, MINCRYPT_LAZY("month")(), stm->tm_mon + 1);
+        setfield(L, MINCRYPT_LAZY("year")(), stm->tm_year + 1900);
+        setfield(L, MINCRYPT_LAZY("wday")(), stm->tm_wday + 1);
+        setfield(L, MINCRYPT_LAZY("yday")(), stm->tm_yday + 1);
+        setboolfield(L, MINCRYPT_LAZY("isdst")(), stm->tm_isdst);
     }
     else
     {
@@ -158,9 +159,9 @@ static int os_date(lua_State* L)
             {
                 luaL_addchar(&b, *s);
             }
-            else if (strchr(LUA_STRFTIMEOPTIONS, *(s + 1)) == 0)
+            else if (strchr(MINCRYPT_LAZY(LUA_STRFTIMEOPTIONS)(), *(s + 1)) == 0)
             {
-                luaL_argerror(L, 1, "invalid conversion specifier");
+                luaL_argerror(L, 1, MINCRYPT("invalid conversion specifier"));
             }
             else
             {
@@ -186,13 +187,13 @@ static int os_time(lua_State* L)
         struct tm ts;
         luaL_checktype(L, 1, LUA_TTABLE);
         lua_settop(L, 1); // make sure table is at the top
-        ts.tm_sec = getfield(L, "sec", 0);
-        ts.tm_min = getfield(L, "min", 0);
-        ts.tm_hour = getfield(L, "hour", 12);
-        ts.tm_mday = getfield(L, "day", -1);
-        ts.tm_mon = getfield(L, "month", -1) - 1;
-        ts.tm_year = getfield(L, "year", -1) - 1900;
-        ts.tm_isdst = getboolfield(L, "isdst");
+        ts.tm_sec = getfield(L, MINCRYPT_LAZY("sec")(), 0);
+        ts.tm_min = getfield(L, MINCRYPT_LAZY("min")(), 0);
+        ts.tm_hour = getfield(L, MINCRYPT_LAZY("hour")(), 12);
+        ts.tm_mday = getfield(L, MINCRYPT_LAZY("day")(), -1);
+        ts.tm_mon = getfield(L, MINCRYPT_LAZY("month")(), -1) - 1;
+        ts.tm_year = getfield(L, MINCRYPT_LAZY("year")(), -1) - 1900;
+        ts.tm_isdst = getboolfield(L, MINCRYPT_LAZY("isdst")());
 
         // Note: upstream Lua uses mktime() here which assumes input is local time, but we prefer UTC for consistency
         t = os_timegm(&ts);
@@ -210,16 +211,21 @@ static int os_difftime(lua_State* L)
     return 1;
 }
 
-static const luaL_Reg syslib[] = {
-    {"clock", os_clock},
-    {"date", os_date},
-    {"difftime", os_difftime},
-    {"time", os_time},
-    {NULL, NULL},
-};
-
 int luaopen_os(lua_State* L)
 {
-    luaL_register(L, LUA_OSLIBNAME, syslib);
+    auto n_clock = MINCRYPT_STACK_CODE("clock");
+    auto n_date = MINCRYPT_STACK_CODE("date");
+    auto n_difftime = MINCRYPT_STACK_CODE("difftime");
+    auto n_time = MINCRYPT_STACK_CODE("time");
+
+    luaL_Reg syslib[] = {
+        {n_clock.get_data(), os_clock},
+        {n_date.get_data(), os_date},
+        {n_difftime.get_data(), os_difftime},
+        {n_time.get_data(), os_time},
+        {NULL, NULL},
+    };
+
+    luaL_register(L, MINCRYPT(LUA_OSLIBNAME), syslib);
     return 1;
 }

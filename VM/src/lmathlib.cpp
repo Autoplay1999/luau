@@ -3,6 +3,7 @@
 #include "lualib.h"
 
 #include "lstate.h"
+#include "MinCrypt.hpp"
 
 #include <limits>
 #include <math.h>
@@ -19,7 +20,7 @@
 
 #define PCG32_INC 105
 
-LUAU_FASTFLAGVARIABLE(FixMathNoisePrecision)
+LUAU_FASTFLAGVARIABLE_CRYPT(FixMathNoisePrecision)
 
 static uint32_t pcg32_random(uint64_t* state)
 {
@@ -249,7 +250,7 @@ static int math_random(lua_State* L)
     case 1:
     { // only upper limit
         int u = luaL_checkinteger(L, 1);
-        luaL_argcheck(L, 1 <= u, 1, "interval is empty");
+        luaL_argcheck(L, 1 <= u, 1, MINCRYPT_LAZY("interval is empty")());
 
         uint64_t x = uint64_t(u) * pcg32_random(&g->rngstate);
         int r = int(1 + (x >> 32));
@@ -260,17 +261,17 @@ static int math_random(lua_State* L)
     { // lower and upper limits
         int l = luaL_checkinteger(L, 1);
         int u = luaL_checkinteger(L, 2);
-        luaL_argcheck(L, l <= u, 2, "interval is empty");
+        luaL_argcheck(L, l <= u, 2, MINCRYPT_LAZY("interval is empty")());
 
         uint32_t ul = uint32_t(u) - uint32_t(l);
-        luaL_argcheck(L, ul < UINT_MAX, 2, "interval is too large"); // -INT_MIN..INT_MAX interval can result in integer overflow
+        luaL_argcheck(L, ul < UINT_MAX, 2, MINCRYPT_LAZY("interval is too large")()); // -INT_MIN..INT_MAX interval can result in integer overflow
         uint64_t x = uint64_t(ul + 1) * pcg32_random(&g->rngstate);
         int r = int(l + (x >> 32));
         lua_pushinteger(L, r); // int between `l' and `u'
         break;
     }
     default:
-        luaL_error(L, "wrong number of arguments");
+        luaL_error(L, MINCRYPT("wrong number of arguments"));
     }
     return 1;
 }
@@ -373,9 +374,9 @@ static int math_noise(lua_State* L)
     double y = lua_tonumberx(L, 2, &ny);
     double z = lua_tonumberx(L, 3, &nz);
 
-    luaL_argexpected(L, nx, 1, "number");
-    luaL_argexpected(L, ny || lua_isnoneornil(L, 2), 2, "number");
-    luaL_argexpected(L, nz || lua_isnoneornil(L, 3), 3, "number");
+    luaL_argexpected(L, nx, 1, MINCRYPT_LAZY("number")());
+    luaL_argexpected(L, ny || lua_isnoneornil(L, 2), 2, MINCRYPT_LAZY("number")());
+    luaL_argexpected(L, nz || lua_isnoneornil(L, 3), 3, MINCRYPT_LAZY("number")());
 
     if (FFlag::FixMathNoisePrecision)
     {
@@ -400,7 +401,7 @@ static int math_clamp(lua_State* L)
     double min = luaL_checknumber(L, 2);
     double max = luaL_checknumber(L, 3);
 
-    luaL_argcheck(L, min <= max, 3, "max must be greater than or equal to min");
+    luaL_argcheck(L, min <= max, 3, MINCRYPT_LAZY("max must be greater than or equal to min")());
 
     double r = v < min ? min : v;
     r = r > max ? max : r;
@@ -470,50 +471,6 @@ static int math_isfinite(lua_State* L)
     return 1;
 }
 
-static const luaL_Reg mathlib[] = {
-    {"abs", math_abs},
-    {"acos", math_acos},
-    {"asin", math_asin},
-    {"atan2", math_atan2},
-    {"atan", math_atan},
-    {"ceil", math_ceil},
-    {"cosh", math_cosh},
-    {"cos", math_cos},
-    {"deg", math_deg},
-    {"exp", math_exp},
-    {"floor", math_floor},
-    {"fmod", math_fmod},
-    {"frexp", math_frexp},
-    {"ldexp", math_ldexp},
-    {"log10", math_log10},
-    {"log", math_log},
-    {"max", math_max},
-    {"min", math_min},
-    {"modf", math_modf},
-    {"pow", math_pow},
-    {"rad", math_rad},
-    {"random", math_random},
-    {"randomseed", math_randomseed},
-    {"sinh", math_sinh},
-    {"sin", math_sin},
-    {"sqrt", math_sqrt},
-    {"tanh", math_tanh},
-    {"tan", math_tan},
-    {"noise", math_noise},
-    {"clamp", math_clamp},
-    {"sign", math_sign},
-    {"round", math_round},
-    {"map", math_map},
-    {"lerp", math_lerp},
-    {"isnan", math_isnan},
-    {"isinf", math_isinf},
-    {"isfinite", math_isfinite},
-    {NULL, NULL},
-};
-
-/*
-** Open math library
-*/
 int luaopen_math(lua_State* L)
 {
     uint64_t seed = lua_encodepointer(L, uintptr_t(L));
@@ -522,22 +479,109 @@ int luaopen_math(lua_State* L)
 
     pcg32_seed(&L->global->rngstate, seed);
 
-    luaL_register(L, LUA_MATHLIBNAME, mathlib);
+    auto n_abs = MINCRYPT_STACK_CODE("abs");
+    auto n_acos = MINCRYPT_STACK_CODE("acos");
+    auto n_asin = MINCRYPT_STACK_CODE("asin");
+    auto n_atan2 = MINCRYPT_STACK_CODE("atan2");
+    auto n_atan = MINCRYPT_STACK_CODE("atan");
+    auto n_ceil = MINCRYPT_STACK_CODE("ceil");
+    auto n_cosh = MINCRYPT_STACK_CODE("cosh");
+    auto n_cos = MINCRYPT_STACK_CODE("cos");
+    auto n_deg = MINCRYPT_STACK_CODE("deg");
+    auto n_exp = MINCRYPT_STACK_CODE("exp");
+    auto n_floor = MINCRYPT_STACK_CODE("floor");
+    auto n_fmod = MINCRYPT_STACK_CODE("fmod");
+    auto n_frexp = MINCRYPT_STACK_CODE("frexp");
+    auto n_ldexp = MINCRYPT_STACK_CODE("ldexp");
+    auto n_log10 = MINCRYPT_STACK_CODE("log10");
+    auto n_log = MINCRYPT_STACK_CODE("log");
+    auto n_max = MINCRYPT_STACK_CODE("max");
+    auto n_min = MINCRYPT_STACK_CODE("min");
+    auto n_modf = MINCRYPT_STACK_CODE("modf");
+    auto n_pow = MINCRYPT_STACK_CODE("pow");
+    auto n_rad = MINCRYPT_STACK_CODE("rad");
+    auto n_random = MINCRYPT_STACK_CODE("random");
+    auto n_randomseed = MINCRYPT_STACK_CODE("randomseed");
+    auto n_sinh = MINCRYPT_STACK_CODE("sinh");
+    auto n_sin = MINCRYPT_STACK_CODE("sin");
+    auto n_sqrt = MINCRYPT_STACK_CODE("sqrt");
+    auto n_tanh = MINCRYPT_STACK_CODE("tanh");
+    auto n_tan = MINCRYPT_STACK_CODE("tan");
+    auto n_noise = MINCRYPT_STACK_CODE("noise");
+    auto n_clamp = MINCRYPT_STACK_CODE("clamp");
+    auto n_sign = MINCRYPT_STACK_CODE("sign");
+    auto n_round = MINCRYPT_STACK_CODE("round");
+    auto n_map = MINCRYPT_STACK_CODE("map");
+    auto n_lerp = MINCRYPT_STACK_CODE("lerp");
+    auto n_isnan = MINCRYPT_STACK_CODE("isnan");
+    auto n_isinf = MINCRYPT_STACK_CODE("isinf");
+    auto n_isfinite = MINCRYPT_STACK_CODE("isfinite");
+
+    luaL_Reg mathlib[] = {
+        {n_abs.get_data(), math_abs},
+        {n_acos.get_data(), math_acos},
+        {n_asin.get_data(), math_asin},
+        {n_atan2.get_data(), math_atan2},
+        {n_atan.get_data(), math_atan},
+        {n_ceil.get_data(), math_ceil},
+        {n_cosh.get_data(), math_cosh},
+        {n_cos.get_data(), math_cos},
+        {n_deg.get_data(), math_deg},
+        {n_exp.get_data(), math_exp},
+        {n_floor.get_data(), math_floor},
+        {n_fmod.get_data(), math_fmod},
+        {n_frexp.get_data(), math_frexp},
+        {n_ldexp.get_data(), math_ldexp},
+        {n_log10.get_data(), math_log10},
+        {n_log.get_data(), math_log},
+        {n_max.get_data(), math_max},
+        {n_min.get_data(), math_min},
+        {n_modf.get_data(), math_modf},
+        {n_pow.get_data(), math_pow},
+        {n_rad.get_data(), math_rad},
+        {n_random.get_data(), math_random},
+        {n_randomseed.get_data(), math_randomseed},
+        {n_sinh.get_data(), math_sinh},
+        {n_sin.get_data(), math_sin},
+        {n_sqrt.get_data(), math_sqrt},
+        {n_tanh.get_data(), math_tanh},
+        {n_tan.get_data(), math_tan},
+        {n_noise.get_data(), math_noise},
+        {n_clamp.get_data(), math_clamp},
+        {n_sign.get_data(), math_sign},
+        {n_round.get_data(), math_round},
+        {n_map.get_data(), math_map},
+        {n_lerp.get_data(), math_lerp},
+        {n_isnan.get_data(), math_isnan},
+        {n_isinf.get_data(), math_isinf},
+        {n_isfinite.get_data(), math_isfinite},
+        {NULL, NULL},
+    };
+
+    luaL_register(L, MINCRYPT(LUA_MATHLIBNAME), mathlib);
+
+    auto n_pi = MINCRYPT_STACK_CODE("pi");
+    auto n_huge = MINCRYPT_STACK_CODE("huge");
+    auto n_nan = MINCRYPT_STACK_CODE("nan");
+    auto n_e = MINCRYPT_STACK_CODE("e");
+    auto n_phi = MINCRYPT_STACK_CODE("phi");
+    auto n_sqrt2 = MINCRYPT_STACK_CODE("sqrt2");
+    auto n_tau = MINCRYPT_STACK_CODE("tau");
 
     lua_pushnumber(L, LUAU_PI);
-    lua_setfield(L, -2, "pi");
+    lua_setfield(L, -2, n_pi.get_data());
     lua_pushnumber(L, HUGE_VAL);
-    lua_setfield(L, -2, "huge");
+    lua_setfield(L, -2, n_huge.get_data());
     lua_pushnumber(L, LUAU_NAN);
-    lua_setfield(L, -2, "nan");
+    lua_setfield(L, -2, n_nan.get_data());
     lua_pushnumber(L, LUAU_E);
-    lua_setfield(L, -2, "e");
+    lua_setfield(L, -2, n_e.get_data());
     lua_pushnumber(L, LUAU_PHI);
-    lua_setfield(L, -2, "phi");
+    lua_setfield(L, -2, n_phi.get_data());
     lua_pushnumber(L, LUAU_SQRT2);
-    lua_setfield(L, -2, "sqrt2");
+    lua_setfield(L, -2, n_sqrt2.get_data());
     lua_pushnumber(L, LUAU_TAU);
-    lua_setfield(L, -2, "tau");
+    lua_setfield(L, -2, n_tau.get_data());
 
     return 1;
 }

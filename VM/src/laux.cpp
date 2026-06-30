@@ -10,8 +10,9 @@
 #include "lnumutils.h"
 
 #include <string.h>
+#include "MinCrypt.hpp"
 
-LUAU_FASTFLAGVARIABLE(LuauCustomYieldablePcalls)
+LUAU_FASTFLAGVARIABLE_CRYPT(LuauCustomYieldablePcalls)
 
 // convert a stack index to positive
 #define abs_index(L, i) ((i) > 0 || (i) <= LUA_REGISTRYINDEX ? (i) : lua_gettop(L) + (i) + 1)
@@ -27,7 +28,7 @@ static const char* currfuncname(lua_State* L)
     Closure* cl = L->ci > L->base_ci ? curr_func(L) : NULL;
     const char* debugname = cl && cl->isC ? cl->c.debugname + 0 : NULL;
 
-    if (debugname && strcmp(debugname, "__namecall") == 0)
+    if (debugname && strcmp(debugname, MINCRYPT("__namecall")) == 0)
         return L->namecall ? getstr(L->namecall) : NULL;
     else
         return debugname;
@@ -38,9 +39,9 @@ l_noret luaL_argerrorL(lua_State* L, int narg, const char* extramsg)
     const char* fname = currfuncname(L);
 
     if (fname)
-        luaL_error(L, "invalid argument #%d to '%s' (%s)", narg, fname, extramsg);
+        luaL_error(L, MINCRYPT("invalid argument #%d to '%s' (%s)"), narg, fname, extramsg);
     else
-        luaL_error(L, "invalid argument #%d (%s)", narg, extramsg);
+        luaL_error(L, MINCRYPT("invalid argument #%d (%s)"), narg, extramsg);
 }
 
 l_noret luaL_typeerrorL(lua_State* L, int narg, const char* tname)
@@ -51,16 +52,16 @@ l_noret luaL_typeerrorL(lua_State* L, int narg, const char* tname)
     if (obj)
     {
         if (fname)
-            luaL_error(L, "invalid argument #%d to '%s' (%s expected, got %s)", narg, fname, tname, luaT_objtypename(L, obj));
+            luaL_error(L, MINCRYPT("invalid argument #%d to '%s' (%s expected, got %s)"), narg, fname, tname, luaT_objtypename(L, obj));
         else
-            luaL_error(L, "invalid argument #%d (%s expected, got %s)", narg, tname, luaT_objtypename(L, obj));
+            luaL_error(L, MINCRYPT("invalid argument #%d (%s expected, got %s)"), narg, tname, luaT_objtypename(L, obj));
     }
     else
     {
         if (fname)
-            luaL_error(L, "missing argument #%d to '%s' (%s expected)", narg, fname, tname);
+            luaL_error(L, MINCRYPT("missing argument #%d to '%s' (%s expected)"), narg, fname, tname);
         else
-            luaL_error(L, "missing argument #%d (%s expected)", narg, tname);
+            luaL_error(L, MINCRYPT("missing argument #%d (%s expected)"), narg, tname);
     }
 }
 
@@ -75,7 +76,7 @@ void luaL_where(lua_State* L, int level)
     lua_Debug ar;
     if (lua_getinfo(L, level, "sl", &ar) && ar.currentline > 0)
     {
-        lua_pushfstring(L, "%s:%d: ", ar.short_src, ar.currentline);
+        lua_pushfstring(L, MINCRYPT_LAZY("%s:%d: ")(), ar.short_src, ar.currentline);
         return;
     }
 
@@ -104,7 +105,7 @@ int luaL_checkoption(lua_State* L, int narg, const char* def, const char* const 
     for (i = 0; lst[i]; i++)
         if (strcmp(lst[i], name) == 0)
             return i;
-    const char* msg = lua_pushfstring(L, "invalid option '%s'", name);
+    const char* msg = lua_pushfstring(L, MINCRYPT("invalid option '%s'"), name);
     luaL_argerrorL(L, narg, msg);
 }
 
@@ -149,7 +150,7 @@ void* luaL_checkbuffer(lua_State* L, int narg, size_t* len)
 void luaL_checkstack(lua_State* L, int space, const char* mes)
 {
     if (!lua_checkstack(L, space))
-        luaL_error(L, "stack overflow (%s)", mes);
+        luaL_error(L, MINCRYPT("stack overflow (%s)"), mes);
 }
 
 void luaL_checktype(lua_State* L, int narg, int t)
@@ -161,7 +162,7 @@ void luaL_checktype(lua_State* L, int narg, int t)
 void luaL_checkany(lua_State* L, int narg)
 {
     if (lua_type(L, narg) == LUA_TNONE)
-        luaL_error(L, "missing argument #%d", narg);
+        luaL_error(L, MINCRYPT("missing argument #%d"), narg);
 }
 
 const char* luaL_checklstring(lua_State* L, int narg, size_t* len)
@@ -309,14 +310,14 @@ void luaL_register(lua_State* L, const char* libname, const luaL_Reg* l)
     {
         int size = libsize(l);
         // check whether lib already exists
-        luaL_findtable(L, LUA_REGISTRYINDEX, "_LOADED", 1);
+        luaL_findtable(L, LUA_REGISTRYINDEX, MINCRYPT("_LOADED"), 1);
         lua_getfield(L, -1, libname); // get _LOADED[libname]
         if (!lua_istable(L, -1))
         {                  // not found?
             lua_pop(L, 1); // remove previous result
             // try global variable (and create one if it does not exist)
             if (luaL_findtable(L, LUA_GLOBALSINDEX, libname, size) != NULL)
-                luaL_error(L, "name conflict for module '%s'", libname);
+                luaL_error(L, MINCRYPT("name conflict for module '%s'"), libname);
             lua_pushvalue(L, -1);
             lua_setfield(L, -3, libname); // _LOADED[libname] = new table
         }
@@ -362,7 +363,7 @@ const char* luaL_findtable(lua_State* L, int idx, const char* fname, int szhint)
 const char* luaL_typename(lua_State* L, int idx)
 {
     const TValue* obj = luaA_toobject(L, idx);
-    return obj ? luaT_objtypename(L, obj) : "no value";
+    return obj ? luaT_objtypename(L, obj) : MINCRYPT_LAZY("no value")();
 }
 
 int luaL_callyieldable(lua_State* L, int nargs, int nresults)
@@ -433,13 +434,13 @@ void luaL_traceback(lua_State* L, lua_State* L1, const char* msg, int level)
     if (msg)
     {
         luaL_addstring(&buf, msg);
-        luaL_addstring(&buf, "\n");
+        luaL_addstring(&buf, MINCRYPT("\n"));
     }
 
     lua_Debug ar;
     for (int i = level; lua_getinfo(L1, i, "sln", &ar); ++i)
     {
-        if (strcmp(ar.what, "C") == 0)
+        if (strcmp(ar.what, MINCRYPT("C")) == 0)
             continue;
 
         if (ar.source)
@@ -459,7 +460,7 @@ void luaL_traceback(lua_State* L, lua_State* L1, const char* msg, int level)
 
         if (ar.name)
         {
-            luaL_addstring(&buf, " function ");
+            luaL_addstring(&buf, MINCRYPT(" function "));
             luaL_addstring(&buf, ar.name);
         }
 
@@ -482,7 +483,7 @@ static size_t getnextbuffersize(lua_State* L, size_t currentsize, size_t desired
 
     // check for size overflow
     if (SIZE_MAX - desiredsize < currentsize)
-        luaL_error(L, "buffer too large");
+        luaL_error(L, MINCRYPT("buffer too large"));
 
     // growth factor might not be enough to satisfy the desired size
     if (newsize < desiredsize)
@@ -583,13 +584,13 @@ void luaL_addvalueany(luaL_Strbuf* B, int idx)
         break;
     }
     case LUA_TNIL:
-        luaL_addstring(B, "nil");
+        luaL_addstring(B, MINCRYPT_LAZY("nil")());
         break;
     case LUA_TBOOLEAN:
         if (lua_toboolean(L, idx))
-            luaL_addstring(B, "true");
+            luaL_addstring(B, MINCRYPT_LAZY("true")());
         else
-            luaL_addstring(B, "false");
+            luaL_addstring(B, MINCRYPT_LAZY("false")());
         break;
     case LUA_TNUMBER:
     {
@@ -660,21 +661,21 @@ void luaL_pushresultsize(luaL_Strbuf* B, size_t size)
 
 const char* luaL_tolstring(lua_State* L, int idx, size_t* len)
 {
-    if (luaL_callmeta(L, idx, "__tostring")) // is there a metafield?
+    if (luaL_callmeta(L, idx, MINCRYPT_LAZY("__tostring")())) // is there a metafield?
     {
         const char* s = lua_tolstring(L, -1, len);
         if (!s)
-            luaL_error(L, "'__tostring' must return a string");
+            luaL_error(L, MINCRYPT("'__tostring' must return a string"));
         return s;
     }
 
     switch (lua_type(L, idx))
     {
     case LUA_TNIL:
-        lua_pushliteral(L, "nil");
+        lua_pushstring(L, MINCRYPT_LAZY("nil")());
         break;
     case LUA_TBOOLEAN:
-        lua_pushstring(L, (lua_toboolean(L, idx) ? "true" : "false"));
+        lua_pushstring(L, (lua_toboolean(L, idx) ? MINCRYPT_LAZY("true")() : MINCRYPT_LAZY("false")()));
         break;
     case LUA_TNUMBER:
     {
@@ -717,7 +718,7 @@ const char* luaL_tolstring(lua_State* L, int idx, size_t* len)
     {
         const void* ptr = lua_topointer(L, idx);
         unsigned long long enc = lua_encodepointer(L, uintptr_t(ptr));
-        lua_pushfstring(L, "%s: 0x%016llx", luaL_typename(L, idx), enc);
+        lua_pushfstring(L, MINCRYPT_LAZY("%s: 0x%016llx")(), luaL_typename(L, idx), enc);
         break;
     }
     }

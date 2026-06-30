@@ -6,6 +6,7 @@
 #include "lapi.h"
 #include "ldo.h"
 #include "ludata.h"
+#include "MinCrypt.hpp"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -51,7 +52,7 @@ static int luaB_tonumber(lua_State* L)
     else
     {
         const char* s1 = luaL_checkstring(L, 1);
-        luaL_argcheck(L, 2 <= base && base <= 36, 2, "base out of range");
+        luaL_argcheck(L, 2 <= base && base <= 36, 2, MINCRYPT_LAZY("base out of range")());
         char* s2;
         unsigned long long n;
         n = strtoull(s1, &s2, base);
@@ -91,7 +92,7 @@ static int luaB_getmetatable(lua_State* L)
         lua_pushnil(L);
         return 1; // no metatable
     }
-    luaL_getmetafield(L, 1, "__metatable");
+    luaL_getmetafield(L, 1, MINCRYPT_LAZY("__metatable")());
     return 1; // returns either __metatable field (if present) or metatable
 }
 
@@ -99,9 +100,9 @@ static int luaB_setmetatable(lua_State* L)
 {
     int t = lua_type(L, 2);
     luaL_checktype(L, 1, LUA_TTABLE);
-    luaL_argexpected(L, t == LUA_TNIL || t == LUA_TTABLE, 2, "nil or table");
-    if (luaL_getmetafield(L, 1, "__metatable"))
-        luaL_error(L, "cannot change a protected metatable");
+    luaL_argexpected(L, t == LUA_TNIL || t == LUA_TTABLE, 2, MINCRYPT_LAZY("nil or table")());
+    if (luaL_getmetafield(L, 1, MINCRYPT_LAZY("__metatable")()))
+        luaL_error(L, MINCRYPT("cannot change a protected metatable"));
     lua_settop(L, 2);
     lua_setmetatable(L, 1);
     return 1;
@@ -115,11 +116,11 @@ static void getfunc(lua_State* L, int opt)
     {
         lua_Debug ar;
         int level = opt ? luaL_optinteger(L, 1, 1) : luaL_checkinteger(L, 1);
-        luaL_argcheck(L, level >= 0, 1, "level must be non-negative");
+        luaL_argcheck(L, level >= 0, 1, MINCRYPT_LAZY("level must be non-negative")());
         if (lua_getinfo(L, level, "f", &ar) == 0)
-            luaL_argerror(L, 1, "invalid level");
+            luaL_argerror(L, 1, MINCRYPT("invalid level"));
         if (lua_isnil(L, -1))
-            luaL_error(L, "no function environment for tail call at level %d", level);
+            luaL_error(L, MINCRYPT("no function environment for tail call at level %d"), level);
     }
 }
 
@@ -149,7 +150,7 @@ static int luaB_setfenv(lua_State* L)
         return 0;
     }
     else if (lua_iscfunction(L, -2) || lua_setfenv(L, -2) == 0)
-        luaL_error(L, "'setfenv' cannot change environment of given object");
+        luaL_error(L, MINCRYPT("'setfenv' cannot change environment of given object"));
     return 1;
 }
 
@@ -183,7 +184,7 @@ static int luaB_rawset(lua_State* L)
 static int luaB_rawlen(lua_State* L)
 {
     int tt = lua_type(L, 1);
-    luaL_argcheck(L, tt == LUA_TTABLE || tt == LUA_TSTRING, 1, "table or string expected");
+    luaL_argcheck(L, tt == LUA_TTABLE || tt == LUA_TSTRING, 1, MINCRYPT_LAZY("table or string expected")());
     int len = lua_objlen(L, 1);
     lua_pushinteger(L, len);
     return 1;
@@ -256,7 +257,7 @@ static int luaB_assert(lua_State* L)
 {
     luaL_checkany(L, 1);
     if (!lua_toboolean(L, 1))
-        luaL_error(L, "%s", luaL_optstring(L, 2, "assertion failed!"));
+        luaL_error(L, "%s", luaL_optstring(L, 2, MINCRYPT("assertion failed!")));
     return lua_gettop(L);
 }
 
@@ -275,7 +276,7 @@ static int luaB_select(lua_State* L)
             i = n + i;
         else if (i > n)
             i = n;
-        luaL_argcheck(L, 1 <= i, 1, "index out of range");
+        luaL_argcheck(L, 1 <= i, 1, MINCRYPT_LAZY("index out of range")());
         return n - i;
     }
 }
@@ -446,7 +447,7 @@ static int luaB_tostring(lua_State* L)
 static int luaB_newproxy(lua_State* L)
 {
     int t = lua_type(L, 1);
-    luaL_argexpected(L, t == LUA_TNONE || t == LUA_TNIL || t == LUA_TBOOLEAN, 1, "nil or boolean");
+    luaL_argexpected(L, t == LUA_TNONE || t == LUA_TNIL || t == LUA_TBOOLEAN, 1, MINCRYPT_LAZY("nil or boolean")());
 
     bool needsmt = lua_toboolean(L, 1);
 
@@ -461,29 +462,6 @@ static int luaB_newproxy(lua_State* L)
     return 1;
 }
 
-static const luaL_Reg base_funcs[] = {
-    {"assert", luaB_assert},
-    {"error", luaB_error},
-    {"gcinfo", luaB_gcinfo},
-    {"getfenv", luaB_getfenv},
-    {"getmetatable", luaB_getmetatable},
-    {"next", luaB_next},
-    {"newproxy", luaB_newproxy},
-    {"print", luaB_print},
-    {"rawequal", luaB_rawequal},
-    {"rawget", luaB_rawget},
-    {"rawset", luaB_rawset},
-    {"rawlen", luaB_rawlen},
-    {"select", luaB_select},
-    {"setfenv", luaB_setfenv},
-    {"setmetatable", luaB_setmetatable},
-    {"tonumber", luaB_tonumber},
-    {"tostring", luaB_tostring},
-    {"type", luaB_type},
-    {"typeof", luaB_typeof},
-    {NULL, NULL},
-};
-
 static void auxopen(lua_State* L, const char* name, lua_CFunction f, lua_CFunction u)
 {
     lua_pushcfunction(L, u, NULL);
@@ -495,22 +473,68 @@ int luaopen_base(lua_State* L)
 {
     // set global _G
     lua_pushvalue(L, LUA_GLOBALSINDEX);
-    lua_setglobal(L, "_G");
+    lua_setglobal(L, MINCRYPT("_G"));
+
+    auto n_assert = MINCRYPT_STACK_CODE("assert");
+    auto n_error = MINCRYPT_STACK_CODE("error");
+    auto n_gcinfo = MINCRYPT_STACK_CODE("gcinfo");
+    auto n_getfenv = MINCRYPT_STACK_CODE("getfenv");
+    auto n_getmetatable = MINCRYPT_STACK_CODE("getmetatable");
+    auto n_next = MINCRYPT_STACK_CODE("next");
+    auto n_newproxy = MINCRYPT_STACK_CODE("newproxy");
+    auto n_print = MINCRYPT_STACK_CODE("print");
+    auto n_rawequal = MINCRYPT_STACK_CODE("rawequal");
+    auto n_rawget = MINCRYPT_STACK_CODE("rawget");
+    auto n_rawset = MINCRYPT_STACK_CODE("rawset");
+    auto n_rawlen = MINCRYPT_STACK_CODE("rawlen");
+    auto n_select = MINCRYPT_STACK_CODE("select");
+    auto n_setfenv = MINCRYPT_STACK_CODE("setfenv");
+    auto n_setmetatable = MINCRYPT_STACK_CODE("setmetatable");
+    auto n_tonumber = MINCRYPT_STACK_CODE("tonumber");
+    auto n_tostring = MINCRYPT_STACK_CODE("tostring");
+    auto n_type = MINCRYPT_STACK_CODE("type");
+    auto n_typeof = MINCRYPT_STACK_CODE("typeof");
+
+    luaL_Reg base_funcs[] = {
+        {n_assert.get_data(), luaB_assert},
+        {n_error.get_data(), luaB_error},
+        {n_gcinfo.get_data(), luaB_gcinfo},
+        {n_getfenv.get_data(), luaB_getfenv},
+        {n_getmetatable.get_data(), luaB_getmetatable},
+        {n_next.get_data(), luaB_next},
+        {n_newproxy.get_data(), luaB_newproxy},
+        {n_print.get_data(), luaB_print},
+        {n_rawequal.get_data(), luaB_rawequal},
+        {n_rawget.get_data(), luaB_rawget},
+        {n_rawset.get_data(), luaB_rawset},
+        {n_rawlen.get_data(), luaB_rawlen},
+        {n_select.get_data(), luaB_select},
+        {n_setfenv.get_data(), luaB_setfenv},
+        {n_setmetatable.get_data(), luaB_setmetatable},
+        {n_tonumber.get_data(), luaB_tonumber},
+        {n_tostring.get_data(), luaB_tostring},
+        {n_type.get_data(), luaB_type},
+        {n_typeof.get_data(), luaB_typeof},
+        {NULL, NULL},
+    };
 
     // open lib into global table
-    luaL_register(L, "_G", base_funcs);
-    lua_pushliteral(L, "Luau");
-    lua_setglobal(L, "_VERSION"); // set global _VERSION
+    luaL_register(L, MINCRYPT("_G"), base_funcs);
+    lua_pushstring(L, MINCRYPT("Luau"));
+    lua_setglobal(L, MINCRYPT("_VERSION")); // set global _VERSION
 
     // `ipairs' and `pairs' need auxiliary functions as upvalues
-    auxopen(L, "ipairs", luaB_ipairs, luaB_inext);
-    auxopen(L, "pairs", luaB_pairs, luaB_next);
+    auxopen(L, MINCRYPT("ipairs"), luaB_ipairs, luaB_inext);
+    auxopen(L, MINCRYPT("pairs"), luaB_pairs, luaB_next);
 
-    lua_pushcclosurek(L, luaB_pcally, "pcall", 0, luaB_pcallcont);
-    lua_setfield(L, -2, "pcall");
+    auto n_pcall = MINCRYPT_STACK_CODE("pcall");
+    auto n_xpcall = MINCRYPT_STACK_CODE("xpcall");
 
-    lua_pushcclosurek(L, luaB_xpcally, "xpcall", 0, luaB_xpcallcont);
-    lua_setfield(L, -2, "xpcall");
+    lua_pushcclosurek(L, luaB_pcally, n_pcall.get_data(), 0, luaB_pcallcont);
+    lua_setfield(L, -2, n_pcall.get_data());
+
+    lua_pushcclosurek(L, luaB_xpcally, n_xpcall.get_data(), 0, luaB_xpcallcont);
+    lua_setfield(L, -2, n_xpcall.get_data());
 
     return 1;
 }

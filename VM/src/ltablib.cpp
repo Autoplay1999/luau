@@ -10,6 +10,7 @@
 #include "lgc.h"
 #include "ldebug.h"
 #include "lvm.h"
+#include "MinCrypt.hpp"
 
 static int foreachi(lua_State* L)
 {
@@ -166,7 +167,7 @@ static int tinsert(lua_State* L)
     }
     default:
     {
-        luaL_error(L, "wrong number of arguments to 'insert'");
+        luaL_error(L, MINCRYPT("wrong number of arguments to 'insert'"));
     }
     }
     lua_rawseti(L, 1, pos); // t[pos] = v
@@ -207,9 +208,9 @@ static int tmove(lua_State* L)
 
     if (e >= f)
     { // otherwise, nothing to move
-        luaL_argcheck(L, f > 0 || e < INT_MAX + f, 3, "too many elements to move");
+        luaL_argcheck(L, f > 0 || e < INT_MAX + f, 3, MINCRYPT_LAZY("too many elements to move")());
         int n = e - f + 1; // number of elements to move
-        luaL_argcheck(L, t <= INT_MAX - n + 1, 4, "destination wrap around");
+        luaL_argcheck(L, t <= INT_MAX - n + 1, 4, MINCRYPT_LAZY("destination wrap around")());
 
         LuaTable* dst = hvalue(L->base + (tt - 1));
 
@@ -238,7 +239,7 @@ static void addfield(lua_State* L, luaL_Strbuf* b, int i, LuaTable* t)
     {
         int tt = lua_rawgeti(L, 1, i);
         if (tt != LUA_TSTRING && tt != LUA_TNUMBER)
-            luaL_error(L, "invalid value (%s) at index %d in table for 'concat'", luaL_typename(L, -1), i);
+            luaL_error(L, MINCRYPT("invalid value (%s) at index %d in table for 'concat'"), luaL_typename(L, -1), i);
         luaL_addvalue(b);
     }
 }
@@ -298,7 +299,7 @@ static int tunpack(lua_State* L)
         return 0;                 // empty range
     unsigned n = (unsigned)e - i; // number of elements minus 1 (avoid overflows)
     if (n >= (unsigned int)INT_MAX || !lua_checkstack(L, (int)(++n)))
-        luaL_error(L, "too many results to unpack");
+        luaL_error(L, MINCRYPT("too many results to unpack"));
 
     // fast-path: direct array-to-stack copy
     if (i == 1 && int(n) <= t->sizearray)
@@ -356,7 +357,7 @@ inline int sort_less(lua_State* L, LuaTable* t, int i, int j, SortPredicate pred
 
     // predicate call may resize the table, which is invalid
     if (t->sizearray != n)
-        luaL_error(L, "table modified during sorting");
+        luaL_error(L, MINCRYPT("table modified during sorting"));
 
     return res;
 }
@@ -438,13 +439,13 @@ static void sort_rec(lua_State* L, LuaTable* t, int l, int u, int limit, SortPre
             while (sort_less(L, t, ++i, p, pred))
             {
                 if (i >= u)
-                    luaL_error(L, "invalid order function for sorting");
+                    luaL_error(L, MINCRYPT("invalid order function for sorting"));
             }
             // repeat --j until a[j] <= P
             while (sort_less(L, t, p, --j, pred))
             {
                 if (j <= l)
-                    luaL_error(L, "invalid order function for sorting");
+                    luaL_error(L, MINCRYPT("invalid order function for sorting"));
             }
             if (j < i)
                 break;
@@ -497,7 +498,7 @@ static int tcreate(lua_State* L)
 {
     int size = luaL_checkinteger(L, 1);
     if (size < 0)
-        luaL_argerror(L, 1, "size out of range");
+        luaL_argerror(L, 1, MINCRYPT("size out of range"));
 
     if (!lua_isnoneornil(L, 2))
     {
@@ -526,7 +527,7 @@ static int tfind(lua_State* L)
     luaL_checkany(L, 2);
     int init = luaL_optinteger(L, 3, 1);
     if (init < 1)
-        luaL_argerror(L, 3, "index out of range");
+        luaL_argerror(L, 3, MINCRYPT("index out of range"));
 
     LuaTable* t = hvalue(L->base);
 
@@ -564,8 +565,8 @@ static int tclear(lua_State* L)
 static int tfreeze(lua_State* L)
 {
     luaL_checktype(L, 1, LUA_TTABLE);
-    luaL_argcheck(L, !lua_getreadonly(L, 1), 1, "table is already frozen");
-    luaL_argcheck(L, !luaL_getmetafield(L, 1, "__metatable"), 1, "table has a protected metatable");
+    luaL_argcheck(L, !lua_getreadonly(L, 1), 1, MINCRYPT_LAZY("table is already frozen")());
+    luaL_argcheck(L, !luaL_getmetafield(L, 1, MINCRYPT_LAZY("__metatable")()), 1, MINCRYPT_LAZY("table has a protected metatable")());
 
     lua_setreadonly(L, 1, true);
 
@@ -584,7 +585,7 @@ static int tisfrozen(lua_State* L)
 static int tclone(lua_State* L)
 {
     luaL_checktype(L, 1, LUA_TTABLE);
-    luaL_argcheck(L, !luaL_getmetafield(L, 1, "__metatable"), 1, "table has a protected metatable");
+    luaL_argcheck(L, !luaL_getmetafield(L, 1, MINCRYPT_LAZY("__metatable")()), 1, MINCRYPT_LAZY("table has a protected metatable")());
 
     LuaTable* tt = luaH_clone(L, hvalue(L->base));
 
@@ -595,34 +596,50 @@ static int tclone(lua_State* L)
     return 1;
 }
 
-static const luaL_Reg tab_funcs[] = {
-    {"concat", tconcat},
-    {"foreach", foreach},
-    {"foreachi", foreachi},
-    {"getn", getn},
-    {"maxn", maxn},
-    {"insert", tinsert},
-    {"remove", tremove},
-    {"sort", tsort},
-    {"pack", tpack},
-    {"unpack", tunpack},
-    {"move", tmove},
-    {"create", tcreate},
-    {"find", tfind},
-    {"clear", tclear},
-    {"freeze", tfreeze},
-    {"isfrozen", tisfrozen},
-    {"clone", tclone},
-    {NULL, NULL},
-};
-
 int luaopen_table(lua_State* L)
 {
-    luaL_register(L, LUA_TABLIBNAME, tab_funcs);
+    auto n_foreach = MINCRYPT_STACK_CODE("foreach");
+    auto n_foreachi = MINCRYPT_STACK_CODE("foreachi");
+    auto n_getn = MINCRYPT_STACK_CODE("getn");
+    auto n_maxn = MINCRYPT_STACK_CODE("maxn");
+    auto n_insert = MINCRYPT_STACK_CODE("insert");
+    auto n_remove = MINCRYPT_STACK_CODE("remove");
+    auto n_sort = MINCRYPT_STACK_CODE("sort");
+    auto n_pack = MINCRYPT_STACK_CODE("pack");
+    auto n_unpack = MINCRYPT_STACK_CODE("unpack");
+    auto n_move = MINCRYPT_STACK_CODE("move");
+    auto n_create = MINCRYPT_STACK_CODE("create");
+    auto n_find = MINCRYPT_STACK_CODE("find");
+    auto n_clear = MINCRYPT_STACK_CODE("clear");
+    auto n_freeze = MINCRYPT_STACK_CODE("freeze");
+    auto n_isfrozen = MINCRYPT_STACK_CODE("isfrozen");
+    auto n_clone = MINCRYPT_STACK_CODE("clone");
+
+    luaL_Reg tab_funcs[] = {
+        {n_foreach.get_data(), foreach},
+        {n_foreachi.get_data(), foreachi},
+        {n_getn.get_data(), getn},
+        {n_maxn.get_data(), maxn},
+        {n_insert.get_data(), tinsert},
+        {n_remove.get_data(), tremove},
+        {n_sort.get_data(), tsort},
+        {n_pack.get_data(), tpack},
+        {n_unpack.get_data(), tunpack},
+        {n_move.get_data(), tmove},
+        {n_create.get_data(), tcreate},
+        {n_find.get_data(), tfind},
+        {n_clear.get_data(), tclear},
+        {n_freeze.get_data(), tfreeze},
+        {n_isfrozen.get_data(), tisfrozen},
+        {n_clone.get_data(), tclone},
+        {NULL, NULL},
+    };
+
+    luaL_register(L, MINCRYPT(LUA_TABLIBNAME), tab_funcs);
 
     // Lua 5.1 compat
-    lua_pushcfunction(L, tunpack, "unpack");
-    lua_setglobal(L, "unpack");
+    lua_pushcfunction(L, tunpack, n_unpack.get_data());
+    lua_setglobal(L, n_unpack.get_data());
 
     return 1;
 }

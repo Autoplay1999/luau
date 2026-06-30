@@ -3,6 +3,7 @@
 #include "lualib.h"
 
 #include "lcommon.h"
+#include "MinCrypt.hpp"
 
 #define MAXUNICODE 0x10FFFF
 
@@ -66,8 +67,8 @@ static int utflen(lua_State* L)
     const char* s = luaL_checklstring(L, 1, &len);
     int posi = u_posrelat(luaL_optinteger(L, 2, 1), len);
     int posj = u_posrelat(luaL_optinteger(L, 3, -1), len);
-    luaL_argcheck(L, 1 <= posi && --posi <= (int)len, 2, "initial position out of string");
-    luaL_argcheck(L, --posj < (int)len, 3, "final position out of string");
+    luaL_argcheck(L, 1 <= posi && --posi <= (int)len, 2, MINCRYPT_LAZY("initial position out of string")());
+    luaL_argcheck(L, --posj < (int)len, 3, MINCRYPT_LAZY("final position out of string")());
     while (posi <= posj)
     {
         const char* s1 = utf8_decode(s + posi, NULL);
@@ -96,14 +97,14 @@ static int codepoint(lua_State* L)
     int pose = u_posrelat(luaL_optinteger(L, 3, posi), len);
     int n;
     const char* se;
-    luaL_argcheck(L, posi >= 1, 2, "out of range");
-    luaL_argcheck(L, pose <= (int)len, 3, "out of range");
+    luaL_argcheck(L, posi >= 1, 2, MINCRYPT_LAZY("out of range")());
+    luaL_argcheck(L, pose <= (int)len, 3, MINCRYPT_LAZY("out of range")());
     if (posi > pose)
         return 0;               // empty interval; return no values
     if (pose - posi >= INT_MAX) // (int -> int) overflow?
-        luaL_error(L, "string slice too long");
+        luaL_error(L, MINCRYPT("string slice too long"));
     n = (int)(pose - posi) + 1;
-    luaL_checkstack(L, n, "string slice too long");
+    luaL_checkstack(L, n, MINCRYPT_LAZY("string slice too long")());
     n = 0;
     se = s + pose;
     for (s += posi - 1; s < se;)
@@ -111,7 +112,7 @@ static int codepoint(lua_State* L)
         int code;
         s = utf8_decode(s, &code);
         if (s == NULL)
-            luaL_error(L, "invalid UTF-8 code");
+            luaL_error(L, MINCRYPT("invalid UTF-8 code"));
         lua_pushinteger(L, code);
         n++;
     }
@@ -146,7 +147,7 @@ static int luaO_utf8esc(char* buff, unsigned long x)
 static int buffutfchar(lua_State* L, int arg, char* buff, const char** charstr)
 {
     int code = luaL_checkinteger(L, arg);
-    luaL_argcheck(L, 0 <= code && code <= MAXUNICODE, arg, "value out of range");
+    luaL_argcheck(L, 0 <= code && code <= MAXUNICODE, arg, MINCRYPT_LAZY("value out of range")());
     int l = luaO_utf8esc(buff, cast_to(long, code));
     *charstr = buff + UTF8BUFFSZ - l;
     return l;
@@ -195,7 +196,7 @@ static int byteoffset(lua_State* L)
     int n = luaL_checkinteger(L, 2);
     int posi = (n >= 0) ? 1 : (int)len + 1;
     posi = u_posrelat(luaL_optinteger(L, 3, posi), len);
-    luaL_argcheck(L, 1 <= posi && --posi <= (int)len, 3, "position out of range");
+    luaL_argcheck(L, 1 <= posi && --posi <= (int)len, 3, MINCRYPT_LAZY("position out of range")());
     if (n == 0)
     {
         // find beginning of current byte sequence
@@ -205,7 +206,7 @@ static int byteoffset(lua_State* L)
     else
     {
         if (iscont(s + posi))
-            luaL_error(L, "initial position is a continuation byte");
+            luaL_error(L, MINCRYPT("initial position is a continuation byte"));
         if (n < 0)
         {
             while (n < 0 && posi > 0)
@@ -257,7 +258,7 @@ static int iter_aux(lua_State* L)
         int code;
         const char* next = utf8_decode(s + n, &code);
         if (next == NULL || iscont(next))
-            luaL_error(L, "invalid UTF-8 code");
+            luaL_error(L, MINCRYPT("invalid UTF-8 code"));
         lua_pushinteger(L, n + 1);
         lua_pushinteger(L, code);
         return 2;
@@ -276,21 +277,29 @@ static int iter_codes(lua_State* L)
 // pattern to match a single UTF-8 character
 #define UTF8PATT "[\0-\x7F\xC2-\xF4][\x80-\xBF]*"
 
-static const luaL_Reg funcs[] = {
-    {"offset", byteoffset},
-    {"codepoint", codepoint},
-    {"char", utfchar},
-    {"len", utflen},
-    {"codes", iter_codes},
-    {NULL, NULL},
-};
-
 int luaopen_utf8(lua_State* L)
 {
-    luaL_register(L, LUA_UTF8LIBNAME, funcs);
+    auto n_offset = MINCRYPT_STACK_CODE("offset");
+    auto n_codepoint = MINCRYPT_STACK_CODE("codepoint");
+    auto n_char = MINCRYPT_STACK_CODE("char");
+    auto n_len = MINCRYPT_STACK_CODE("len");
+    auto n_codes = MINCRYPT_STACK_CODE("codes");
+
+    luaL_Reg funcs[] = {
+        {n_offset.get_data(), byteoffset},
+        {n_codepoint.get_data(), codepoint},
+        {n_char.get_data(), utfchar},
+        {n_len.get_data(), utflen},
+        {n_codes.get_data(), iter_codes},
+        {NULL, NULL},
+    };
+
+    luaL_register(L, MINCRYPT(LUA_UTF8LIBNAME), funcs);
+
+    auto n_charpattern = MINCRYPT_STACK_CODE("charpattern");
 
     lua_pushlstring(L, UTF8PATT, sizeof(UTF8PATT) / sizeof(char) - 1);
-    lua_setfield(L, -2, "charpattern");
+    lua_setfield(L, -2, n_charpattern.get_data());
 
     return 1;
 }

@@ -4,6 +4,7 @@
 #include "lcommon.h"
 #include "lnumutils.h"
 #include "lobject.h"
+#include "MinCrypt.hpp"
 
 #include <climits>
 #include <cmath>
@@ -12,7 +13,7 @@
 #include <intrin.h>
 #endif
 
-LUAU_FASTFLAGVARIABLE(LuauIntegerLibrary)
+LUAU_FASTFLAGVARIABLE_CRYPT(LuauIntegerLibrary)
 
 #define mask64(w) (0xFFFFFFFFFFFFFFFFULL >> (64 - (w)))
 
@@ -38,7 +39,7 @@ static int int64_fromstring(lua_State* L)
 {
     const char* s = luaL_checkstring(L, 1);
     int base = luaL_optinteger(L, 2, 10);
-    luaL_argcheck(L, 2 <= base && base <= 36, 2, "base out of range");
+    luaL_argcheck(L, 2 <= base && base <= 36, 2, MINCRYPT_LAZY("base out of range")());
 
     int64_t result;
     if (luaO_str2l(s, &result, base))
@@ -103,9 +104,9 @@ static int int64_div(lua_State* L)
     int64_t b = luaL_checkinteger64(L, 2);
 
     if (b == 0)
-        luaL_error(L, "division by zero");
+        luaL_error(L, MINCRYPT("division by zero"));
     if ((a == LLONG_MIN) && (b == -1))
-        luaL_error(L, "integer overflow");
+        luaL_error(L, MINCRYPT("integer overflow"));
 
     lua_pushinteger64(L, a / b);
 
@@ -118,9 +119,9 @@ static int int64_idiv(lua_State* L)
     int64_t b = luaL_checkinteger64(L, 2);
 
     if (b == 0)
-        luaL_error(L, "division by zero");
+        luaL_error(L, MINCRYPT("division by zero"));
     if ((a == LLONG_MIN) && (b == -1))
-        luaL_error(L, "integer overflow");
+        luaL_error(L, MINCRYPT("integer overflow"));
 
     int64_t result = a / b;
     if ((result < 0) && (a % b))
@@ -137,7 +138,7 @@ static int int64_rem(lua_State* L)
     int64_t b = luaL_checkinteger64(L, 2);
 
     if (b == 0)
-        luaL_error(L, "division by zero");
+        luaL_error(L, MINCRYPT("division by zero"));
 
     if ((a == LLONG_MIN) && (b == -1))
     {
@@ -156,7 +157,7 @@ static int int64_mod(lua_State* L)
     int64_t b = luaL_checkinteger64(L, 2);
 
     if (b == 0)
-        luaL_error(L, "division by zero");
+        luaL_error(L, MINCRYPT("division by zero"));
 
     int64_t remainder = 0;
     if ((a != LLONG_MIN) || (b != -1))
@@ -177,7 +178,7 @@ static int int64_udiv(lua_State* L)
     uint64_t b = luaL_checkinteger64(L, 2);
 
     if (b == 0)
-        luaL_error(L, "division by zero");
+        luaL_error(L, MINCRYPT("division by zero"));
 
     lua_pushinteger64(L, a / b);
 
@@ -190,7 +191,7 @@ static int int64_urem(lua_State* L)
     uint64_t b = luaL_checkinteger64(L, 2);
 
     if (b == 0)
-        luaL_error(L, "division by zero");
+        luaL_error(L, MINCRYPT("division by zero"));
 
     lua_pushinteger64(L, a % b);
 
@@ -433,10 +434,10 @@ static int int64_extract(lua_State* L)
     int64_t f = luaL_checkinteger64(L, 2);
     int64_t w = luaL_optinteger64(L, 3, 1);
 
-    luaL_argcheck(L, 0 <= f && f <= 63, 2, "field cannot be negative");
-    luaL_argcheck(L, 0 < w, 3, "width must be positive");
+    luaL_argcheck(L, 0 <= f && f <= 63, 2, MINCRYPT_LAZY("field cannot be negative")());
+    luaL_argcheck(L, 0 < w, 3, MINCRYPT_LAZY("width must be positive")());
     if (f + w > 64)
-        luaL_error(L, "trying to access non-existent bits");
+        luaL_error(L, MINCRYPT("trying to access non-existent bits"));
 
     lua_pushinteger64(L, ((uint64_t)n >> f) & mask64(w));
 
@@ -450,10 +451,10 @@ static int int64_replace(lua_State* L)
     int64_t f = luaL_checkinteger64(L, 3);
     int64_t w = luaL_optinteger64(L, 4, 1);
 
-    luaL_argcheck(L, 0 <= f && f <= 63, 3, "field cannot be negative");
-    luaL_argcheck(L, 0 < w, 4, "width must be positive");
+    luaL_argcheck(L, 0 <= f && f <= 63, 3, MINCRYPT_LAZY("field cannot be negative")());
+    luaL_argcheck(L, 0 < w, 4, MINCRYPT_LAZY("width must be positive")());
     if (f + w > 64)
-        luaL_error(L, "trying to access non-existent bits");
+        luaL_error(L, MINCRYPT("trying to access non-existent bits"));
 
     uint64_t baseMask = ((0xFFFFFFFFFFFFFFFFULL) >> (64 - w));
     uint64_t replacement = (((uint64_t)r) & baseMask) << f;
@@ -469,7 +470,7 @@ static int int64_clamp(lua_State* L)
     int64_t mi = luaL_checkinteger64(L, 2);
     int64_t mx = luaL_checkinteger64(L, 3);
 
-    luaL_argcheck(L, mi <= mx, 3, "max must be greater than or equal to min");
+    luaL_argcheck(L, mi <= mx, 3, MINCRYPT_LAZY("max must be greater than or equal to min")());
 
     if (a < mi)
         lua_pushinteger64(L, mi);
@@ -557,57 +558,100 @@ static int int64_bswap(lua_State* L)
     return 1;
 }
 
-static const luaL_Reg int64lib[] = {
-    {"create", int64_create},
-    {"tonumber", int64_tonumber},
-    {"neg", int64_neg},
-    {"add", int64_add},
-    {"sub", int64_sub},
-    {"mul", int64_mul},
-    {"div", int64_div},
-    {"min", int64_min},
-    {"max", int64_max},
-    {"rem", int64_rem},
-    {"idiv", int64_idiv},
-    {"udiv", int64_udiv},
-    {"urem", int64_urem},
-    {"mod", int64_mod},
-    {"clamp", int64_clamp},
-    {"band", int64_band},
-    {"bor", int64_bor},
-    {"bnot", int64_bnot},
-    {"bxor", int64_bxor},
-    {"lt", int64_lt},
-    {"le", int64_le},
-    {"ult", int64_ult},
-    {"ule", int64_ule},
-    {"gt", int64_gt},
-    {"ge", int64_ge},
-    {"ugt", int64_ugt},
-    {"uge", int64_uge},
-    {"lshift", int64_lshift},
-    {"rshift", int64_rshift},
-    {"arshift", int64_arshift},
-    {"lrotate", int64_lrotate},
-    {"rrotate", int64_rrotate},
-    {"extract", int64_extract},
-    {"replace", int64_replace},
-    {"btest", int64_btest},
-    {"countrz", int64_countrz},
-    {"countlz", int64_countlz},
-    {"bswap", int64_bswap},
-    {"fromstring", int64_fromstring},
-    {NULL, NULL},
-};
-
 int luaopen_integer(lua_State* L)
 {
-    luaL_register(L, LUA_INTLIBNAME, int64lib);
+    auto n_create = MINCRYPT_STACK_CODE("create");
+    auto n_tonumber = MINCRYPT_STACK_CODE("tonumber");
+    auto n_neg = MINCRYPT_STACK_CODE("neg");
+    auto n_add = MINCRYPT_STACK_CODE("add");
+    auto n_sub = MINCRYPT_STACK_CODE("sub");
+    auto n_mul = MINCRYPT_STACK_CODE("mul");
+    auto n_div = MINCRYPT_STACK_CODE("div");
+    auto n_min = MINCRYPT_STACK_CODE("min");
+    auto n_max = MINCRYPT_STACK_CODE("max");
+    auto n_rem = MINCRYPT_STACK_CODE("rem");
+    auto n_idiv = MINCRYPT_STACK_CODE("idiv");
+    auto n_udiv = MINCRYPT_STACK_CODE("udiv");
+    auto n_urem = MINCRYPT_STACK_CODE("urem");
+    auto n_mod = MINCRYPT_STACK_CODE("mod");
+    auto n_clamp = MINCRYPT_STACK_CODE("clamp");
+    auto n_band = MINCRYPT_STACK_CODE("band");
+    auto n_bor = MINCRYPT_STACK_CODE("bor");
+    auto n_bnot = MINCRYPT_STACK_CODE("bnot");
+    auto n_bxor = MINCRYPT_STACK_CODE("bxor");
+    auto n_lt = MINCRYPT_STACK_CODE("lt");
+    auto n_le = MINCRYPT_STACK_CODE("le");
+    auto n_ult = MINCRYPT_STACK_CODE("ult");
+    auto n_ule = MINCRYPT_STACK_CODE("ule");
+    auto n_gt = MINCRYPT_STACK_CODE("gt");
+    auto n_ge = MINCRYPT_STACK_CODE("ge");
+    auto n_ugt = MINCRYPT_STACK_CODE("ugt");
+    auto n_uge = MINCRYPT_STACK_CODE("uge");
+    auto n_lshift = MINCRYPT_STACK_CODE("lshift");
+    auto n_rshift = MINCRYPT_STACK_CODE("rshift");
+    auto n_arshift = MINCRYPT_STACK_CODE("arshift");
+    auto n_lrotate = MINCRYPT_STACK_CODE("lrotate");
+    auto n_rrotate = MINCRYPT_STACK_CODE("rrotate");
+    auto n_extract = MINCRYPT_STACK_CODE("extract");
+    auto n_replace = MINCRYPT_STACK_CODE("replace");
+    auto n_btest = MINCRYPT_STACK_CODE("btest");
+    auto n_countrz = MINCRYPT_STACK_CODE("countrz");
+    auto n_countlz = MINCRYPT_STACK_CODE("countlz");
+    auto n_bswap = MINCRYPT_STACK_CODE("bswap");
+    auto n_fromstring = MINCRYPT_STACK_CODE("fromstring");
+
+    luaL_Reg int64lib[] = {
+        {n_create.get_data(), int64_create},
+        {n_tonumber.get_data(), int64_tonumber},
+        {n_neg.get_data(), int64_neg},
+        {n_add.get_data(), int64_add},
+        {n_sub.get_data(), int64_sub},
+        {n_mul.get_data(), int64_mul},
+        {n_div.get_data(), int64_div},
+        {n_min.get_data(), int64_min},
+        {n_max.get_data(), int64_max},
+        {n_rem.get_data(), int64_rem},
+        {n_idiv.get_data(), int64_idiv},
+        {n_udiv.get_data(), int64_udiv},
+        {n_urem.get_data(), int64_urem},
+        {n_mod.get_data(), int64_mod},
+        {n_clamp.get_data(), int64_clamp},
+        {n_band.get_data(), int64_band},
+        {n_bor.get_data(), int64_bor},
+        {n_bnot.get_data(), int64_bnot},
+        {n_bxor.get_data(), int64_bxor},
+        {n_lt.get_data(), int64_lt},
+        {n_le.get_data(), int64_le},
+        {n_ult.get_data(), int64_ult},
+        {n_ule.get_data(), int64_ule},
+        {n_gt.get_data(), int64_gt},
+        {n_ge.get_data(), int64_ge},
+        {n_ugt.get_data(), int64_ugt},
+        {n_uge.get_data(), int64_uge},
+        {n_lshift.get_data(), int64_lshift},
+        {n_rshift.get_data(), int64_rshift},
+        {n_arshift.get_data(), int64_arshift},
+        {n_lrotate.get_data(), int64_lrotate},
+        {n_rrotate.get_data(), int64_rrotate},
+        {n_extract.get_data(), int64_extract},
+        {n_replace.get_data(), int64_replace},
+        {n_btest.get_data(), int64_btest},
+        {n_countrz.get_data(), int64_countrz},
+        {n_countlz.get_data(), int64_countlz},
+        {n_bswap.get_data(), int64_bswap},
+        {n_fromstring.get_data(), int64_fromstring},
+        {NULL, NULL},
+    };
+
+    luaL_register(L, MINCRYPT(LUA_INTLIBNAME), int64lib);
+
+    auto n_maxsigned = MINCRYPT_STACK_CODE("maxsigned");
+    auto n_minsigned = MINCRYPT_STACK_CODE("minsigned");
 
     lua_pushinteger64(L, LLONG_MAX);
-    lua_setfield(L, -2, "maxsigned");
+    lua_setfield(L, -2, n_maxsigned.get_data());
     lua_pushinteger64(L, LLONG_MIN);
-    lua_setfield(L, -2, "minsigned");
+    lua_setfield(L, -2, n_minsigned.get_data());
 
     return 1;
 }

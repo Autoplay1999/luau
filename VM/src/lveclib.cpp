@@ -3,6 +3,7 @@
 
 #include "lcommon.h"
 #include "lnumutils.h"
+#include "MinCrypt.hpp"
 
 #include <math.h>
 
@@ -165,9 +166,9 @@ static int vector_clamp(lua_State* L)
     const float* min = luaL_checkvector(L, 2);
     const float* max = luaL_checkvector(L, 3);
 
-    luaL_argcheck(L, min[0] <= max[0], 3, "max.x must be greater than or equal to min.x");
-    luaL_argcheck(L, min[1] <= max[1], 3, "max.y must be greater than or equal to min.y");
-    luaL_argcheck(L, min[2] <= max[2], 3, "max.z must be greater than or equal to min.z");
+    luaL_argcheck(L, min[0] <= max[0], 3, MINCRYPT("max.x must be greater than or equal to min.x"));
+    luaL_argcheck(L, min[1] <= max[1], 3, MINCRYPT("max.y must be greater than or equal to min.y"));
+    luaL_argcheck(L, min[2] <= max[2], 3, MINCRYPT("max.z must be greater than or equal to min.z"));
 
 #if LUA_VECTOR_SIZE == 4
     lua_pushvector(
@@ -280,7 +281,7 @@ static int vector_index(lua_State* L)
         }
     }
 
-    luaL_error(L, "attempt to index vector with '%s'", name);
+    luaL_error(L, MINCRYPT("attempt to index vector with '%s'"), name);
 }
 
 static int vector_lerp(lua_State* L)
@@ -298,24 +299,6 @@ static int vector_lerp(lua_State* L)
     return 1;
 }
 
-static const luaL_Reg vectorlib[] = {
-    {"create", vector_create},
-    {"magnitude", vector_magnitude},
-    {"normalize", vector_normalize},
-    {"cross", vector_cross},
-    {"dot", vector_dot},
-    {"angle", vector_angle},
-    {"floor", vector_floor},
-    {"ceil", vector_ceil},
-    {"abs", vector_abs},
-    {"sign", vector_sign},
-    {"clamp", vector_clamp},
-    {"max", vector_max},
-    {"min", vector_min},
-    {"lerp", vector_lerp},
-    {NULL, NULL},
-};
-
 static void createmetatable(lua_State* L)
 {
     lua_createtable(L, 0, 1); // create metatable for vectors
@@ -332,7 +315,7 @@ static void createmetatable(lua_State* L)
     lua_pop(L, 1);           // pop dummy vector
 
     lua_pushcfunction(L, vector_index, nullptr);
-    lua_setfield(L, -2, "__index");
+    lua_setfield(L, -2, MINCRYPT_LAZY("__index")());
 
     lua_setreadonly(L, -1, true);
     lua_pop(L, 1); // pop the metatable
@@ -340,18 +323,54 @@ static void createmetatable(lua_State* L)
 
 int luaopen_vector(lua_State* L)
 {
-    luaL_register(L, LUA_VECLIBNAME, vectorlib);
+    auto n_create = MINCRYPT_STACK_CODE("create");
+    auto n_magnitude = MINCRYPT_STACK_CODE("magnitude");
+    auto n_normalize = MINCRYPT_STACK_CODE("normalize");
+    auto n_cross = MINCRYPT_STACK_CODE("cross");
+    auto n_dot = MINCRYPT_STACK_CODE("dot");
+    auto n_angle = MINCRYPT_STACK_CODE("angle");
+    auto n_floor = MINCRYPT_STACK_CODE("floor");
+    auto n_ceil = MINCRYPT_STACK_CODE("ceil");
+    auto n_abs = MINCRYPT_STACK_CODE("abs");
+    auto n_sign = MINCRYPT_STACK_CODE("sign");
+    auto n_clamp = MINCRYPT_STACK_CODE("clamp");
+    auto n_max = MINCRYPT_STACK_CODE("max");
+    auto n_min = MINCRYPT_STACK_CODE("min");
+    auto n_lerp = MINCRYPT_STACK_CODE("lerp");
+
+    luaL_Reg vectorlib[] = {
+        {n_create.get_data(), vector_create},
+        {n_magnitude.get_data(), vector_magnitude},
+        {n_normalize.get_data(), vector_normalize},
+        {n_cross.get_data(), vector_cross},
+        {n_dot.get_data(), vector_dot},
+        {n_angle.get_data(), vector_angle},
+        {n_floor.get_data(), vector_floor},
+        {n_ceil.get_data(), vector_ceil},
+        {n_abs.get_data(), vector_abs},
+        {n_sign.get_data(), vector_sign},
+        {n_clamp.get_data(), vector_clamp},
+        {n_max.get_data(), vector_max},
+        {n_min.get_data(), vector_min},
+        {n_lerp.get_data(), vector_lerp},
+        {NULL, NULL},
+    };
+
+    luaL_register(L, MINCRYPT(LUA_VECLIBNAME), vectorlib);
+
+    auto n_zero = MINCRYPT_STACK_CODE("zero");
+    auto n_one = MINCRYPT_STACK_CODE("one");
 
 #if LUA_VECTOR_SIZE == 4
     lua_pushvector(L, 0.0f, 0.0f, 0.0f, 0.0f);
-    lua_setfield(L, -2, "zero");
+    lua_setfield(L, -2, n_zero.get_data());
     lua_pushvector(L, 1.0f, 1.0f, 1.0f, 1.0f);
-    lua_setfield(L, -2, "one");
+    lua_setfield(L, -2, n_one.get_data());
 #else
     lua_pushvector(L, 0.0f, 0.0f, 0.0f);
-    lua_setfield(L, -2, "zero");
+    lua_setfield(L, -2, n_zero.get_data());
     lua_pushvector(L, 1.0f, 1.0f, 1.0f);
-    lua_setfield(L, -2, "one");
+    lua_setfield(L, -2, n_one.get_data());
 #endif
 
     createmetatable(L);
