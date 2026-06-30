@@ -169,7 +169,7 @@ const char* luaO_chunkid(char* buf, size_t buflen, const char* source, size_t sr
         if (srclen <= buflen)
             return source + 1;
         // truncate the part after @
-        memcpy(buf, "...", 3);
+        memcpy(buf, MINCRYPT("..."), 3);
         memcpy(buf + 3, source + srclen - (buflen - 4), buflen - 4);
         buf[buflen - 1] = '\0';
     }
@@ -179,15 +179,15 @@ const char* luaO_chunkid(char* buf, size_t buflen, const char* source, size_t sr
         buflen -= sizeof("[string \"...\"]");
         if (len > buflen)
             len = buflen;
-        strcpy(buf, "[string \"");
+        strcpy(buf, MINCRYPT("[string \""));
         if (source[len] != '\0')
         { // must truncate?
             strncat(buf, source, len);
-            strcat(buf, "...");
+            strcat(buf, MINCRYPT("..."));
         }
         else
             strcat(buf, source);
-        strcat(buf, "\"]");
+        strcat(buf, MINCRYPT("\"]"));
     }
     return buf;
 }

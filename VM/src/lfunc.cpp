@@ -5,9 +5,10 @@
 #include "lstate.h"
 #include "lmem.h"
 #include "lgc.h"
+#include "MinCrypt.hpp"
 
 LUAU_FASTFLAG(LuauCIProto)
-LUAU_FASTINTVARIABLE(LuauInlineHitsThreshold, 3)
+LUAU_FASTINTVARIABLE_CRYPT(LuauInlineHitsThreshold, 3)
 
 Proto* luaF_newproto(lua_State* L)
 {

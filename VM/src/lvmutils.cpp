@@ -10,6 +10,7 @@
 #include "lgc.h"
 #include "ldo.h"
 #include "lnumutils.h"
+#include "MinCrypt.hpp"
 
 #include <string.h>
 
@@ -174,7 +175,7 @@ void luaV_gettable(lua_State* L, const TValue* t, TValue* key, StkId val)
         }
         t = tm; // else repeat with `tm'
     }
-    luaG_runerror(L, "'__index' chain too long; possible loop");
+    luaG_runerror(L, MINCRYPT("'__index' chain too long; possible loop"));
 }
 
 void luaV_settable(lua_State* L, const TValue* t, TValue* key, StkId val)
@@ -234,7 +235,7 @@ void luaV_settable(lua_State* L, const TValue* t, TValue* key, StkId val)
         setobj(L, &temp, tm); // avoid pointing inside table (may rehash)
         t = &temp;
     }
-    luaG_runerror(L, "'__newindex' chain too long; possible loop");
+    luaG_runerror(L, MINCRYPT("'__newindex' chain too long; possible loop"));
 }
 
 static int call_binTM(lua_State* L, const TValue* p1, const TValue* p2, StkId res, TMS event)
@@ -418,7 +419,7 @@ void luaV_concat(lua_State* L, int total, int last)
             {
                 size_t l = tsvalue(top - n - 1)->len;
                 if (l > MAXSSIZE - tl)
-                    luaG_runerror(L, "string length overflow");
+                    luaG_runerror(L, MINCRYPT("string length overflow"));
                 tl += l;
             }
 
@@ -636,21 +637,21 @@ void luaV_dolen(lua_State* L, StkId ra, const TValue* rb)
     }
 
     if (ttisnil(tm))
-        luaG_typeerror(L, rb, "get length of");
+        luaG_typeerror(L, rb, MINCRYPT("get length of"));
 
     StkId res = callTMres(L, ra, tm, rb, luaO_nilobject);
     if (!ttisnumber(res))
-        luaG_runerror(L, "'__len' must return a number"); // note, we can't access rb since stack may have been reallocated
+        luaG_runerror(L, MINCRYPT("'__len' must return a number")); // note, we can't access rb since stack may have been reallocated
 }
 
 LUAU_NOINLINE void luaV_prepareFORN(lua_State* L, StkId plimit, StkId pstep, StkId pinit)
 {
     if (!ttisnumber(pinit) && !luaV_tonumber(pinit, pinit))
-        luaG_forerror(L, pinit, "initial value");
+        luaG_forerror(L, pinit, MINCRYPT("initial value"));
     if (!ttisnumber(plimit) && !luaV_tonumber(plimit, plimit))
-        luaG_forerror(L, plimit, "limit");
+        luaG_forerror(L, plimit, MINCRYPT("limit"));
     if (!ttisnumber(pstep) && !luaV_tonumber(pstep, pstep))
-        luaG_forerror(L, pstep, "step");
+        luaG_forerror(L, pstep, MINCRYPT("step"));
 }
 
 // calls a C function f with no yielding support; optionally save one resulting value to the res register
@@ -715,7 +716,7 @@ LUAU_NOINLINE void luaV_tryfuncTM(lua_State* L, StkId func)
 {
     const TValue* tm = luaT_gettmbyobj(L, func, TM_CALL);
     if (!ttisfunction(tm))
-        luaG_typeerror(L, func, "call");
+        luaG_typeerror(L, func, MINCRYPT("call"));
     for (StkId p = L->top; p > func; p--) // open space for metamethod
         setobj2s(L, p, p - 1);
     L->top++;              // stack space pre-allocated by the caller

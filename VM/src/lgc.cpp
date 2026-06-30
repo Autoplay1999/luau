@@ -14,11 +14,12 @@
 #include "lclass.h"
 
 #include <string.h>
+#include "MinCrypt.hpp"
 
 LUAU_FASTFLAG(LuauUdataDirectAccess6)
 LUAU_FASTFLAG(LuauDirectFieldGet)
-LUAU_FASTFLAGVARIABLE(LuauUdataMetatablePinned)
-LUAU_DYNAMIC_FASTFLAGVARIABLE(LuauGcTableStepFix, false)
+LUAU_FASTFLAGVARIABLE_CRYPT(LuauUdataMetatablePinned)
+LUAU_DYNAMIC_FASTFLAGVARIABLE_CRYPT(LuauGcTableStepFix, false)
 
 /*
  * Luau uses an incremental non-generational non-moving mark&sweep garbage collector.

@@ -14,17 +14,16 @@
 #include "lbuiltins.h"
 #include "lnumutils.h"
 #include "lbytecode.h"
+#include "MinCrypt.hpp"
 
 #include <string.h>
 
-LUAU_FASTFLAGVARIABLE(LuauDirectFieldGet)
-LUAU_FLAGVERSION(LuauDirectFieldGet, 2)
-
-LUAU_FASTFLAGVARIABLE(LuauCIProto)
-LUAU_FASTFLAGVARIABLE(DebugLuauUserDefinedClassesRuntime)
-LUAU_FASTFLAGVARIABLE(LuauCallFeedback)
-LUAU_FASTFLAGVARIABLE(LuauYieldIter2)
-LUAU_FASTFLAGVARIABLE(LuauPromoteProto)
+LUAU_FASTFLAGVARIABLE_CRYPT(LuauDirectFieldGet)
+LUAU_FASTFLAGVARIABLE_CRYPT(LuauCIProto)
+LUAU_FASTFLAGVARIABLE_CRYPT(DebugLuauUserDefinedClassesRuntime)
+LUAU_FASTFLAGVARIABLE_CRYPT(LuauCallFeedback)
+LUAU_FASTFLAGVARIABLE_CRYPT(LuauYieldIter2)
+LUAU_FASTFLAGVARIABLE_CRYPT(LuauPromoteProto)
 
 // Disable c99-designator to avoid the warning in computed goto dispatch table
 #ifdef __clang__
@@ -2576,7 +2575,7 @@ reentry:
                             if (ttisnil(fn))
                             {
                                 VM_PROTECT_PC();
-                                luaG_typeerror(L, ra, "iterate over");
+                                luaG_typeerror(L, ra, MINCRYPT("iterate over"));
                             }
                         }
 
@@ -2598,7 +2597,7 @@ reentry:
                             if (ttisnil(ra))
                             {
                                 VM_PROTECT_PC(); // next call always errors
-                                luaG_typeerror(L, ra, "call");
+                                luaG_typeerror(L, ra, MINCRYPT("call"));
                             }
                         }
                         else if (fasttm(L, mt, TM_CALL))
@@ -2616,7 +2615,7 @@ reentry:
                         else
                         {
                             VM_PROTECT_PC(); // next call always errors
-                            luaG_typeerror(L, ra, "iterate over");
+                            luaG_typeerror(L, ra, MINCRYPT("iterate over"));
                         }
                     }
                 }
@@ -2649,7 +2648,7 @@ reentry:
                             if (ttisnil(ra))
                             {
                                 VM_PROTECT_PC(); // next call always errors
-                                luaG_typeerror(L, ra, "call");
+                                luaG_typeerror(L, ra, MINCRYPT("call"));
                             }
                         }
                         else if (fasttm(L, mt, TM_CALL))
@@ -2667,7 +2666,7 @@ reentry:
                         else
                         {
                             VM_PROTECT_PC(); // next call always errors
-                            luaG_typeerror(L, ra, "iterate over");
+                            luaG_typeerror(L, ra, MINCRYPT("iterate over"));
                         }
                     }
                 }
@@ -2804,7 +2803,7 @@ reentry:
                 else if (!ttisfunction(ra))
                 {
                     VM_PROTECT_PC(); // next call always errors
-                    luaG_typeerror(L, ra, "iterate over");
+                    luaG_typeerror(L, ra, MINCRYPT("iterate over"));
                 }
 
                 pc += LUAU_INSN_D(insn);
@@ -2827,7 +2826,7 @@ reentry:
                 else if (!ttisfunction(ra))
                 {
                     VM_PROTECT_PC(); // next call always errors
-                    luaG_typeerror(L, ra, "iterate over");
+                    luaG_typeerror(L, ra, MINCRYPT("iterate over"));
                 }
 
                 pc += LUAU_INSN_D(insn);
