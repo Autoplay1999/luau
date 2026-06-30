@@ -598,6 +598,7 @@ static int tclone(lua_State* L)
 
 int luaopen_table(lua_State* L)
 {
+    auto n_concat = MINCRYPT_STACK_CODE("concat");
     auto n_foreach = MINCRYPT_STACK_CODE("foreach");
     auto n_foreachi = MINCRYPT_STACK_CODE("foreachi");
     auto n_getn = MINCRYPT_STACK_CODE("getn");
@@ -616,6 +617,7 @@ int luaopen_table(lua_State* L)
     auto n_clone = MINCRYPT_STACK_CODE("clone");
 
     luaL_Reg tab_funcs[] = {
+        {n_concat.get_data(), tconcat},
         {n_foreach.get_data(), foreach},
         {n_foreachi.get_data(), foreachi},
         {n_getn.get_data(), getn},

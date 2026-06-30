@@ -167,25 +167,25 @@ ifneq ($(nativelj),)
 endif
 
 # target-specific flags
-$(COMMON_OBJECTS): CXXFLAGS+=-std=c++17 -ICommon/include
-$(AST_OBJECTS): CXXFLAGS+=-std=c++17 -ICommon/include -IAst/include
-$(BYTECODE_OBJECTS): CXXFLAGS+=-std=c++17 -IBytecode/include -ICommon/include
-$(JITINLINER_OBJECTS): CXXFLAGS+=-std=c++17 -IInliner/include -IBytecode/include -IBytecode/src -ICommon/include -IVM/include -IVM/src
-$(COMPILER_OBJECTS): CXXFLAGS+=-std=c++17 -IBytecode/include -ICompiler/include -ICommon/include -IAst/include
-$(CONFIG_OBJECTS): CXXFLAGS+=-std=c++17 -IConfig/include -ICommon/include -IAst/include -IBytecode/include -ICompiler/include -IVM/include
-$(ANALYSIS_OBJECTS): CXXFLAGS+=-std=c++17 -ICommon/include -IAst/include -IAnalysis/include -IConfig/include -IBytecode/include -ICompiler/include -IVM/include
-$(CODEGEN_OBJECTS): CXXFLAGS+=-std=c++17 -ICommon/include -ICodeGen/include -IVM/include -IVM/src # Code generation needs VM internals
-$(VM_OBJECTS): CXXFLAGS+=-std=c++11 -ICommon/include -IVM/include
-$(REQUIRE_OBJECTS): CXXFLAGS+=-std=c++17 -ICommon/include -IVM/include -IAst/include -IConfig/include -IRequire/include
+$(COMMON_OBJECTS): CXXFLAGS+=-std=c++20 -ICommon/include
+$(AST_OBJECTS): CXXFLAGS+=-std=c++20 -ICommon/include -IAst/include
+$(BYTECODE_OBJECTS): CXXFLAGS+=-std=c++20 -IBytecode/include -ICommon/include
+$(JITINLINER_OBJECTS): CXXFLAGS+=-std=c++20 -IInliner/include -IBytecode/include -IBytecode/src -ICommon/include -IVM/include -IVM/src
+$(COMPILER_OBJECTS): CXXFLAGS+=-std=c++20 -IBytecode/include -ICompiler/include -ICommon/include -IAst/include
+$(CONFIG_OBJECTS): CXXFLAGS+=-std=c++20 -IConfig/include -ICommon/include -IAst/include -IBytecode/include -ICompiler/include -IVM/include
+$(ANALYSIS_OBJECTS): CXXFLAGS+=-std=c++20 -ICommon/include -IAst/include -IAnalysis/include -IConfig/include -IBytecode/include -ICompiler/include -IVM/include
+$(CODEGEN_OBJECTS): CXXFLAGS+=-std=c++20 -ICommon/include -ICodeGen/include -IVM/include -IVM/src # Code generation needs VM internals
+$(VM_OBJECTS): CXXFLAGS+=-std=c++20 -ICommon/include -IVM/include
+$(REQUIRE_OBJECTS): CXXFLAGS+=-std=c++20 -ICommon/include -IVM/include -IAst/include -IConfig/include -IRequire/include
 $(ISOCLINE_OBJECTS): CXXFLAGS+=-Wno-unused-function -Iextern/isocline/include
-$(TESTS_OBJECTS): CXXFLAGS+=-std=c++17 -ICommon/include -IAst/include -IBytecode/include -IInliner/include -ICompiler/include -IConfig/include -IAnalysis/include -ICodeGen/include -IVM/include -IVM/src -IRequire/include -ICLI/include -Iextern -DDOCTEST_CONFIG_DOUBLE_STRINGIFY -DLUAU_CONFORMANCE_SOURCE_DIR=$(LUAU_CONFORMANCE_SOURCE_DIR)
-$(REPL_CLI_OBJECTS): CXXFLAGS+=-std=c++17 -ICommon/include -IAst/include -IBytecode/include -IInliner/include -ICompiler/include -IVM/include -ICodeGen/include -IRequire/include -Iextern -Iextern/isocline/include -ICLI/include
-$(ANALYZE_CLI_OBJECTS): CXXFLAGS+=-std=c++17 -ICommon/include -IAst/include -IAnalysis/include -IConfig/include -IRequire/include -IVM/include -Iextern -ICLI/include
-$(COMPILE_CLI_OBJECTS): CXXFLAGS+=-std=c++17 -ICommon/include -IAst/include -IBytecode/include -ICompiler/include -IVM/include -ICodeGen/include -ICLI/include
-$(BYTECODE_CLI_OBJECTS): CXXFLAGS+=-std=c++17 -ICommon/include -IAst/include -IBytecode/include -ICompiler/include -IVM/include -ICodeGen/include -ICLI/include
-$(TEST_LINK_VM_OBJECTS): CXXFLAGS+=-std=c++11 -ICommon/include -IVM/include
-$(TEST_LINK_CODEGEN_OBJECTS): CXXFLAGS+=-std=c++17 -ICommon/include -IVM/include -ICodeGen/include
-$(FUZZ_OBJECTS): CXXFLAGS+=-std=c++17 -ICommon/include -IAst/include -IBytecode/include -ICompiler/include -IAnalysis/include -IVM/include -ICodeGen/include -IConfig/include
+$(TESTS_OBJECTS): CXXFLAGS+=-std=c++20 -ICommon/include -IAst/include -IBytecode/include -IInliner/include -ICompiler/include -IConfig/include -IAnalysis/include -ICodeGen/include -IVM/include -IVM/src -IRequire/include -ICLI/include -Iextern -DDOCTEST_CONFIG_DOUBLE_STRINGIFY -DLUAU_CONFORMANCE_SOURCE_DIR=$(LUAU_CONFORMANCE_SOURCE_DIR)
+$(REPL_CLI_OBJECTS): CXXFLAGS+=-std=c++20 -ICommon/include -IAst/include -IBytecode/include -IInliner/include -ICompiler/include -IVM/include -ICodeGen/include -IRequire/include -Iextern -Iextern/isocline/include -ICLI/include
+$(ANALYZE_CLI_OBJECTS): CXXFLAGS+=-std=c++20 -ICommon/include -IAst/include -IAnalysis/include -IConfig/include -IRequire/include -IVM/include -Iextern -ICLI/include
+$(COMPILE_CLI_OBJECTS): CXXFLAGS+=-std=c++20 -ICommon/include -IAst/include -IBytecode/include -ICompiler/include -IVM/include -ICodeGen/include -ICLI/include
+$(BYTECODE_CLI_OBJECTS): CXXFLAGS+=-std=c++20 -ICommon/include -IAst/include -IBytecode/include -ICompiler/include -IVM/include -ICodeGen/include -ICLI/include
+$(TEST_LINK_VM_OBJECTS): CXXFLAGS+=-std=c++20 -ICommon/include -IVM/include
+$(TEST_LINK_CODEGEN_OBJECTS): CXXFLAGS+=-std=c++20 -ICommon/include -IVM/include -ICodeGen/include
+$(FUZZ_OBJECTS): CXXFLAGS+=-std=c++20 -ICommon/include -IAst/include -IBytecode/include -ICompiler/include -IAnalysis/include -IVM/include -ICodeGen/include -IConfig/include
 
 $(TESTS_TARGET): LDFLAGS+=-lpthread
 $(REPL_CLI_TARGET): LDFLAGS+=-lpthread

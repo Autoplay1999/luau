@@ -10,6 +10,8 @@
 #include <utility>
 #include <cstdint>
 
+#include "Luau/Common.h"
+
 namespace MinCrypt {
 
 template <size_t N>
@@ -32,7 +34,7 @@ constexpr FixedString<N> encrypt_string(const char (&str)[N]) {
 }
 
 template <size_t N>
-__declspec(noinline) void decrypt_runtime(const char* src, char* dst) {
+LUAU_NOINLINE void decrypt_runtime(const char* src, char* dst) {
     volatile int key = 256;
     for (size_t i = 0; i < N; ++i) {
         dst[i] = static_cast<char>(key - static_cast<int>(src[i]));
@@ -82,7 +84,7 @@ class StackCodeDecryptedString {
     static constexpr size_t padded_size = ((EncryptedStr.size + word_size - 1) / word_size) * word_size;
 
 public:
-    __forceinline StackCodeDecryptedString() {
+    LUAU_FORCEINLINE StackCodeDecryptedString() {
         constexpr auto uintptr_data = get_uintptr_encrypted<EncryptedStr.size>(EncryptedStr.value);
 
         volatile uintptr_t* dest = reinterpret_cast<volatile uintptr_t*>(decrypted_data_.data());
