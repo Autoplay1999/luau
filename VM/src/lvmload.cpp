@@ -810,7 +810,7 @@ int luau_load(lua_State* L, const char* chunkname, const char* data, size_t size
 
     if (status == LUA_ERRMEM)
     {
-        lua_pushstring(L, MINCRYPT_LAZY("LUA_MEMERRMSG")()); // out-of-memory error message doesn't require an allocation
+        lua_pushstring(L, MINCRYPT_LAZY(LUA_MEMERRMSG)()); // out-of-memory error message doesn't require an allocation
         return 1;
     }
 

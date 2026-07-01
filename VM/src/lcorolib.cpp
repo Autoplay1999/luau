@@ -243,9 +243,9 @@ static int coclose(lua_State* L)
         lua_pushboolean(L, false);
 
         if (co->status == LUA_ERRMEM)
-            lua_pushstring(L, MINCRYPT_LAZY("LUA_MEMERRMSG")());
+            lua_pushstring(L, MINCRYPT_LAZY(LUA_MEMERRMSG)());
         else if (co->status == LUA_ERRERR)
-            lua_pushstring(L, MINCRYPT_LAZY("LUA_ERRERRMSG")());
+            lua_pushstring(L, MINCRYPT_LAZY(LUA_ERRERRMSG)());
         else if (lua_gettop(co))
             lua_xmove(co, L, 1); // move error message
 
