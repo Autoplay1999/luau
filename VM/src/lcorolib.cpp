@@ -256,30 +256,30 @@ static int coclose(lua_State* L)
 
 int luaopen_coroutine(lua_State* L)
 {
-    auto n_create = MINCRYPT_STACK_CODE("create");
-    auto n_running = MINCRYPT_STACK_CODE("running");
-    auto n_status = MINCRYPT_STACK_CODE("status");
-    auto n_wrap = MINCRYPT_STACK_CODE("wrap");
-    auto n_yield = MINCRYPT_STACK_CODE("yield");
-    auto n_isyieldable = MINCRYPT_STACK_CODE("isyieldable");
-    auto n_close = MINCRYPT_STACK_CODE("close");
-    auto n_resume = MINCRYPT_STACK_CODE("resume");
+    auto n_create = MINCRYPT_LAZY("create")();
+    auto n_running = MINCRYPT_LAZY("running")();
+    auto n_status = MINCRYPT_LAZY("status")();
+    auto n_wrap = MINCRYPT_LAZY("wrap")();
+    auto n_yield = MINCRYPT_LAZY("yield")();
+    auto n_isyieldable = MINCRYPT_LAZY("isyieldable")();
+    auto n_close = MINCRYPT_LAZY("close")();
+    auto n_resume = MINCRYPT_LAZY("resume")();
 
     luaL_Reg co_funcs[] = {
-        {n_create.get_data(), cocreate},
-        {n_running.get_data(), corunning},
-        {n_status.get_data(), costatus},
-        {n_wrap.get_data(), cowrap},
-        {n_yield.get_data(), coyield},
-        {n_isyieldable.get_data(), coyieldable},
-        {n_close.get_data(), coclose},
+        {n_create, cocreate},
+        {n_running, corunning},
+        {n_status, costatus},
+        {n_wrap, cowrap},
+        {n_yield, coyield},
+        {n_isyieldable, coyieldable},
+        {n_close, coclose},
         {NULL, NULL},
     };
 
     luaL_register(L, MINCRYPT(LUA_COLIBNAME), co_funcs);
 
-    lua_pushcclosurek(L, coresumey, n_resume.get_data(), 0, coresumecont);
-    lua_setfield(L, -2, n_resume.get_data());
+    lua_pushcclosurek(L, coresumey, n_resume, 0, coresumecont);
+    lua_setfield(L, -2, n_resume);
 
     return 1;
 }

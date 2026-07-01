@@ -279,27 +279,27 @@ static int iter_codes(lua_State* L)
 
 int luaopen_utf8(lua_State* L)
 {
-    auto n_offset = MINCRYPT_STACK_CODE("offset");
-    auto n_codepoint = MINCRYPT_STACK_CODE("codepoint");
-    auto n_char = MINCRYPT_STACK_CODE("char");
-    auto n_len = MINCRYPT_STACK_CODE("len");
-    auto n_codes = MINCRYPT_STACK_CODE("codes");
+    auto n_offset = MINCRYPT_LAZY("offset")();
+    auto n_codepoint = MINCRYPT_LAZY("codepoint")();
+    auto n_char = MINCRYPT_LAZY("char")();
+    auto n_len = MINCRYPT_LAZY("len")();
+    auto n_codes = MINCRYPT_LAZY("codes")();
 
     luaL_Reg funcs[] = {
-        {n_offset.get_data(), byteoffset},
-        {n_codepoint.get_data(), codepoint},
-        {n_char.get_data(), utfchar},
-        {n_len.get_data(), utflen},
-        {n_codes.get_data(), iter_codes},
+        {n_offset, byteoffset},
+        {n_codepoint, codepoint},
+        {n_char, utfchar},
+        {n_len, utflen},
+        {n_codes, iter_codes},
         {NULL, NULL},
     };
 
     luaL_register(L, MINCRYPT(LUA_UTF8LIBNAME), funcs);
 
-    auto n_charpattern = MINCRYPT_STACK_CODE("charpattern");
+    auto n_charpattern = MINCRYPT_LAZY("charpattern")();
 
     lua_pushlstring(L, UTF8PATT, sizeof(UTF8PATT) / sizeof(char) - 1);
-    lua_setfield(L, -2, n_charpattern.get_data());
+    lua_setfield(L, -2, n_charpattern);
 
     return 1;
 }

@@ -371,67 +371,67 @@ static int buffer_writebits(lua_State* L)
 
 int luaopen_buffer(lua_State* L)
 {
-    auto n_create = MINCRYPT_STACK_CODE("create");
-    auto n_fromstring = MINCRYPT_STACK_CODE("fromstring");
-    auto n_tostring = MINCRYPT_STACK_CODE("tostring");
-    auto n_readi8 = MINCRYPT_STACK_CODE("readi8");
-    auto n_readu8 = MINCRYPT_STACK_CODE("readu8");
-    auto n_readi16 = MINCRYPT_STACK_CODE("readi16");
-    auto n_readu16 = MINCRYPT_STACK_CODE("readu16");
-    auto n_readi32 = MINCRYPT_STACK_CODE("readi32");
-    auto n_readu32 = MINCRYPT_STACK_CODE("readu32");
-    auto n_readf32 = MINCRYPT_STACK_CODE("readf32");
-    auto n_readf64 = MINCRYPT_STACK_CODE("readf64");
-    auto n_writei8 = MINCRYPT_STACK_CODE("writei8");
-    auto n_writeu8 = MINCRYPT_STACK_CODE("writeu8");
-    auto n_writei16 = MINCRYPT_STACK_CODE("writei16");
-    auto n_writeu16 = MINCRYPT_STACK_CODE("writeu16");
-    auto n_writei32 = MINCRYPT_STACK_CODE("writei32");
-    auto n_writeu32 = MINCRYPT_STACK_CODE("writeu32");
-    auto n_writef32 = MINCRYPT_STACK_CODE("writef32");
-    auto n_writef64 = MINCRYPT_STACK_CODE("writef64");
-    auto n_readstring = MINCRYPT_STACK_CODE("readstring");
-    auto n_writestring = MINCRYPT_STACK_CODE("writestring");
-    auto n_len = MINCRYPT_STACK_CODE("len");
-    auto n_copy = MINCRYPT_STACK_CODE("copy");
-    auto n_fill = MINCRYPT_STACK_CODE("fill");
-    auto n_readbits = MINCRYPT_STACK_CODE("readbits");
-    auto n_writebits = MINCRYPT_STACK_CODE("writebits");
+    auto n_create = MINCRYPT_LAZY("create")();
+    auto n_fromstring = MINCRYPT_LAZY("fromstring")();
+    auto n_tostring = MINCRYPT_LAZY("tostring")();
+    auto n_readi8 = MINCRYPT_LAZY("readi8")();
+    auto n_readu8 = MINCRYPT_LAZY("readu8")();
+    auto n_readi16 = MINCRYPT_LAZY("readi16")();
+    auto n_readu16 = MINCRYPT_LAZY("readu16")();
+    auto n_readi32 = MINCRYPT_LAZY("readi32")();
+    auto n_readu32 = MINCRYPT_LAZY("readu32")();
+    auto n_readf32 = MINCRYPT_LAZY("readf32")();
+    auto n_readf64 = MINCRYPT_LAZY("readf64")();
+    auto n_writei8 = MINCRYPT_LAZY("writei8")();
+    auto n_writeu8 = MINCRYPT_LAZY("writeu8")();
+    auto n_writei16 = MINCRYPT_LAZY("writei16")();
+    auto n_writeu16 = MINCRYPT_LAZY("writeu16")();
+    auto n_writei32 = MINCRYPT_LAZY("writei32")();
+    auto n_writeu32 = MINCRYPT_LAZY("writeu32")();
+    auto n_writef32 = MINCRYPT_LAZY("writef32")();
+    auto n_writef64 = MINCRYPT_LAZY("writef64")();
+    auto n_readstring = MINCRYPT_LAZY("readstring")();
+    auto n_writestring = MINCRYPT_LAZY("writestring")();
+    auto n_len = MINCRYPT_LAZY("len")();
+    auto n_copy = MINCRYPT_LAZY("copy")();
+    auto n_fill = MINCRYPT_LAZY("fill")();
+    auto n_readbits = MINCRYPT_LAZY("readbits")();
+    auto n_writebits = MINCRYPT_LAZY("writebits")();
 
     if (FFlag::LuauIntegerLibrary)
     {
-        auto n_readinteger = MINCRYPT_STACK_CODE("readinteger");
-        auto n_writeinteger = MINCRYPT_STACK_CODE("writeinteger");
+        auto n_readinteger = MINCRYPT_LAZY("readinteger")();
+        auto n_writeinteger = MINCRYPT_LAZY("writeinteger")();
 
         luaL_Reg bufferlib[] = {
-            {n_create.get_data(), buffer_create},
-            {n_fromstring.get_data(), buffer_fromstring},
-            {n_tostring.get_data(), buffer_tostring},
-            {n_readi8.get_data(), buffer_readinteger<int8_t>},
-            {n_readu8.get_data(), buffer_readinteger<uint8_t>},
-            {n_readi16.get_data(), buffer_readinteger<int16_t>},
-            {n_readu16.get_data(), buffer_readinteger<uint16_t>},
-            {n_readi32.get_data(), buffer_readinteger<int32_t>},
-            {n_readu32.get_data(), buffer_readinteger<uint32_t>},
-            {n_readf32.get_data(), buffer_readfp<float, uint32_t>},
-            {n_readf64.get_data(), buffer_readfp<double, uint64_t>},
-            {n_writei8.get_data(), buffer_writeinteger<int8_t>},
-            {n_writeu8.get_data(), buffer_writeinteger<uint8_t>},
-            {n_writei16.get_data(), buffer_writeinteger<int16_t>},
-            {n_writeu16.get_data(), buffer_writeinteger<uint16_t>},
-            {n_writei32.get_data(), buffer_writeinteger<int32_t>},
-            {n_writeu32.get_data(), buffer_writeinteger<uint32_t>},
-            {n_writef32.get_data(), buffer_writefp<float, uint32_t>},
-            {n_writef64.get_data(), buffer_writefp<double, uint64_t>},
-            {n_readstring.get_data(), buffer_readstring},
-            {n_writestring.get_data(), buffer_writestring},
-            {n_len.get_data(), buffer_len},
-            {n_copy.get_data(), buffer_copy},
-            {n_fill.get_data(), buffer_fill},
-            {n_readbits.get_data(), buffer_readbits},
-            {n_writebits.get_data(), buffer_writebits},
-            {n_readinteger.get_data(), buffer_readlong},
-            {n_writeinteger.get_data(), buffer_writelong},
+            {n_create, buffer_create},
+            {n_fromstring, buffer_fromstring},
+            {n_tostring, buffer_tostring},
+            {n_readi8, buffer_readinteger<int8_t>},
+            {n_readu8, buffer_readinteger<uint8_t>},
+            {n_readi16, buffer_readinteger<int16_t>},
+            {n_readu16, buffer_readinteger<uint16_t>},
+            {n_readi32, buffer_readinteger<int32_t>},
+            {n_readu32, buffer_readinteger<uint32_t>},
+            {n_readf32, buffer_readfp<float, uint32_t>},
+            {n_readf64, buffer_readfp<double, uint64_t>},
+            {n_writei8, buffer_writeinteger<int8_t>},
+            {n_writeu8, buffer_writeinteger<uint8_t>},
+            {n_writei16, buffer_writeinteger<int16_t>},
+            {n_writeu16, buffer_writeinteger<uint16_t>},
+            {n_writei32, buffer_writeinteger<int32_t>},
+            {n_writeu32, buffer_writeinteger<uint32_t>},
+            {n_writef32, buffer_writefp<float, uint32_t>},
+            {n_writef64, buffer_writefp<double, uint64_t>},
+            {n_readstring, buffer_readstring},
+            {n_writestring, buffer_writestring},
+            {n_len, buffer_len},
+            {n_copy, buffer_copy},
+            {n_fill, buffer_fill},
+            {n_readbits, buffer_readbits},
+            {n_writebits, buffer_writebits},
+            {n_readinteger, buffer_readlong},
+            {n_writeinteger, buffer_writelong},
             {NULL, NULL},
         };
 
@@ -440,32 +440,32 @@ int luaopen_buffer(lua_State* L)
     else
     {
         luaL_Reg bufferlib_NOINTEGER[] = {
-            {n_create.get_data(), buffer_create},
-            {n_fromstring.get_data(), buffer_fromstring},
-            {n_tostring.get_data(), buffer_tostring},
-            {n_readi8.get_data(), buffer_readinteger<int8_t>},
-            {n_readu8.get_data(), buffer_readinteger<uint8_t>},
-            {n_readi16.get_data(), buffer_readinteger<int16_t>},
-            {n_readu16.get_data(), buffer_readinteger<uint16_t>},
-            {n_readi32.get_data(), buffer_readinteger<int32_t>},
-            {n_readu32.get_data(), buffer_readinteger<uint32_t>},
-            {n_readf32.get_data(), buffer_readfp<float, uint32_t>},
-            {n_readf64.get_data(), buffer_readfp<double, uint64_t>},
-            {n_writei8.get_data(), buffer_writeinteger<int8_t>},
-            {n_writeu8.get_data(), buffer_writeinteger<uint8_t>},
-            {n_writei16.get_data(), buffer_writeinteger<int16_t>},
-            {n_writeu16.get_data(), buffer_writeinteger<uint16_t>},
-            {n_writei32.get_data(), buffer_writeinteger<int32_t>},
-            {n_writeu32.get_data(), buffer_writeinteger<uint32_t>},
-            {n_writef32.get_data(), buffer_writefp<float, uint32_t>},
-            {n_writef64.get_data(), buffer_writefp<double, uint64_t>},
-            {n_readstring.get_data(), buffer_readstring},
-            {n_writestring.get_data(), buffer_writestring},
-            {n_len.get_data(), buffer_len},
-            {n_copy.get_data(), buffer_copy},
-            {n_fill.get_data(), buffer_fill},
-            {n_readbits.get_data(), buffer_readbits},
-            {n_writebits.get_data(), buffer_writebits},
+            {n_create, buffer_create},
+            {n_fromstring, buffer_fromstring},
+            {n_tostring, buffer_tostring},
+            {n_readi8, buffer_readinteger<int8_t>},
+            {n_readu8, buffer_readinteger<uint8_t>},
+            {n_readi16, buffer_readinteger<int16_t>},
+            {n_readu16, buffer_readinteger<uint16_t>},
+            {n_readi32, buffer_readinteger<int32_t>},
+            {n_readu32, buffer_readinteger<uint32_t>},
+            {n_readf32, buffer_readfp<float, uint32_t>},
+            {n_readf64, buffer_readfp<double, uint64_t>},
+            {n_writei8, buffer_writeinteger<int8_t>},
+            {n_writeu8, buffer_writeinteger<uint8_t>},
+            {n_writei16, buffer_writeinteger<int16_t>},
+            {n_writeu16, buffer_writeinteger<uint16_t>},
+            {n_writei32, buffer_writeinteger<int32_t>},
+            {n_writeu32, buffer_writeinteger<uint32_t>},
+            {n_writef32, buffer_writefp<float, uint32_t>},
+            {n_writef64, buffer_writefp<double, uint64_t>},
+            {n_readstring, buffer_readstring},
+            {n_writestring, buffer_writestring},
+            {n_len, buffer_len},
+            {n_copy, buffer_copy},
+            {n_fill, buffer_fill},
+            {n_readbits, buffer_readbits},
+            {n_writebits, buffer_writebits},
             {NULL, NULL},
         };
 

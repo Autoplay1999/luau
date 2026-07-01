@@ -1658,42 +1658,42 @@ static void createmetatable(lua_State* L)
 
 int luaopen_string(lua_State* L)
 {
-    auto n_byte = MINCRYPT_STACK_CODE("byte");
-    auto n_char = MINCRYPT_STACK_CODE("char");
-    auto n_find = MINCRYPT_STACK_CODE("find");
-    auto n_format = MINCRYPT_STACK_CODE("format");
-    auto n_gmatch = MINCRYPT_STACK_CODE("gmatch");
-    auto n_gsub = MINCRYPT_STACK_CODE("gsub");
-    auto n_len = MINCRYPT_STACK_CODE("len");
-    auto n_lower = MINCRYPT_STACK_CODE("lower");
-    auto n_match = MINCRYPT_STACK_CODE("match");
-    auto n_rep = MINCRYPT_STACK_CODE("rep");
-    auto n_reverse = MINCRYPT_STACK_CODE("reverse");
-    auto n_sub = MINCRYPT_STACK_CODE("sub");
-    auto n_upper = MINCRYPT_STACK_CODE("upper");
-    auto n_split = MINCRYPT_STACK_CODE("split");
-    auto n_pack = MINCRYPT_STACK_CODE("pack");
-    auto n_packsize = MINCRYPT_STACK_CODE("packsize");
-    auto n_unpack = MINCRYPT_STACK_CODE("unpack");
+    auto n_byte = MINCRYPT_LAZY("byte")();
+    auto n_char = MINCRYPT_LAZY("char")();
+    auto n_find = MINCRYPT_LAZY("find")();
+    auto n_format = MINCRYPT_LAZY("format")();
+    auto n_gmatch = MINCRYPT_LAZY("gmatch")();
+    auto n_gsub = MINCRYPT_LAZY("gsub")();
+    auto n_len = MINCRYPT_LAZY("len")();
+    auto n_lower = MINCRYPT_LAZY("lower")();
+    auto n_match = MINCRYPT_LAZY("match")();
+    auto n_rep = MINCRYPT_LAZY("rep")();
+    auto n_reverse = MINCRYPT_LAZY("reverse")();
+    auto n_sub = MINCRYPT_LAZY("sub")();
+    auto n_upper = MINCRYPT_LAZY("upper")();
+    auto n_split = MINCRYPT_LAZY("split")();
+    auto n_pack = MINCRYPT_LAZY("pack")();
+    auto n_packsize = MINCRYPT_LAZY("packsize")();
+    auto n_unpack = MINCRYPT_LAZY("unpack")();
 
     luaL_Reg strlib[] = {
-        {n_byte.get_data(), str_byte},
-        {n_char.get_data(), str_char},
-        {n_find.get_data(), str_find},
-        {n_format.get_data(), str_format},
-        {n_gmatch.get_data(), gmatch},
-        {n_gsub.get_data(), str_gsub},
-        {n_len.get_data(), str_len},
-        {n_lower.get_data(), str_lower},
-        {n_match.get_data(), str_match},
-        {n_rep.get_data(), str_rep},
-        {n_reverse.get_data(), str_reverse},
-        {n_sub.get_data(), str_sub},
-        {n_upper.get_data(), str_upper},
-        {n_split.get_data(), str_split},
-        {n_pack.get_data(), str_pack},
-        {n_packsize.get_data(), str_packsize},
-        {n_unpack.get_data(), str_unpack},
+        {n_byte, str_byte},
+        {n_char, str_char},
+        {n_find, str_find},
+        {n_format, str_format},
+        {n_gmatch, gmatch},
+        {n_gsub, str_gsub},
+        {n_len, str_len},
+        {n_lower, str_lower},
+        {n_match, str_match},
+        {n_rep, str_rep},
+        {n_reverse, str_reverse},
+        {n_sub, str_sub},
+        {n_upper, str_upper},
+        {n_split, str_split},
+        {n_pack, str_pack},
+        {n_packsize, str_packsize},
+        {n_unpack, str_unpack},
         {NULL, NULL},
     };
 

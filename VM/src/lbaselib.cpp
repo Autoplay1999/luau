@@ -475,46 +475,46 @@ int luaopen_base(lua_State* L)
     lua_pushvalue(L, LUA_GLOBALSINDEX);
     lua_setglobal(L, MINCRYPT("_G"));
 
-    auto n_assert = MINCRYPT_STACK_CODE("assert");
-    auto n_error = MINCRYPT_STACK_CODE("error");
-    auto n_gcinfo = MINCRYPT_STACK_CODE("gcinfo");
-    auto n_getfenv = MINCRYPT_STACK_CODE("getfenv");
-    auto n_getmetatable = MINCRYPT_STACK_CODE("getmetatable");
-    auto n_next = MINCRYPT_STACK_CODE("next");
-    auto n_newproxy = MINCRYPT_STACK_CODE("newproxy");
-    auto n_print = MINCRYPT_STACK_CODE("print");
-    auto n_rawequal = MINCRYPT_STACK_CODE("rawequal");
-    auto n_rawget = MINCRYPT_STACK_CODE("rawget");
-    auto n_rawset = MINCRYPT_STACK_CODE("rawset");
-    auto n_rawlen = MINCRYPT_STACK_CODE("rawlen");
-    auto n_select = MINCRYPT_STACK_CODE("select");
-    auto n_setfenv = MINCRYPT_STACK_CODE("setfenv");
-    auto n_setmetatable = MINCRYPT_STACK_CODE("setmetatable");
-    auto n_tonumber = MINCRYPT_STACK_CODE("tonumber");
-    auto n_tostring = MINCRYPT_STACK_CODE("tostring");
-    auto n_type = MINCRYPT_STACK_CODE("type");
-    auto n_typeof = MINCRYPT_STACK_CODE("typeof");
+    auto n_assert = MINCRYPT_LAZY("assert")();
+    auto n_error = MINCRYPT_LAZY("error")();
+    auto n_gcinfo = MINCRYPT_LAZY("gcinfo")();
+    auto n_getfenv = MINCRYPT_LAZY("getfenv")();
+    auto n_getmetatable = MINCRYPT_LAZY("getmetatable")();
+    auto n_next = MINCRYPT_LAZY("next")();
+    auto n_newproxy = MINCRYPT_LAZY("newproxy")();
+    auto n_print = MINCRYPT_LAZY("print")();
+    auto n_rawequal = MINCRYPT_LAZY("rawequal")();
+    auto n_rawget = MINCRYPT_LAZY("rawget")();
+    auto n_rawset = MINCRYPT_LAZY("rawset")();
+    auto n_rawlen = MINCRYPT_LAZY("rawlen")();
+    auto n_select = MINCRYPT_LAZY("select")();
+    auto n_setfenv = MINCRYPT_LAZY("setfenv")();
+    auto n_setmetatable = MINCRYPT_LAZY("setmetatable")();
+    auto n_tonumber = MINCRYPT_LAZY("tonumber")();
+    auto n_tostring = MINCRYPT_LAZY("tostring")();
+    auto n_type = MINCRYPT_LAZY("type")();
+    auto n_typeof = MINCRYPT_LAZY("typeof")();
 
     luaL_Reg base_funcs[] = {
-        {n_assert.get_data(), luaB_assert},
-        {n_error.get_data(), luaB_error},
-        {n_gcinfo.get_data(), luaB_gcinfo},
-        {n_getfenv.get_data(), luaB_getfenv},
-        {n_getmetatable.get_data(), luaB_getmetatable},
-        {n_next.get_data(), luaB_next},
-        {n_newproxy.get_data(), luaB_newproxy},
-        {n_print.get_data(), luaB_print},
-        {n_rawequal.get_data(), luaB_rawequal},
-        {n_rawget.get_data(), luaB_rawget},
-        {n_rawset.get_data(), luaB_rawset},
-        {n_rawlen.get_data(), luaB_rawlen},
-        {n_select.get_data(), luaB_select},
-        {n_setfenv.get_data(), luaB_setfenv},
-        {n_setmetatable.get_data(), luaB_setmetatable},
-        {n_tonumber.get_data(), luaB_tonumber},
-        {n_tostring.get_data(), luaB_tostring},
-        {n_type.get_data(), luaB_type},
-        {n_typeof.get_data(), luaB_typeof},
+        {n_assert, luaB_assert},
+        {n_error, luaB_error},
+        {n_gcinfo, luaB_gcinfo},
+        {n_getfenv, luaB_getfenv},
+        {n_getmetatable, luaB_getmetatable},
+        {n_next, luaB_next},
+        {n_newproxy, luaB_newproxy},
+        {n_print, luaB_print},
+        {n_rawequal, luaB_rawequal},
+        {n_rawget, luaB_rawget},
+        {n_rawset, luaB_rawset},
+        {n_rawlen, luaB_rawlen},
+        {n_select, luaB_select},
+        {n_setfenv, luaB_setfenv},
+        {n_setmetatable, luaB_setmetatable},
+        {n_tonumber, luaB_tonumber},
+        {n_tostring, luaB_tostring},
+        {n_type, luaB_type},
+        {n_typeof, luaB_typeof},
         {NULL, NULL},
     };
 
@@ -527,14 +527,14 @@ int luaopen_base(lua_State* L)
     auxopen(L, MINCRYPT("ipairs"), luaB_ipairs, luaB_inext);
     auxopen(L, MINCRYPT("pairs"), luaB_pairs, luaB_next);
 
-    auto n_pcall = MINCRYPT_STACK_CODE("pcall");
-    auto n_xpcall = MINCRYPT_STACK_CODE("xpcall");
+    auto n_pcall = MINCRYPT_LAZY("pcall")();
+    auto n_xpcall = MINCRYPT_LAZY("xpcall")();
 
-    lua_pushcclosurek(L, luaB_pcally, n_pcall.get_data(), 0, luaB_pcallcont);
-    lua_setfield(L, -2, n_pcall.get_data());
+    lua_pushcclosurek(L, luaB_pcally, n_pcall, 0, luaB_pcallcont);
+    lua_setfield(L, -2, n_pcall);
 
-    lua_pushcclosurek(L, luaB_xpcally, n_xpcall.get_data(), 0, luaB_xpcallcont);
-    lua_setfield(L, -2, n_xpcall.get_data());
+    lua_pushcclosurek(L, luaB_xpcally, n_xpcall, 0, luaB_xpcallcont);
+    lua_setfield(L, -2, n_xpcall);
 
     return 1;
 }

@@ -34,12 +34,12 @@ static int class_classof(lua_State* L)
 
 int luaopen_class(lua_State* L)
 {
-    auto n_isinstance = MINCRYPT_STACK_CODE("isinstance");
-    auto n_classof = MINCRYPT_STACK_CODE("classof");
+    auto n_isinstance = MINCRYPT_LAZY("isinstance")();
+    auto n_classof = MINCRYPT_LAZY("classof")();
 
     luaL_Reg classlib[] = {
-        {n_isinstance.get_data(), class_isinstance},
-        {n_classof.get_data(), class_classof},
+        {n_isinstance, class_isinstance},
+        {n_classof, class_classof},
         {nullptr, nullptr},
     };
 

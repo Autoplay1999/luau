@@ -222,38 +222,38 @@ static int b_swap(lua_State* L)
 
 int luaopen_bit32(lua_State* L)
 {
-    auto n_arshift = MINCRYPT_STACK_CODE("arshift");
-    auto n_band    = MINCRYPT_STACK_CODE("band");
-    auto n_bnot    = MINCRYPT_STACK_CODE("bnot");
-    auto n_bor     = MINCRYPT_STACK_CODE("bor");
-    auto n_bxor    = MINCRYPT_STACK_CODE("bxor");
-    auto n_btest   = MINCRYPT_STACK_CODE("btest");
-    auto n_extract = MINCRYPT_STACK_CODE("extract");
-    auto n_lrotate = MINCRYPT_STACK_CODE("lrotate");
-    auto n_lshift  = MINCRYPT_STACK_CODE("lshift");
-    auto n_replace = MINCRYPT_STACK_CODE("replace");
-    auto n_rrotate = MINCRYPT_STACK_CODE("rrotate");
-    auto n_rshift  = MINCRYPT_STACK_CODE("rshift");
-    auto n_countlz = MINCRYPT_STACK_CODE("countlz");
-    auto n_countrz = MINCRYPT_STACK_CODE("countrz");
-    auto n_byteswap= MINCRYPT_STACK_CODE("byteswap");
+    auto n_arshift = MINCRYPT_LAZY("arshift")();
+    auto n_band = MINCRYPT_LAZY("band")();
+    auto n_bnot = MINCRYPT_LAZY("bnot")();
+    auto n_bor = MINCRYPT_LAZY("bor")();
+    auto n_bxor = MINCRYPT_LAZY("bxor")();
+    auto n_btest = MINCRYPT_LAZY("btest")();
+    auto n_extract = MINCRYPT_LAZY("extract")();
+    auto n_lrotate = MINCRYPT_LAZY("lrotate")();
+    auto n_lshift = MINCRYPT_LAZY("lshift")();
+    auto n_replace = MINCRYPT_LAZY("replace")();
+    auto n_rrotate = MINCRYPT_LAZY("rrotate")();
+    auto n_rshift = MINCRYPT_LAZY("rshift")();
+    auto n_countlz = MINCRYPT_LAZY("countlz")();
+    auto n_countrz = MINCRYPT_LAZY("countrz")();
+    auto n_byteswap = MINCRYPT_LAZY("byteswap")();
 
     luaL_Reg bitlib[] = {
-        {n_arshift.get_data(),  b_arshift},
-        {n_band.get_data(),     b_and},
-        {n_bnot.get_data(),     b_not},
-        {n_bor.get_data(),      b_or},
-        {n_bxor.get_data(),     b_xor},
-        {n_btest.get_data(),    b_test},
-        {n_extract.get_data(),  b_extract},
-        {n_lrotate.get_data(),  b_lrot},
-        {n_lshift.get_data(),   b_lshift},
-        {n_replace.get_data(),  b_replace},
-        {n_rrotate.get_data(),  b_rrot},
-        {n_rshift.get_data(),   b_rshift},
-        {n_countlz.get_data(),  b_countlz},
-        {n_countrz.get_data(),  b_countrz},
-        {n_byteswap.get_data(), b_swap},
+        {n_arshift,  b_arshift},
+        {n_band,     b_and},
+        {n_bnot,     b_not},
+        {n_bor,      b_or},
+        {n_bxor,     b_xor},
+        {n_btest,    b_test},
+        {n_extract,  b_extract},
+        {n_lrotate,  b_lrot},
+        {n_lshift,   b_lshift},
+        {n_replace,  b_replace},
+        {n_rrotate,  b_rrot},
+        {n_rshift,   b_rshift},
+        {n_countlz,  b_countlz},
+        {n_countrz,  b_countrz},
+        {n_byteswap, b_swap},
         {NULL, NULL},
     };
 

@@ -598,50 +598,50 @@ static int tclone(lua_State* L)
 
 int luaopen_table(lua_State* L)
 {
-    auto n_concat = MINCRYPT_STACK_CODE("concat");
-    auto n_foreach = MINCRYPT_STACK_CODE("foreach");
-    auto n_foreachi = MINCRYPT_STACK_CODE("foreachi");
-    auto n_getn = MINCRYPT_STACK_CODE("getn");
-    auto n_maxn = MINCRYPT_STACK_CODE("maxn");
-    auto n_insert = MINCRYPT_STACK_CODE("insert");
-    auto n_remove = MINCRYPT_STACK_CODE("remove");
-    auto n_sort = MINCRYPT_STACK_CODE("sort");
-    auto n_pack = MINCRYPT_STACK_CODE("pack");
-    auto n_unpack = MINCRYPT_STACK_CODE("unpack");
-    auto n_move = MINCRYPT_STACK_CODE("move");
-    auto n_create = MINCRYPT_STACK_CODE("create");
-    auto n_find = MINCRYPT_STACK_CODE("find");
-    auto n_clear = MINCRYPT_STACK_CODE("clear");
-    auto n_freeze = MINCRYPT_STACK_CODE("freeze");
-    auto n_isfrozen = MINCRYPT_STACK_CODE("isfrozen");
-    auto n_clone = MINCRYPT_STACK_CODE("clone");
+    auto n_concat = MINCRYPT_LAZY("concat")();
+    auto n_foreach = MINCRYPT_LAZY("foreach")();
+    auto n_foreachi = MINCRYPT_LAZY("foreachi")();
+    auto n_getn = MINCRYPT_LAZY("getn")();
+    auto n_maxn = MINCRYPT_LAZY("maxn")();
+    auto n_insert = MINCRYPT_LAZY("insert")();
+    auto n_remove = MINCRYPT_LAZY("remove")();
+    auto n_sort = MINCRYPT_LAZY("sort")();
+    auto n_pack = MINCRYPT_LAZY("pack")();
+    auto n_unpack = MINCRYPT_LAZY("unpack")();
+    auto n_move = MINCRYPT_LAZY("move")();
+    auto n_create = MINCRYPT_LAZY("create")();
+    auto n_find = MINCRYPT_LAZY("find")();
+    auto n_clear = MINCRYPT_LAZY("clear")();
+    auto n_freeze = MINCRYPT_LAZY("freeze")();
+    auto n_isfrozen = MINCRYPT_LAZY("isfrozen")();
+    auto n_clone = MINCRYPT_LAZY("clone")();
 
     luaL_Reg tab_funcs[] = {
-            {n_concat.get_data(), tconcat},
-            {n_foreach.get_data(), foreach},
-        {n_foreachi.get_data(), foreachi},
-        {n_getn.get_data(), getn},
-        {n_maxn.get_data(), maxn},
-        {n_insert.get_data(), tinsert},
-        {n_remove.get_data(), tremove},
-        {n_sort.get_data(), tsort},
-        {n_pack.get_data(), tpack},
-        {n_unpack.get_data(), tunpack},
-        {n_move.get_data(), tmove},
-        {n_create.get_data(), tcreate},
-        {n_find.get_data(), tfind},
-        {n_clear.get_data(), tclear},
-        {n_freeze.get_data(), tfreeze},
-        {n_isfrozen.get_data(), tisfrozen},
-        {n_clone.get_data(), tclone},
+            {n_concat, tconcat},
+            {n_foreach, foreach},
+        {n_foreachi, foreachi},
+        {n_getn, getn},
+        {n_maxn, maxn},
+        {n_insert, tinsert},
+        {n_remove, tremove},
+        {n_sort, tsort},
+        {n_pack, tpack},
+        {n_unpack, tunpack},
+        {n_move, tmove},
+        {n_create, tcreate},
+        {n_find, tfind},
+        {n_clear, tclear},
+        {n_freeze, tfreeze},
+        {n_isfrozen, tisfrozen},
+        {n_clone, tclone},
         {NULL, NULL},
     };
 
     luaL_register(L, MINCRYPT(LUA_TABLIBNAME), tab_funcs);
 
     // Lua 5.1 compat
-    lua_pushcfunction(L, tunpack, n_unpack.get_data());
-    lua_setglobal(L, n_unpack.get_data());
+    lua_pushcfunction(L, tunpack, n_unpack);
+    lua_setglobal(L, n_unpack);
 
     return 1;
 }

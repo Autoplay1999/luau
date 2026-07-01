@@ -323,54 +323,54 @@ static void createmetatable(lua_State* L)
 
 int luaopen_vector(lua_State* L)
 {
-    auto n_create = MINCRYPT_STACK_CODE("create");
-    auto n_magnitude = MINCRYPT_STACK_CODE("magnitude");
-    auto n_normalize = MINCRYPT_STACK_CODE("normalize");
-    auto n_cross = MINCRYPT_STACK_CODE("cross");
-    auto n_dot = MINCRYPT_STACK_CODE("dot");
-    auto n_angle = MINCRYPT_STACK_CODE("angle");
-    auto n_floor = MINCRYPT_STACK_CODE("floor");
-    auto n_ceil = MINCRYPT_STACK_CODE("ceil");
-    auto n_abs = MINCRYPT_STACK_CODE("abs");
-    auto n_sign = MINCRYPT_STACK_CODE("sign");
-    auto n_clamp = MINCRYPT_STACK_CODE("clamp");
-    auto n_max = MINCRYPT_STACK_CODE("max");
-    auto n_min = MINCRYPT_STACK_CODE("min");
-    auto n_lerp = MINCRYPT_STACK_CODE("lerp");
+    auto n_create = MINCRYPT_LAZY("create")();
+    auto n_magnitude = MINCRYPT_LAZY("magnitude")();
+    auto n_normalize = MINCRYPT_LAZY("normalize")();
+    auto n_cross = MINCRYPT_LAZY("cross")();
+    auto n_dot = MINCRYPT_LAZY("dot")();
+    auto n_angle = MINCRYPT_LAZY("angle")();
+    auto n_floor = MINCRYPT_LAZY("floor")();
+    auto n_ceil = MINCRYPT_LAZY("ceil")();
+    auto n_abs = MINCRYPT_LAZY("abs")();
+    auto n_sign = MINCRYPT_LAZY("sign")();
+    auto n_clamp = MINCRYPT_LAZY("clamp")();
+    auto n_max = MINCRYPT_LAZY("max")();
+    auto n_min = MINCRYPT_LAZY("min")();
+    auto n_lerp = MINCRYPT_LAZY("lerp")();
 
     luaL_Reg vectorlib[] = {
-        {n_create.get_data(), vector_create},
-        {n_magnitude.get_data(), vector_magnitude},
-        {n_normalize.get_data(), vector_normalize},
-        {n_cross.get_data(), vector_cross},
-        {n_dot.get_data(), vector_dot},
-        {n_angle.get_data(), vector_angle},
-        {n_floor.get_data(), vector_floor},
-        {n_ceil.get_data(), vector_ceil},
-        {n_abs.get_data(), vector_abs},
-        {n_sign.get_data(), vector_sign},
-        {n_clamp.get_data(), vector_clamp},
-        {n_max.get_data(), vector_max},
-        {n_min.get_data(), vector_min},
-        {n_lerp.get_data(), vector_lerp},
+        {n_create, vector_create},
+        {n_magnitude, vector_magnitude},
+        {n_normalize, vector_normalize},
+        {n_cross, vector_cross},
+        {n_dot, vector_dot},
+        {n_angle, vector_angle},
+        {n_floor, vector_floor},
+        {n_ceil, vector_ceil},
+        {n_abs, vector_abs},
+        {n_sign, vector_sign},
+        {n_clamp, vector_clamp},
+        {n_max, vector_max},
+        {n_min, vector_min},
+        {n_lerp, vector_lerp},
         {NULL, NULL},
     };
 
     luaL_register(L, MINCRYPT(LUA_VECLIBNAME), vectorlib);
 
-    auto n_zero = MINCRYPT_STACK_CODE("zero");
-    auto n_one = MINCRYPT_STACK_CODE("one");
+    auto n_zero = MINCRYPT_LAZY("zero")();
+    auto n_one = MINCRYPT_LAZY("one")();
 
 #if LUA_VECTOR_SIZE == 4
     lua_pushvector(L, 0.0f, 0.0f, 0.0f, 0.0f);
-    lua_setfield(L, -2, n_zero.get_data());
+    lua_setfield(L, -2, n_zero);
     lua_pushvector(L, 1.0f, 1.0f, 1.0f, 1.0f);
-    lua_setfield(L, -2, n_one.get_data());
+    lua_setfield(L, -2, n_one);
 #else
     lua_pushvector(L, 0.0f, 0.0f, 0.0f);
-    lua_setfield(L, -2, n_zero.get_data());
+    lua_setfield(L, -2, n_zero);
     lua_pushvector(L, 1.0f, 1.0f, 1.0f);
-    lua_setfield(L, -2, n_one.get_data());
+    lua_setfield(L, -2, n_one);
 #endif
 
     createmetatable(L);

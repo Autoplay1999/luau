@@ -11,46 +11,46 @@ LUAU_FASTFLAG(DebugLuauUserDefinedClassesRuntime)
 
 void luaL_openlibs(lua_State* L)
 {
-    auto n_co       = MINCRYPT_STACK_CODE(LUA_COLIBNAME);
-    auto n_tab      = MINCRYPT_STACK_CODE(LUA_TABLIBNAME);
-    auto n_os       = MINCRYPT_STACK_CODE(LUA_OSLIBNAME);
-    auto n_str      = MINCRYPT_STACK_CODE(LUA_STRLIBNAME);
-    auto n_math     = MINCRYPT_STACK_CODE(LUA_MATHLIBNAME);
-    auto n_db       = MINCRYPT_STACK_CODE(LUA_DBLIBNAME);
-    auto n_utf8     = MINCRYPT_STACK_CODE(LUA_UTF8LIBNAME);
-    auto n_bit      = MINCRYPT_STACK_CODE(LUA_BITLIBNAME);
-    auto n_buf      = MINCRYPT_STACK_CODE(LUA_BUFFERLIBNAME);
-    auto n_vec      = MINCRYPT_STACK_CODE(LUA_VECLIBNAME);
-    auto n_int      = MINCRYPT_STACK_CODE(LUA_INTLIBNAME);
+    auto n_co = MINCRYPT_LAZY(LUA_COLIBNAME)();
+    auto n_tab = MINCRYPT_LAZY(LUA_TABLIBNAME)();
+    auto n_os = MINCRYPT_LAZY(LUA_OSLIBNAME)();
+    auto n_str = MINCRYPT_LAZY(LUA_STRLIBNAME)();
+    auto n_math = MINCRYPT_LAZY(LUA_MATHLIBNAME)();
+    auto n_db = MINCRYPT_LAZY(LUA_DBLIBNAME)();
+    auto n_utf8 = MINCRYPT_LAZY(LUA_UTF8LIBNAME)();
+    auto n_bit = MINCRYPT_LAZY(LUA_BITLIBNAME)();
+    auto n_buf = MINCRYPT_LAZY(LUA_BUFFERLIBNAME)();
+    auto n_vec = MINCRYPT_LAZY(LUA_VECLIBNAME)();
+    auto n_int = MINCRYPT_LAZY(LUA_INTLIBNAME)();
 
     luaL_Reg lualibs[] = {
         {"", luaopen_base},
-        {n_co.get_data(), luaopen_coroutine},
-        {n_tab.get_data(), luaopen_table},
-        {n_os.get_data(), luaopen_os},
-        {n_str.get_data(), luaopen_string},
-        {n_math.get_data(), luaopen_math},
-        {n_db.get_data(), luaopen_debug},
-        {n_utf8.get_data(), luaopen_utf8},
-        {n_bit.get_data(), luaopen_bit32},
-        {n_buf.get_data(), luaopen_buffer},
-        {n_vec.get_data(), luaopen_vector},
-        {n_int.get_data(), luaopen_integer},
+        {n_co, luaopen_coroutine},
+        {n_tab, luaopen_table},
+        {n_os, luaopen_os},
+        {n_str, luaopen_string},
+        {n_math, luaopen_math},
+        {n_db, luaopen_debug},
+        {n_utf8, luaopen_utf8},
+        {n_bit, luaopen_bit32},
+        {n_buf, luaopen_buffer},
+        {n_vec, luaopen_vector},
+        {n_int, luaopen_integer},
         {NULL, NULL},
     };
 
     luaL_Reg lualibs_NOINTEGER[] = {
         {"", luaopen_base},
-        {n_co.get_data(), luaopen_coroutine},
-        {n_tab.get_data(), luaopen_table},
-        {n_os.get_data(), luaopen_os},
-        {n_str.get_data(), luaopen_string},
-        {n_math.get_data(), luaopen_math},
-        {n_db.get_data(), luaopen_debug},
-        {n_utf8.get_data(), luaopen_utf8},
-        {n_bit.get_data(), luaopen_bit32},
-        {n_buf.get_data(), luaopen_buffer},
-        {n_vec.get_data(), luaopen_vector},
+        {n_co, luaopen_coroutine},
+        {n_tab, luaopen_table},
+        {n_os, luaopen_os},
+        {n_str, luaopen_string},
+        {n_math, luaopen_math},
+        {n_db, luaopen_debug},
+        {n_utf8, luaopen_utf8},
+        {n_bit, luaopen_bit32},
+        {n_buf, luaopen_buffer},
+        {n_vec, luaopen_vector},
         {NULL, NULL},
     };
 

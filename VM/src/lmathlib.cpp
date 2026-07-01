@@ -479,109 +479,109 @@ int luaopen_math(lua_State* L)
 
     pcg32_seed(&L->global->rngstate, seed);
 
-    auto n_abs = MINCRYPT_STACK_CODE("abs");
-    auto n_acos = MINCRYPT_STACK_CODE("acos");
-    auto n_asin = MINCRYPT_STACK_CODE("asin");
-    auto n_atan2 = MINCRYPT_STACK_CODE("atan2");
-    auto n_atan = MINCRYPT_STACK_CODE("atan");
-    auto n_ceil = MINCRYPT_STACK_CODE("ceil");
-    auto n_cosh = MINCRYPT_STACK_CODE("cosh");
-    auto n_cos = MINCRYPT_STACK_CODE("cos");
-    auto n_deg = MINCRYPT_STACK_CODE("deg");
-    auto n_exp = MINCRYPT_STACK_CODE("exp");
-    auto n_floor = MINCRYPT_STACK_CODE("floor");
-    auto n_fmod = MINCRYPT_STACK_CODE("fmod");
-    auto n_frexp = MINCRYPT_STACK_CODE("frexp");
-    auto n_ldexp = MINCRYPT_STACK_CODE("ldexp");
-    auto n_log10 = MINCRYPT_STACK_CODE("log10");
-    auto n_log = MINCRYPT_STACK_CODE("log");
-    auto n_max = MINCRYPT_STACK_CODE("max");
-    auto n_min = MINCRYPT_STACK_CODE("min");
-    auto n_modf = MINCRYPT_STACK_CODE("modf");
-    auto n_pow = MINCRYPT_STACK_CODE("pow");
-    auto n_rad = MINCRYPT_STACK_CODE("rad");
-    auto n_random = MINCRYPT_STACK_CODE("random");
-    auto n_randomseed = MINCRYPT_STACK_CODE("randomseed");
-    auto n_sinh = MINCRYPT_STACK_CODE("sinh");
-    auto n_sin = MINCRYPT_STACK_CODE("sin");
-    auto n_sqrt = MINCRYPT_STACK_CODE("sqrt");
-    auto n_tanh = MINCRYPT_STACK_CODE("tanh");
-    auto n_tan = MINCRYPT_STACK_CODE("tan");
-    auto n_noise = MINCRYPT_STACK_CODE("noise");
-    auto n_clamp = MINCRYPT_STACK_CODE("clamp");
-    auto n_sign = MINCRYPT_STACK_CODE("sign");
-    auto n_round = MINCRYPT_STACK_CODE("round");
-    auto n_map = MINCRYPT_STACK_CODE("map");
-    auto n_lerp = MINCRYPT_STACK_CODE("lerp");
-    auto n_isnan = MINCRYPT_STACK_CODE("isnan");
-    auto n_isinf = MINCRYPT_STACK_CODE("isinf");
-    auto n_isfinite = MINCRYPT_STACK_CODE("isfinite");
+    auto n_abs = MINCRYPT_LAZY("abs")();
+    auto n_acos = MINCRYPT_LAZY("acos")();
+    auto n_asin = MINCRYPT_LAZY("asin")();
+    auto n_atan2 = MINCRYPT_LAZY("atan2")();
+    auto n_atan = MINCRYPT_LAZY("atan")();
+    auto n_ceil = MINCRYPT_LAZY("ceil")();
+    auto n_cosh = MINCRYPT_LAZY("cosh")();
+    auto n_cos = MINCRYPT_LAZY("cos")();
+    auto n_deg = MINCRYPT_LAZY("deg")();
+    auto n_exp = MINCRYPT_LAZY("exp")();
+    auto n_floor = MINCRYPT_LAZY("floor")();
+    auto n_fmod = MINCRYPT_LAZY("fmod")();
+    auto n_frexp = MINCRYPT_LAZY("frexp")();
+    auto n_ldexp = MINCRYPT_LAZY("ldexp")();
+    auto n_log10 = MINCRYPT_LAZY("log10")();
+    auto n_log = MINCRYPT_LAZY("log")();
+    auto n_max = MINCRYPT_LAZY("max")();
+    auto n_min = MINCRYPT_LAZY("min")();
+    auto n_modf = MINCRYPT_LAZY("modf")();
+    auto n_pow = MINCRYPT_LAZY("pow")();
+    auto n_rad = MINCRYPT_LAZY("rad")();
+    auto n_random = MINCRYPT_LAZY("random")();
+    auto n_randomseed = MINCRYPT_LAZY("randomseed")();
+    auto n_sinh = MINCRYPT_LAZY("sinh")();
+    auto n_sin = MINCRYPT_LAZY("sin")();
+    auto n_sqrt = MINCRYPT_LAZY("sqrt")();
+    auto n_tanh = MINCRYPT_LAZY("tanh")();
+    auto n_tan = MINCRYPT_LAZY("tan")();
+    auto n_noise = MINCRYPT_LAZY("noise")();
+    auto n_clamp = MINCRYPT_LAZY("clamp")();
+    auto n_sign = MINCRYPT_LAZY("sign")();
+    auto n_round = MINCRYPT_LAZY("round")();
+    auto n_map = MINCRYPT_LAZY("map")();
+    auto n_lerp = MINCRYPT_LAZY("lerp")();
+    auto n_isnan = MINCRYPT_LAZY("isnan")();
+    auto n_isinf = MINCRYPT_LAZY("isinf")();
+    auto n_isfinite = MINCRYPT_LAZY("isfinite")();
 
     luaL_Reg mathlib[] = {
-        {n_abs.get_data(), math_abs},
-        {n_acos.get_data(), math_acos},
-        {n_asin.get_data(), math_asin},
-        {n_atan2.get_data(), math_atan2},
-        {n_atan.get_data(), math_atan},
-        {n_ceil.get_data(), math_ceil},
-        {n_cosh.get_data(), math_cosh},
-        {n_cos.get_data(), math_cos},
-        {n_deg.get_data(), math_deg},
-        {n_exp.get_data(), math_exp},
-        {n_floor.get_data(), math_floor},
-        {n_fmod.get_data(), math_fmod},
-        {n_frexp.get_data(), math_frexp},
-        {n_ldexp.get_data(), math_ldexp},
-        {n_log10.get_data(), math_log10},
-        {n_log.get_data(), math_log},
-        {n_max.get_data(), math_max},
-        {n_min.get_data(), math_min},
-        {n_modf.get_data(), math_modf},
-        {n_pow.get_data(), math_pow},
-        {n_rad.get_data(), math_rad},
-        {n_random.get_data(), math_random},
-        {n_randomseed.get_data(), math_randomseed},
-        {n_sinh.get_data(), math_sinh},
-        {n_sin.get_data(), math_sin},
-        {n_sqrt.get_data(), math_sqrt},
-        {n_tanh.get_data(), math_tanh},
-        {n_tan.get_data(), math_tan},
-        {n_noise.get_data(), math_noise},
-        {n_clamp.get_data(), math_clamp},
-        {n_sign.get_data(), math_sign},
-        {n_round.get_data(), math_round},
-        {n_map.get_data(), math_map},
-        {n_lerp.get_data(), math_lerp},
-        {n_isnan.get_data(), math_isnan},
-        {n_isinf.get_data(), math_isinf},
-        {n_isfinite.get_data(), math_isfinite},
+        {n_abs, math_abs},
+        {n_acos, math_acos},
+        {n_asin, math_asin},
+        {n_atan2, math_atan2},
+        {n_atan, math_atan},
+        {n_ceil, math_ceil},
+        {n_cosh, math_cosh},
+        {n_cos, math_cos},
+        {n_deg, math_deg},
+        {n_exp, math_exp},
+        {n_floor, math_floor},
+        {n_fmod, math_fmod},
+        {n_frexp, math_frexp},
+        {n_ldexp, math_ldexp},
+        {n_log10, math_log10},
+        {n_log, math_log},
+        {n_max, math_max},
+        {n_min, math_min},
+        {n_modf, math_modf},
+        {n_pow, math_pow},
+        {n_rad, math_rad},
+        {n_random, math_random},
+        {n_randomseed, math_randomseed},
+        {n_sinh, math_sinh},
+        {n_sin, math_sin},
+        {n_sqrt, math_sqrt},
+        {n_tanh, math_tanh},
+        {n_tan, math_tan},
+        {n_noise, math_noise},
+        {n_clamp, math_clamp},
+        {n_sign, math_sign},
+        {n_round, math_round},
+        {n_map, math_map},
+        {n_lerp, math_lerp},
+        {n_isnan, math_isnan},
+        {n_isinf, math_isinf},
+        {n_isfinite, math_isfinite},
         {NULL, NULL},
     };
 
     luaL_register(L, MINCRYPT(LUA_MATHLIBNAME), mathlib);
 
-    auto n_pi = MINCRYPT_STACK_CODE("pi");
-    auto n_huge = MINCRYPT_STACK_CODE("huge");
-    auto n_nan = MINCRYPT_STACK_CODE("nan");
-    auto n_e = MINCRYPT_STACK_CODE("e");
-    auto n_phi = MINCRYPT_STACK_CODE("phi");
-    auto n_sqrt2 = MINCRYPT_STACK_CODE("sqrt2");
-    auto n_tau = MINCRYPT_STACK_CODE("tau");
+    auto n_pi = MINCRYPT_LAZY("pi")();
+    auto n_huge = MINCRYPT_LAZY("huge")();
+    auto n_nan = MINCRYPT_LAZY("nan")();
+    auto n_e = MINCRYPT_LAZY("e")();
+    auto n_phi = MINCRYPT_LAZY("phi")();
+    auto n_sqrt2 = MINCRYPT_LAZY("sqrt2")();
+    auto n_tau = MINCRYPT_LAZY("tau")();
 
     lua_pushnumber(L, LUAU_PI);
-    lua_setfield(L, -2, n_pi.get_data());
+    lua_setfield(L, -2, n_pi);
     lua_pushnumber(L, HUGE_VAL);
-    lua_setfield(L, -2, n_huge.get_data());
+    lua_setfield(L, -2, n_huge);
     lua_pushnumber(L, LUAU_NAN);
-    lua_setfield(L, -2, n_nan.get_data());
+    lua_setfield(L, -2, n_nan);
     lua_pushnumber(L, LUAU_E);
-    lua_setfield(L, -2, n_e.get_data());
+    lua_setfield(L, -2, n_e);
     lua_pushnumber(L, LUAU_PHI);
-    lua_setfield(L, -2, n_phi.get_data());
+    lua_setfield(L, -2, n_phi);
     lua_pushnumber(L, LUAU_SQRT2);
-    lua_setfield(L, -2, n_sqrt2.get_data());
+    lua_setfield(L, -2, n_sqrt2);
     lua_pushnumber(L, LUAU_TAU);
-    lua_setfield(L, -2, n_tau.get_data());
+    lua_setfield(L, -2, n_tau);
 
     return 1;
 }

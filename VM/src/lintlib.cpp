@@ -560,98 +560,98 @@ static int int64_bswap(lua_State* L)
 
 int luaopen_integer(lua_State* L)
 {
-    auto n_create = MINCRYPT_STACK_CODE("create");
-    auto n_tonumber = MINCRYPT_STACK_CODE("tonumber");
-    auto n_neg = MINCRYPT_STACK_CODE("neg");
-    auto n_add = MINCRYPT_STACK_CODE("add");
-    auto n_sub = MINCRYPT_STACK_CODE("sub");
-    auto n_mul = MINCRYPT_STACK_CODE("mul");
-    auto n_div = MINCRYPT_STACK_CODE("div");
-    auto n_min = MINCRYPT_STACK_CODE("min");
-    auto n_max = MINCRYPT_STACK_CODE("max");
-    auto n_rem = MINCRYPT_STACK_CODE("rem");
-    auto n_idiv = MINCRYPT_STACK_CODE("idiv");
-    auto n_udiv = MINCRYPT_STACK_CODE("udiv");
-    auto n_urem = MINCRYPT_STACK_CODE("urem");
-    auto n_mod = MINCRYPT_STACK_CODE("mod");
-    auto n_clamp = MINCRYPT_STACK_CODE("clamp");
-    auto n_band = MINCRYPT_STACK_CODE("band");
-    auto n_bor = MINCRYPT_STACK_CODE("bor");
-    auto n_bnot = MINCRYPT_STACK_CODE("bnot");
-    auto n_bxor = MINCRYPT_STACK_CODE("bxor");
-    auto n_lt = MINCRYPT_STACK_CODE("lt");
-    auto n_le = MINCRYPT_STACK_CODE("le");
-    auto n_ult = MINCRYPT_STACK_CODE("ult");
-    auto n_ule = MINCRYPT_STACK_CODE("ule");
-    auto n_gt = MINCRYPT_STACK_CODE("gt");
-    auto n_ge = MINCRYPT_STACK_CODE("ge");
-    auto n_ugt = MINCRYPT_STACK_CODE("ugt");
-    auto n_uge = MINCRYPT_STACK_CODE("uge");
-    auto n_lshift = MINCRYPT_STACK_CODE("lshift");
-    auto n_rshift = MINCRYPT_STACK_CODE("rshift");
-    auto n_arshift = MINCRYPT_STACK_CODE("arshift");
-    auto n_lrotate = MINCRYPT_STACK_CODE("lrotate");
-    auto n_rrotate = MINCRYPT_STACK_CODE("rrotate");
-    auto n_extract = MINCRYPT_STACK_CODE("extract");
-    auto n_replace = MINCRYPT_STACK_CODE("replace");
-    auto n_btest = MINCRYPT_STACK_CODE("btest");
-    auto n_countrz = MINCRYPT_STACK_CODE("countrz");
-    auto n_countlz = MINCRYPT_STACK_CODE("countlz");
-    auto n_bswap = MINCRYPT_STACK_CODE("bswap");
-    auto n_fromstring = MINCRYPT_STACK_CODE("fromstring");
+    auto n_create = MINCRYPT_LAZY("create")();
+    auto n_tonumber = MINCRYPT_LAZY("tonumber")();
+    auto n_neg = MINCRYPT_LAZY("neg")();
+    auto n_add = MINCRYPT_LAZY("add")();
+    auto n_sub = MINCRYPT_LAZY("sub")();
+    auto n_mul = MINCRYPT_LAZY("mul")();
+    auto n_div = MINCRYPT_LAZY("div")();
+    auto n_min = MINCRYPT_LAZY("min")();
+    auto n_max = MINCRYPT_LAZY("max")();
+    auto n_rem = MINCRYPT_LAZY("rem")();
+    auto n_idiv = MINCRYPT_LAZY("idiv")();
+    auto n_udiv = MINCRYPT_LAZY("udiv")();
+    auto n_urem = MINCRYPT_LAZY("urem")();
+    auto n_mod = MINCRYPT_LAZY("mod")();
+    auto n_clamp = MINCRYPT_LAZY("clamp")();
+    auto n_band = MINCRYPT_LAZY("band")();
+    auto n_bor = MINCRYPT_LAZY("bor")();
+    auto n_bnot = MINCRYPT_LAZY("bnot")();
+    auto n_bxor = MINCRYPT_LAZY("bxor")();
+    auto n_lt = MINCRYPT_LAZY("lt")();
+    auto n_le = MINCRYPT_LAZY("le")();
+    auto n_ult = MINCRYPT_LAZY("ult")();
+    auto n_ule = MINCRYPT_LAZY("ule")();
+    auto n_gt = MINCRYPT_LAZY("gt")();
+    auto n_ge = MINCRYPT_LAZY("ge")();
+    auto n_ugt = MINCRYPT_LAZY("ugt")();
+    auto n_uge = MINCRYPT_LAZY("uge")();
+    auto n_lshift = MINCRYPT_LAZY("lshift")();
+    auto n_rshift = MINCRYPT_LAZY("rshift")();
+    auto n_arshift = MINCRYPT_LAZY("arshift")();
+    auto n_lrotate = MINCRYPT_LAZY("lrotate")();
+    auto n_rrotate = MINCRYPT_LAZY("rrotate")();
+    auto n_extract = MINCRYPT_LAZY("extract")();
+    auto n_replace = MINCRYPT_LAZY("replace")();
+    auto n_btest = MINCRYPT_LAZY("btest")();
+    auto n_countrz = MINCRYPT_LAZY("countrz")();
+    auto n_countlz = MINCRYPT_LAZY("countlz")();
+    auto n_bswap = MINCRYPT_LAZY("bswap")();
+    auto n_fromstring = MINCRYPT_LAZY("fromstring")();
 
     luaL_Reg int64lib[] = {
-        {n_create.get_data(), int64_create},
-        {n_tonumber.get_data(), int64_tonumber},
-        {n_neg.get_data(), int64_neg},
-        {n_add.get_data(), int64_add},
-        {n_sub.get_data(), int64_sub},
-        {n_mul.get_data(), int64_mul},
-        {n_div.get_data(), int64_div},
-        {n_min.get_data(), int64_min},
-        {n_max.get_data(), int64_max},
-        {n_rem.get_data(), int64_rem},
-        {n_idiv.get_data(), int64_idiv},
-        {n_udiv.get_data(), int64_udiv},
-        {n_urem.get_data(), int64_urem},
-        {n_mod.get_data(), int64_mod},
-        {n_clamp.get_data(), int64_clamp},
-        {n_band.get_data(), int64_band},
-        {n_bor.get_data(), int64_bor},
-        {n_bnot.get_data(), int64_bnot},
-        {n_bxor.get_data(), int64_bxor},
-        {n_lt.get_data(), int64_lt},
-        {n_le.get_data(), int64_le},
-        {n_ult.get_data(), int64_ult},
-        {n_ule.get_data(), int64_ule},
-        {n_gt.get_data(), int64_gt},
-        {n_ge.get_data(), int64_ge},
-        {n_ugt.get_data(), int64_ugt},
-        {n_uge.get_data(), int64_uge},
-        {n_lshift.get_data(), int64_lshift},
-        {n_rshift.get_data(), int64_rshift},
-        {n_arshift.get_data(), int64_arshift},
-        {n_lrotate.get_data(), int64_lrotate},
-        {n_rrotate.get_data(), int64_rrotate},
-        {n_extract.get_data(), int64_extract},
-        {n_replace.get_data(), int64_replace},
-        {n_btest.get_data(), int64_btest},
-        {n_countrz.get_data(), int64_countrz},
-        {n_countlz.get_data(), int64_countlz},
-        {n_bswap.get_data(), int64_bswap},
-        {n_fromstring.get_data(), int64_fromstring},
+        {n_create, int64_create},
+        {n_tonumber, int64_tonumber},
+        {n_neg, int64_neg},
+        {n_add, int64_add},
+        {n_sub, int64_sub},
+        {n_mul, int64_mul},
+        {n_div, int64_div},
+        {n_min, int64_min},
+        {n_max, int64_max},
+        {n_rem, int64_rem},
+        {n_idiv, int64_idiv},
+        {n_udiv, int64_udiv},
+        {n_urem, int64_urem},
+        {n_mod, int64_mod},
+        {n_clamp, int64_clamp},
+        {n_band, int64_band},
+        {n_bor, int64_bor},
+        {n_bnot, int64_bnot},
+        {n_bxor, int64_bxor},
+        {n_lt, int64_lt},
+        {n_le, int64_le},
+        {n_ult, int64_ult},
+        {n_ule, int64_ule},
+        {n_gt, int64_gt},
+        {n_ge, int64_ge},
+        {n_ugt, int64_ugt},
+        {n_uge, int64_uge},
+        {n_lshift, int64_lshift},
+        {n_rshift, int64_rshift},
+        {n_arshift, int64_arshift},
+        {n_lrotate, int64_lrotate},
+        {n_rrotate, int64_rrotate},
+        {n_extract, int64_extract},
+        {n_replace, int64_replace},
+        {n_btest, int64_btest},
+        {n_countrz, int64_countrz},
+        {n_countlz, int64_countlz},
+        {n_bswap, int64_bswap},
+        {n_fromstring, int64_fromstring},
         {NULL, NULL},
     };
 
     luaL_register(L, MINCRYPT(LUA_INTLIBNAME), int64lib);
 
-    auto n_maxsigned = MINCRYPT_STACK_CODE("maxsigned");
-    auto n_minsigned = MINCRYPT_STACK_CODE("minsigned");
+    auto n_maxsigned = MINCRYPT_LAZY("maxsigned")();
+    auto n_minsigned = MINCRYPT_LAZY("minsigned")();
 
     lua_pushinteger64(L, LLONG_MAX);
-    lua_setfield(L, -2, n_maxsigned.get_data());
+    lua_setfield(L, -2, n_maxsigned);
     lua_pushinteger64(L, LLONG_MIN);
-    lua_setfield(L, -2, n_minsigned.get_data());
+    lua_setfield(L, -2, n_minsigned);
 
     return 1;
 }

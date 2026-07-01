@@ -134,12 +134,12 @@ static int db_traceback(lua_State* L)
 
 int luaopen_debug(lua_State* L)
 {
-    auto n_info = MINCRYPT_STACK_CODE("info");
-    auto n_traceback = MINCRYPT_STACK_CODE("traceback");
+    auto n_info = MINCRYPT_LAZY("info")();
+    auto n_traceback = MINCRYPT_LAZY("traceback")();
 
     luaL_Reg dblib[] = {
-        {n_info.get_data(), db_info},
-        {n_traceback.get_data(), db_traceback},
+        {n_info, db_info},
+        {n_traceback, db_traceback},
         {NULL, NULL},
     };
 

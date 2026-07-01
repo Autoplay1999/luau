@@ -213,16 +213,16 @@ static int os_difftime(lua_State* L)
 
 int luaopen_os(lua_State* L)
 {
-    auto n_clock = MINCRYPT_STACK_CODE("clock");
-    auto n_date = MINCRYPT_STACK_CODE("date");
-    auto n_difftime = MINCRYPT_STACK_CODE("difftime");
-    auto n_time = MINCRYPT_STACK_CODE("time");
+    auto n_clock = MINCRYPT_LAZY("clock")();
+    auto n_date = MINCRYPT_LAZY("date")();
+    auto n_difftime = MINCRYPT_LAZY("difftime")();
+    auto n_time = MINCRYPT_LAZY("time")();
 
     luaL_Reg syslib[] = {
-        {n_clock.get_data(), os_clock},
-        {n_date.get_data(), os_date},
-        {n_difftime.get_data(), os_difftime},
-        {n_time.get_data(), os_time},
+        {n_clock, os_clock},
+        {n_date, os_date},
+        {n_difftime, os_difftime},
+        {n_time, os_time},
         {NULL, NULL},
     };
 
