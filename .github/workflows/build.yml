@@ -18,7 +18,8 @@ on:
       - "*.md"
 
 jobs:
-  windows:
+  windows-debug:
+    name: windows (${{matrix.arch}})
     runs-on: windows-latest
     strategy:
       matrix:
@@ -27,17 +28,17 @@ jobs:
       - uses: actions/checkout@v1
       - name: cmake configure
         run: cmake . -A ${{matrix.arch}} -DLUAU_WERROR=ON -DLUAU_NATIVE=ON
-      - name: cmake build
+      - name: cmake build tests
         run: cmake --build . --target Luau.UnitTest Luau.Conformance --config Debug
       - name: run tests
-        shell: bash # necessary for fail-fast
+        shell: bash
         run: |
           Debug/Luau.UnitTest.exe
           Debug/Luau.Conformance.exe
           Debug/Luau.UnitTest.exe --fflags=true
           Debug/Luau.Conformance.exe --fflags=true
       - name: run extra conformance tests
-        shell: bash # necessary for fail-fast
+        shell: bash
         run: |
           Debug/Luau.Conformance.exe -O2
           Debug/Luau.Conformance.exe -O2 --fflags=true
@@ -46,9 +47,40 @@ jobs:
           Debug/Luau.Conformance.exe --codegen -O2
           Debug/Luau.Conformance.exe --codegen -O2 --fflags=true
       - name: cmake cli
-        shell: bash # necessary for fail-fast
+        shell: bash
         run: |
-          cmake --build . --target Luau.Repl.CLI Luau.Analyze.CLI Luau.Compile.CLI --config Debug # match config with tests to improve build time
+          cmake --build . --target Luau.Repl.CLI Luau.Analyze.CLI Luau.Compile.CLI --config Debug
           Debug/luau tests/conformance/assert.luau
           Debug/luau-analyze tests/conformance/assert.luau
           Debug/luau-compile tests/conformance/assert.luau
+
+  windows-artifact:
+    name: windows (artifact)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: cmake configure Win32
+        run: cmake -B build_Win32 -A Win32 -DLUAU_WERROR=ON -DLUAU_NATIVE=ON
+      - name: cmake build Win32
+        run: cmake --build build_Win32 --target Luau.Repl.CLI Luau.Analyze.CLI Luau.Compile.CLI --config Release
+      - name: cmake configure x64
+        run: cmake -B build_x64 -A x64 -DLUAU_WERROR=ON -DLUAU_NATIVE=ON
+      - name: cmake build x64
+        run: cmake --build build_x64 --target Luau.Repl.CLI Luau.Analyze.CLI Luau.Compile.CLI --config Release
+      - name: copy artifacts
+        shell: bash
+        run: |
+          mkdir -p artifacts/lib/Win32/Release
+          cp build_Win32/Release/luau.vm.lib artifacts/lib/Win32/Release/ 2>/dev/null || true
+          mkdir -p artifacts/lib/x64/Release
+          cp build_x64/Release/luau.vm.lib artifacts/lib/x64/Release/ 2>/dev/null || true
+      - name: export headers
+        shell: bash
+        run: |
+          mkdir -p artifacts/include
+          cp -r VM/include/* artifacts/include/ 2>/dev/null || true
+      - name: upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: luau-build-release
+          path: artifacts/
