@@ -201,7 +201,7 @@ declare table: {
     maxn: <V>(t: {V}) -> number,
     remove: <V>(t: {V}, number?) -> V?,
     sort: <V>(t: {V}, comp: ((V, V) -> boolean)?) -> (),
-    create: <V>(count: number, value: V?) -> {V},
+    create: (<V>(count: number, value: V) -> {V}) & ((count: number) -> {any}),
     find: <V>(haystack: {V}, needle: V, init: number?) -> number?,
 
     unpack: <V>(list: {V}, i: number?, j: number?) -> ...V,
