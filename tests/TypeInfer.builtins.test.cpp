@@ -1902,7 +1902,6 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "vector_lerp_should_not_crash")
 TEST_CASE_FIXTURE(BuiltinsFixture, "instantiation_works_on_builtins")
 {
     CheckResult result = check(R"(
-        local foo = table.create<<string>>(4)
         local bar = table.unpack<<string>>({})
         local baz = table.find<<string>>({}, 1) -- should error
         assert<<string>>("asd", "lol")
@@ -1910,6 +1909,20 @@ TEST_CASE_FIXTURE(BuiltinsFixture, "instantiation_works_on_builtins")
 
     LUAU_REQUIRE_ERROR_COUNT(1, result);
     CHECK_EQ("Expected this to be 'string', but got 'number'", toString(result.errors[0]));
+}
+
+TEST_CASE_FIXTURE(BuiltinsFixture, "table_create_no_value")
+{
+    CheckResult result = check(R"(
+        --!strict
+        local t = table.create(5)
+        for i = 1, 5 do
+            t[i] = i
+        end
+        t[1] += 1
+    )");
+
+    LUAU_REQUIRE_NO_ERRORS(result);
 }
 
 TEST_CASE_FIXTURE(BuiltinsFixture, "table_freeze_on_any_should_not_error")
