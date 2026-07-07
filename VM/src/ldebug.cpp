@@ -15,7 +15,7 @@
 
 LUAU_FASTFLAG(LuauCIProto)
 
-static const char* getfuncname(Closure* f);
+static const char* getfuncname(Closure* cl);
 
 static int currentpc(lua_State* L, CallInfo* ci)
 {
