@@ -122,6 +122,10 @@ using GetStrFunc = const char* (*)();
 
 #if defined(LUAU_FASTFLAGVARIABLE)
 
+#define LUAU_FASTFLAGVARIABLE_CRYPT_VERSION(flag, version) \
+    namespace FFlag { Luau::FValue<bool> flag(MINCRYPT_LAZY(#flag)(), false, false); } \
+    static Luau::FValueVersionSetter flag##_VersionSetter(MINCRYPT_LAZY(#flag)(), version);
+
 #define LUAU_FASTFLAGVARIABLE_CRYPT(flag) \
     namespace FFlag { Luau::FValue<bool> flag(MINCRYPT_LAZY(#flag)(), false, false); } \
     static Luau::FValueVersionSetter flag##_VersionSetter(MINCRYPT_LAZY(#flag)(), 2);

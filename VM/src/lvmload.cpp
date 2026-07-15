@@ -19,6 +19,7 @@
 
 LUAU_FASTFLAGVARIABLE_CRYPT(LuauUdataDirectAccess6)
 LUAU_FASTFLAG(LuauCallFeedback)
+LUAU_FASTFLAGVARIABLE(LuauCostModel)
 
 template<typename T>
 struct TempBuffer
@@ -371,6 +372,10 @@ static int loadsafe(
 
     for (unsigned int i = 0; i < protoCount; ++i)
     {
+        uint32_t protoSize = 0;
+        if (version >= 12)
+            protoSize = readVarInt(data, size, offset);
+        size_t protoStartOffset = offset;
         Proto* p = luaF_newproto(L);
         p->source = source;
         p->bytecodeid = int(i);
@@ -734,7 +739,6 @@ static int loadsafe(
 
         if (version >= 11)
         {
-            LUAU_ASSERT(FFlag::LuauCallFeedback);
             p->feedbackvecsize = readVarInt(data, size, offset);
 
             if (p->feedbackvecsize > 0)
@@ -751,6 +755,18 @@ static int loadsafe(
                 slot.call_target.proto = 0;
                 slot.call_target.hits = 0;
             }
+        }
+
+        if (version >= 12)
+        {
+            if ((p->flags & LPF_INLINABLE) != 0)
+                p->cost = readVarInt64(data, size, offset);
+        }
+
+        if (version >= 12)
+        {
+            // Potantially skipping unknown data at the end of Proto.
+            offset = protoStartOffset + protoSize;
         }
 
         protos[i] = p;
